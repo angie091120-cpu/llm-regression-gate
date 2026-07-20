@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>llm-regression-gate -- eval diff report</title>
+<style>
+  body { font-family: -apple-system, Segoe UI, Helvetica, Arial, sans-serif; margin: 2rem; color: #1a1a1a; }
+  h1 { font-size: 1.3rem; }
+  table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+  th, td { border: 1px solid #ddd; padding: 0.4rem 0.6rem; text-align: left; font-size: 0.9rem; vertical-align: top; }
+  th { background: #f5f5f5; }
+  .severity-critical { color: #b00020; font-weight: bold; }
+  .severity-warning { color: #b06000; font-weight: bold; }
+  .severity-ok { color: #0a7a2f; font-weight: bold; }
+  .meta { color: #555; font-size: 0.85rem; }
+  code { background: #f2f2f2; padding: 0.1rem 0.3rem; }
+</style>
+</head>
+<body>
+  <h1>llm-regression-gate -- eval diff report</h1>
+  <p class="meta">
+    prompt: baseline <code>{{ report.baseline_prompt_version }}</code> vs candidate <code>{{ report.candidate_prompt_version }}</code>
+    {% if meta.get("model") %} &middot; model <code>{{ meta.model }}</code>{% endif %}
+    {% if meta.get("git_commit") %} &middot; commit <code>{{ meta.git_commit }}</code>{% endif %}
+    {% if meta.get("generated_at") %} &middot; generated {{ meta.generated_at }}{% endif %}
+  </p>
+
+  <h2>Scorecard</h2>
+  <table>
+    <tr><th>metric</th><th>baseline</th><th>candidate</th><th>delta</th></tr>
+    <tr>
+      <td>overall pass rate</td>
+      <td>{{ "%.2f%%"|format(report.baseline_pass_rate * 100) }}</td>
+      <td>{{ "%.2f%%"|format(report.candidate_pass_rate * 100) }}</td>
+      <td>{{ "%+.2f%%"|format(report.overall_delta * 100) }}</td>
+    </tr>
+  </table>
+  <p>
+    severity:
+    <span class="severity-{{ report.severity }}">{{ report.severity }}</span>
+    (warn &gt; {{ "%.0f%%"|format(report.warn_threshold * 100) }}, critical &gt; {{ "%.0f%%"|format(report.critical_threshold * 100) }})
+  </p>
+
+  <h2>Per-category delta</h2>
+  <table>
+    <tr><th>category</th><th>delta</th></tr>
+    {% for cat, delta in report.per_category_delta.items() %}
+    <tr><td>{{ cat }}</td><td>{{ "%+.2f%%"|format(delta * 100) }}</td></tr>
+    {% endfor %}
+  </table>
+
+  <h2>Regressed cases ({{ report.regressions|length }})</h2>
+  {% if report.regressions %}
+  <table>
+    <tr>
+      <th>case id</th>
+      <th>baseline output</th>
+      <th>candidate output</th>
+      <th>judge score (baseline &rarr; candidate)</th>
+    </tr>
+    {% for r in report.regressions %}
+    <tr>
+      <td><code>{{ r.id }}</code></td>
+      <td>{{ r.baseline_predicted_category }}: {{ r.baseline_predicted_summary }}</td>
+      <td>{{ r.candidate_predicted_category }}: {{ r.candidate_predicted_summary }}</td>
+      <td>{{ r.baseline_judge_score }} &rarr; {{ r.candidate_judge_score }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p>No regressions.</p>
+  {% endif %}
+
+  <h2>Improved cases ({{ report.improvements|length }})</h2>
+  {% if report.improvements %}
+  <table>
+    <tr>
+      <th>case id</th>
+      <th>baseline output</th>
+      <th>candidate output</th>
+      <th>judge score (baseline &rarr; candidate)</th>
+    </tr>
+    {% for r in report.improvements %}
+    <tr>
+      <td><code>{{ r.id }}</code></td>
+      <td>{{ r.baseline_predicted_category }}: {{ r.baseline_predicted_summary }}</td>
+      <td>{{ r.candidate_predicted_category }}: {{ r.candidate_predicted_summary }}</td>
+      <td>{{ r.baseline_judge_score }} &rarr; {{ r.candidate_judge_score }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p>No improvements.</p>
+  {% endif %}
+</body>
+</html>
