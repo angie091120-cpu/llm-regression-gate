@@ -1,0 +1,29 @@
+name: eval-gate
+
+on:
+  pull_request:
+    paths:
+      - "prompts/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      # Real-API evaluation + regression diff + PR scorecard comment.
+      # Implemented in evalkit (see SPEC.md §6); fails the job on critical regressions.
+      - name: run eval and diff against baseline
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          echo "TODO(S2): python -m evalkit.run_eval + python -m evalkit.diff + PR comment"
+          exit 1

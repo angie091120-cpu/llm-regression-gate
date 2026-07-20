@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Fail-closed secret scan on staged changes. Requires gitleaks (pinned, see README).
+set -uo pipefail
+if ! command -v gitleaks >/dev/null 2>&1; then
+  echo "pre-commit: gitleaks not found on PATH — refusing to commit (fail-closed)." >&2
+  exit 1
+fi
+exec gitleaks git --pre-commit --staged --redact -v
