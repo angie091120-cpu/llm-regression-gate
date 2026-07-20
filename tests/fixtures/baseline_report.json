@@ -1,0 +1,27 @@
+{
+  "prompt_version": "v1",
+  "model": "claude-haiku-4-5",
+  "generated_at": "2026-07-20T09:00:00+00:00",
+  "git_commit": "fixture0",
+  "pass_threshold": 3,
+  "pass_rate": 1.0,
+  "per_category_accuracy": {
+    "account": 1.0,
+    "billing": 1.0,
+    "general": 1.0,
+    "technical": 1.0
+  },
+  "cumulative_cost_usd": 0.0021,
+  "cases": [
+    {"id": "fix-001", "language": "zh-tw", "expected_category": "billing", "predicted_category": "billing", "expected_summary": "客戶詢問發票抬頭變更方式。", "predicted_summary": "客戶詢問如何變更發票抬頭。", "category_match": true, "judge_score": 5, "passed": true, "latency_ms": 410.2, "tokens": {"input": 320, "output": 40}, "cost_usd": 0.00021},
+    {"id": "fix-002", "language": "en", "expected_category": "technical", "predicted_category": "technical", "expected_summary": "Customer reports a webhook signature failure after rotating the secret.", "predicted_summary": "Customer's webhook signature check fails after rotating the signing secret.", "category_match": true, "judge_score": 5, "passed": true, "latency_ms": 388.5, "tokens": {"input": 310, "output": 38}, "cost_usd": 0.00020},
+    {"id": "fix-003", "language": "zh-tw", "expected_category": "account", "predicted_category": "account", "expected_summary": "客戶請求協助重設密碼。", "predicted_summary": "客戶請求重設密碼，未收到重設信件。", "category_match": true, "judge_score": 5, "passed": true, "latency_ms": 402.7, "tokens": {"input": 305, "output": 36}, "cost_usd": 0.00020},
+    {"id": "fix-004", "language": "en", "expected_category": "general", "predicted_category": "general", "expected_summary": "Customer asks whether a dark mode is planned for the dashboard.", "predicted_summary": "Customer requests a dark mode option for the agent dashboard.", "category_match": true, "judge_score": 4, "passed": true, "latency_ms": 395.1, "tokens": {"input": 300, "output": 34}, "cost_usd": 0.00019},
+    {"id": "fix-005", "language": "zh-tw", "expected_category": "billing", "predicted_category": "billing", "expected_summary": "客戶詢問月繳改年繳的方式。", "predicted_summary": "客戶詢問如何將月繳方案改為年繳。", "category_match": true, "judge_score": 5, "passed": true, "latency_ms": 415.9, "tokens": {"input": 315, "output": 37}, "cost_usd": 0.00021},
+    {"id": "fix-006", "language": "en", "expected_category": "account", "predicted_category": "account", "expected_summary": "Customer requests an account ownership transfer before the current owner leaves.", "predicted_summary": "Customer asks how to transfer account ownership before the owner departs.", "category_match": true, "judge_score": 5, "passed": true, "latency_ms": 401.3, "tokens": {"input": 322, "output": 39}, "cost_usd": 0.00021},
+    {"id": "fix-007", "language": "mixed", "expected_category": "technical", "predicted_category": "technical", "expected_summary": "客戶反映 production 環境 API 回傳 500 錯誤，sandbox 正常。", "predicted_summary": "客戶反映 production API 出現 500 錯誤，sandbox 環境正常。", "category_match": true, "judge_score": 4, "passed": true, "latency_ms": 420.6, "tokens": {"input": 330, "output": 41}, "cost_usd": 0.00022},
+    {"id": "fix-008", "language": "en", "expected_category": "billing", "predicted_category": "billing", "expected_summary": "Customer asks whether adding seats mid-cycle is prorated.", "predicted_summary": "Customer asks if mid-cycle seat additions are billed at full price or prorated.", "category_match": true, "judge_score": 5, "passed": true, "latency_ms": 390.8, "tokens": {"input": 298, "output": 33}, "cost_usd": 0.00019},
+    {"id": "fix-009", "language": "zh-tw", "expected_category": "general", "predicted_category": "general", "expected_summary": "客戶詢問是否有中文客服電話管道。", "predicted_summary": "客戶詢問是否提供中文電話客服。", "category_match": true, "judge_score": 5, "passed": true, "latency_ms": 408.4, "tokens": {"input": 312, "output": 35}, "cost_usd": 0.00020},
+    {"id": "fix-010", "language": "en", "expected_category": "technical", "predicted_category": "technical", "expected_summary": "Customer's CSV export times out for a full quarter of data.", "predicted_summary": "Customer's large quarterly CSV export times out while monthly exports work.", "category_match": true, "judge_score": 4, "passed": true, "latency_ms": 397.2, "tokens": {"input": 308, "output": 36}, "cost_usd": 0.00020}
+  ]
+}
