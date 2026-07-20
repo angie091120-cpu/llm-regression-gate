@@ -1,0 +1,4 @@
+anthropic>=0.40
+pydantic>=2.6
+PyYAML>=6.0
+Jinja2>=3.1
