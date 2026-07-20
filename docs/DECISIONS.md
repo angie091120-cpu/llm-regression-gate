@@ -74,21 +74,23 @@ Entries are added as the build progresses; 3–5 substantive entries expected by
   Flagged as an open question for the boss/Marcus if real usage shows the
   overall-only metric misses category-specific regressions in practice.
 
-## D-005: pricing constants in `evalkit/cost.py` are explicitly unverified placeholders
+## D-005: pricing constants default to verified *list* price, overridable via env vars
 
-- **Chose:** `_DEFAULT_PRICING` ships with concrete per-model $/1M-token
-  numbers so `cost_ledger.json` works out of the box, but the module docstring
-  and every reference to these numbers (README, this file) state plainly that
-  they are **not** a verified live price check and must be confirmed against
-  Anthropic's pricing page (or overridden via `PRICE_<MODEL>_<DIRECTION>` env
-  vars) before being used for real go/no-go budget decisions against the
-  spec's $15 cap.
-- **Why:** fabricating a precise-looking number and presenting it as fact
-  would violate the project's own "don't invent numbers" discipline the whole
-  system is built to enforce elsewhere (golden dataset labels, judge scores).
-  A working default with a loud caveat is safer than either silently guessing
-  or blocking development entirely until pricing is manually verified.
-- **Rejected:** hardcoding pricing with no caveat (dishonest); refusing to
-  provide any default and forcing every caller to set env vars before the
-  first run (unnecessary friction for a number that's easy to override once
-  verified).
+- **Chose:** `_DEFAULT_PRICING` ships with per-model $/1M-token list prices,
+  verified against Anthropic's official model pricing on 2026-07-20
+  (Haiku 4.5: $1 in / $5 out; Sonnet 5: $3 in / $15 out). Time-limited
+  introductory discounts are deliberately **not** encoded — estimates err
+  conservative and don't go stale when a promo ends. Every price remains
+  overridable via `PRICE_<MODEL>_<DIRECTION>` env vars for future changes.
+- **Why:** the budget guard ($15 cap with report/stop thresholds) should
+  never *under*-estimate spend, so list price is the safe default; and
+  because prices do drift, the module refuses to silently guess for unknown
+  models (fail-loud `ValueError`) instead of defaulting to zero. This was
+  originally shipped as an explicitly-unverified placeholder (honesty over
+  invented precision — the same "don't invent numbers" discipline the eval
+  system enforces elsewhere); the values were then confirmed against the
+  official pricing reference and the caveat upgraded to a verification note.
+- **Rejected:** hardcoding the introductory promo price (goes stale, and
+  under-estimates post-promo spend); refusing to provide any default and
+  forcing env vars before the first run (needless friction); silently
+  falling back to $0 for unknown models (breaks the budget guard).

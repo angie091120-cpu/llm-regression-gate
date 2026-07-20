@@ -21,7 +21,7 @@ Prompts live in `/prompts`, one YAML file per version: `version`, `model`, `crea
 - 60–80 cases. Language mix: ~50% Traditional Chinese, ~40% English, ~10% mixed.
 - Deliberate edge cases: typos/zhuyin artifacts, mixed currencies, sarcasm, ambiguous two-category emails, very short emails; each case tagged `expected_difficulty` (`easy | ambiguous | edge`).
 - **Labels are human-verified.** Drafted text and suggested labels may be machine-generated, but `expected_category` / `expected_summary` are only written after human review; `label_status: confirmed` is required for a case to enter evaluation. The eval runner skips (and warns about) unconfirmed cases.
-- Dataset is versioned (`golden_dataset_v1.json`); adding confirmed cases bumps the minor version.
+- Dataset is versioned via an internal `dataset_version` field in `golden_dataset.json` (the filename stays stable — it is part of the AC2 contract); adding confirmed cases bumps the minor version. *(Revised 2026-07-20: an earlier draft named the file `golden_dataset_v1.json`, contradicting AC2; the AC wins — see docs/DECISIONS.md D-001.)*
 
 ## 4. Evaluation engine
 

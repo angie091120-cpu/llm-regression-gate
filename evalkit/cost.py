@@ -1,12 +1,14 @@
 """Token-cost accounting (SPEC.md §3.4 budget tracking).
 
-IMPORTANT -- the per-model $/1M-token constants below are best-effort
-placeholders (David's training-data recollection, not a verified live
-price check) and must be treated as unverified until confirmed against
-https://www.anthropic.com/pricing. Override them with the PRICE_<MODEL>_IN /
-PRICE_<MODEL>_OUT environment variables (model name upper-cased, hyphens ->
-underscores, e.g. PRICE_CLAUDE_HAIKU_4_5_INPUT) before trusting
-cost_ledger.json for real go/no-go budget decisions. See docs/DECISIONS.md.
+Pricing defaults were verified against Anthropic's official model pricing
+on 2026-07-20 (list price per 1M tokens: Haiku 4.5 $1/$5, Sonnet 5 $3/$15).
+We deliberately use list price rather than any time-limited introductory
+discount, so cost estimates err conservative and don't go stale when a
+promo ends. Prices do change -- re-verify before relying on
+cost_ledger.json for hard budget decisions, or override per model with the
+PRICE_<MODEL>_INPUT / PRICE_<MODEL>_OUTPUT environment variables (model
+name upper-cased, hyphens -> underscores, e.g.
+PRICE_CLAUDE_HAIKU_4_5_INPUT). See docs/DECISIONS.md D-005.
 """
 from __future__ import annotations
 
@@ -17,7 +19,7 @@ from pathlib import Path
 
 LEDGER_PATH = Path(os.environ.get("EVALKIT_COST_LEDGER", "cost_ledger.json"))
 
-# USD per 1,000,000 tokens. PLACEHOLDER -- see module docstring.
+# USD per 1,000,000 tokens, list price (verified 2026-07-20 -- see docstring).
 _DEFAULT_PRICING: dict[str, dict[str, float]] = {
     "claude-haiku-4-5": {"input": 1.00, "output": 5.00},
     "claude-sonnet-5": {"input": 3.00, "output": 15.00},
