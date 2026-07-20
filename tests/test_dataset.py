@@ -87,14 +87,17 @@ def test_load_confirmed_cases_fails_loud_on_incomplete_confirmed_case(tmp_path):
         load_confirmed_cases(path)
 
 
-def test_current_golden_dataset_has_zero_confirmed_cases():
-    """As of W1, golden_dataset.json is entirely draft -- confirming labels is
-    the boss's manual step (SPEC.md §3.1(c) step 2). This test documents that
-    invariant and will start failing the moment real labels land, which is
-    exactly the signal we want."""
+def test_current_golden_dataset_is_fully_confirmed():
+    """Labels were human-verified on 2026-07-20 (SPEC.md §3.1(c) step 2), so
+    the eval runner must see all 70 cases -- and, with nothing filtered out,
+    must NOT emit the skipped-cases warning. (This test's predecessor asserted
+    the pre-labeling zero-confirmed state and was designed to fail the moment
+    real labels landed; that signal fired and the invariant flipped.)"""
+    import warnings
     from pathlib import Path
 
     dataset_path = Path(__file__).parent.parent / "golden_dataset.json"
-    with pytest.warns(UserWarning):
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")  # any skipped-case warning fails the test
         confirmed = load_confirmed_cases(dataset_path)
-    assert confirmed == []
+    assert len(confirmed) == 70

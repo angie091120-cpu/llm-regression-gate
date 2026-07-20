@@ -48,12 +48,19 @@ def test_language_quota_matches_spec_50_40_10(dataset):
     assert counts["mixed"] / total == pytest.approx(0.10, abs=0.01)
 
 
-def test_all_cases_are_draft_and_unlabeled(dataset):
-    """W1 invariant: labeling is the boss's manual step, not the agent's."""
+def test_all_cases_are_confirmed_with_complete_labels(dataset):
+    """Post-labeling invariant (labels human-verified 2026-07-20): every
+    confirmed case must carry a complete, valid expected_* label set and a
+    human audit trail. Guards against a case being flipped to `confirmed`
+    without its labels actually being filled in."""
+    valid_categories = {"billing", "technical", "account", "general"}
+    valid_difficulties = {"easy", "ambiguous", "edge"}
     for c in dataset["cases"]:
-        assert c["label_status"] == "draft"
-        assert c["expected_category"] is None
-        assert c["expected_summary"] is None
+        assert c["label_status"] == "confirmed", f"case {c['id']} not confirmed"
+        assert c["expected_category"] in valid_categories, f"case {c['id']} bad expected_category"
+        assert c["expected_summary"], f"case {c['id']} missing expected_summary"
+        assert c["expected_difficulty"] in valid_difficulties, f"case {c['id']} bad expected_difficulty"
+        assert c["labeled_by"] and c["labeled_at"], f"case {c['id']} missing labeling audit trail"
 
 
 def test_every_case_has_notes(dataset):

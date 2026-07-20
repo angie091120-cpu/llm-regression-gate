@@ -8,13 +8,13 @@
       "draft_category": "billing",
       "draft_summary": "客戶請求更新訂閱發票的公司抬頭與統一編號。",
       "draft_difficulty": "easy",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "billing",
+      "expected_summary": "客戶請求更新訂閱發票的公司抬頭與統一編號。",
+      "expected_difficulty": "easy",
       "notes": "標準 billing 情境：發票抬頭／統編變更請求，資訊完整、無歧義。",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-002",
@@ -23,13 +23,13 @@
       "draft_category": "technical",
       "draft_summary": "客戶反映 API 串接文件連結失效，需要新的端點資訊。",
       "draft_difficulty": "easy",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "technical",
+      "expected_summary": "客戶反映 API 串接文件連結失效，需要新的端點資訊。",
+      "expected_difficulty": "easy",
       "notes": "標準 technical 情境：文件連結失效阻擋整合進度。",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-003",
@@ -38,13 +38,13 @@
       "draft_category": "account",
       "draft_summary": "客戶反映團隊成員登入被系統擋下，顯示已達人數上限但後台顯示仍有名額，需釐清是帳號問題還是需升級方案。",
       "draft_difficulty": "ambiguous",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "account",
+      "expected_summary": "客戶反映團隊成員登入被系統擋下，顯示已達人數上限但後台顯示仍有名額，需釐清是帳號問題還是需升級方案。",
+      "expected_difficulty": "ambiguous",
       "notes": "跨 account／billing 的模糊案例：登入問題根因可能是帳號設定，也可能是方案人數上限，客戶自己也不確定。",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-004",
@@ -53,13 +53,13 @@
       "draft_category": "general",
       "draft_summary": "客戶詢問是否提供中文電話客服管道。",
       "draft_difficulty": "easy",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "general",
+      "expected_summary": "客戶詢問是否提供中文電話客服管道。",
+      "expected_difficulty": "easy",
       "notes": "標準 general 情境：服務管道詢問，非故障通報。",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-005",
@@ -68,13 +68,13 @@
       "draft_category": "billing",
       "draft_summary": "客戶詢問如何將月繳方案切換為年繳，並確認是否影響當期已付款項。",
       "draft_difficulty": "easy",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "billing",
+      "expected_summary": "客戶詢問如何將月繳方案切換為年繳，並確認是否影響當期已付款項。",
+      "expected_difficulty": "easy",
       "notes": "標準 billing 情境：方案週期切換與費用銜接問題。",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-006",
@@ -83,13 +83,13 @@
       "draft_category": "technical",
       "draft_summary": "客戶反映匯出報表的工單總數與後台儀表板數字不一致，懷疑匯出功能有誤。",
       "draft_difficulty": "ambiguous",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "technical",
+      "expected_summary": "客戶反映匯出報表的工單總數與後台儀表板數字不一致，懷疑匯出功能有誤。",
+      "expected_difficulty": "ambiguous",
       "notes": "數字對不上可能是真的 bug，也可能是統計口徑差異（例如匯出排除了草稿工單），連客戶自己都不確定，判斷上有難度。",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-007",
@@ -98,13 +98,13 @@
       "draft_category": "account",
       "draft_summary": "客戶請求協助重設密碼，表示未收到重設信件。",
       "draft_difficulty": "easy",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "account",
+      "expected_summary": "客戶請求協助重設密碼，表示未收到重設信件。",
+      "expected_difficulty": "easy",
       "notes": "標準 account 情境：密碼重設請求。",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-008",
@@ -113,13 +113,13 @@
       "draft_category": "general",
       "draft_summary": "客戶詢問後台介面是否有繁體中文版規劃。",
       "draft_difficulty": "easy",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "general",
+      "expected_summary": "客戶詢問後台介面是否有繁體中文版規劃。",
+      "expected_difficulty": "easy",
       "notes": "標準 general 情境：功能／在地化規劃詢問。",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-009",
@@ -128,13 +128,13 @@
       "draft_category": "billing",
       "draft_summary": "客戶因信用卡過期扣款失敗，帳號被降級導致無法存取進行中的工單，情況緊急。",
       "draft_difficulty": "ambiguous",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "billing",
+      "expected_summary": "客戶因信用卡過期扣款失敗，帳號被降級導致無法存取進行中的工單，情況緊急。",
+      "expected_difficulty": "ambiguous",
       "notes": "根因是 billing（扣款失敗），但客戶當下最急迫的痛點是帳號存取權被鎖，跨 billing／account，且情緒緊急。",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-010",
@@ -143,13 +143,13 @@
       "draft_category": "technical",
       "draft_summary": "客戶反映特定 iPhone 更新 App 後開啟即閃退，其他裝置正常。",
       "draft_difficulty": "easy",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "technical",
+      "expected_summary": "客戶反映特定 iPhone 更新 App 後開啟即閃退，其他裝置正常。",
+      "expected_difficulty": "easy",
       "notes": "標準 technical 情境：單一裝置的 App 閃退回報。",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-011",
@@ -158,13 +158,13 @@
       "draft_category": "account",
       "draft_summary": "客戶詢問如何將離職員工的帳號權限與工單紀錄轉移給接手同事。",
       "draft_difficulty": "easy",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "account",
+      "expected_summary": "客戶詢問如何將離職員工的帳號權限與工單紀錄轉移給接手同事。",
+      "expected_difficulty": "easy",
       "notes": "標準 account 情境：離職交接的帳號轉移流程詢問。",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-012",
@@ -173,13 +173,13 @@
       "draft_category": "general",
       "draft_summary": "客戶以反諷語氣簡短抱怨系統當機。",
       "draft_difficulty": "edge",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
-      "notes": "極短句＋反諷語氣組合：測試模型是否被「太棒了」字面誤導成正面情緒，而非讀出真正的當機抱怨。",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "expected_category": "general",
+      "expected_summary": "客戶以反諷語氣簡短抱怨系統當機。",
+      "expected_difficulty": "edge",
+      "notes": "極短句＋反諷語氣組合：測試模型是否被「太棒了」字面誤導成正面情緒，而非讀出真正的當機抱怨。〔2026-07-20 定案原則：有具體症狀描述才標 technical（如 case-034），純情緒抱怨無可排查資訊→general。〕",
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-013",
@@ -188,13 +188,13 @@
       "draft_category": "billing",
       "draft_summary": "客戶請求補發第二季合併發票，表示未收到六月份發票。",
       "draft_difficulty": "easy",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "billing",
+      "expected_summary": "客戶請求補發第二季合併發票，表示未收到六月份發票。",
+      "expected_difficulty": "easy",
       "notes": "標準 billing 情境：補開發票請求。",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-014",
@@ -203,13 +203,13 @@
       "draft_category": "technical",
       "draft_summary": "客戶反映 Zapier 整合的新工單通知偶發性未觸發，成因待釐清。",
       "draft_difficulty": "ambiguous",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "technical",
+      "expected_summary": "客戶反映 Zapier 整合的新工單通知偶發性未觸發，成因待釐清。",
+      "expected_difficulty": "ambiguous",
       "notes": "偶發性、無規律的整合故障，客戶自己也無法判斷是我方 webhook 還是第三方 Zapier 的問題，需要工程排查才能定案。",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-015",
@@ -218,13 +218,13 @@
       "draft_category": "account",
       "draft_summary": "客戶反映帳號因異常活動偵測被誤判停用，遠端團隊多地登入觸發風控，急需恢復。",
       "draft_difficulty": "edge",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "account",
+      "expected_summary": "客戶反映帳號因異常活動偵測被誤判停用，遠端團隊多地登入觸發風控，急需恢復。",
+      "expected_difficulty": "edge",
       "notes": "高急迫度的疑似誤判案例：風控機制與正常遠端團隊行為衝突，需要人工判斷是否為誤判，非單純的帳號設定請求。",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-016",
@@ -233,13 +233,13 @@
       "draft_category": "general",
       "draft_summary": "客戶詢問 50 人規模團隊的企業方案報價與是否配有專屬客戶成功經理。",
       "draft_difficulty": "easy",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "general",
+      "expected_summary": "客戶詢問 50 人規模團隊的企業方案報價與是否配有專屬客戶成功經理。",
+      "expected_difficulty": "easy",
       "notes": "標準 general 情境：企業方案的業務詢價。",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-017",
@@ -248,13 +248,13 @@
       "draft_category": "billing",
       "draft_summary": "客戶詢問是否能將以美金計價的訂閱費用開立台幣發票。",
       "draft_difficulty": "ambiguous",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "billing",
+      "expected_summary": "客戶詢問是否能將以美金計價的訂閱費用開立台幣發票。",
+      "expected_difficulty": "ambiguous",
       "notes": "幣別混用（USD 計價／TWD 報帳需求）：是單純的財務流程問題，也可能牽涉到系統是否支援雙幣別開票，判斷空間存在。",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-018",
@@ -263,13 +263,13 @@
       "draft_category": "technical",
       "draft_summary": "客戶設定 SSO 網域驗證持續失敗，即便 DNS TXT 紀錄已生效超過 24 小時。",
       "draft_difficulty": "easy",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "technical",
+      "expected_summary": "客戶設定 SSO 網域驗證持續失敗，即便 DNS TXT 紀錄已生效超過 24 小時。",
+      "expected_difficulty": "easy",
       "notes": "標準 technical 情境：SSO 網域驗證失敗，客戶已排除自身 DNS 設定延遲的可能性。",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-019",
@@ -278,13 +278,13 @@
       "draft_category": "account",
       "draft_summary": "客戶請求合併兩個重複建立的帳號。",
       "draft_difficulty": "easy",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "account",
+      "expected_summary": "客戶請求合併兩個重複建立的帳號。",
+      "expected_difficulty": "easy",
       "notes": "標準 account 情境：重複帳號合併請求。",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-020",
@@ -293,13 +293,13 @@
       "draft_category": "general",
       "draft_summary": "客戶質疑官網標示美金價格與結帳頁台幣金額換算是否合理，語氣帶有質疑。",
       "draft_difficulty": "edge",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
-      "notes": "幣別混用（USD／TWD）＋輕微反諷語氣（「坑人」），且介於 billing 計價疑問與 general 詢價之間，是本組合最刁鑽的邊界案例之一。",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "expected_category": "general",
+      "expected_summary": "客戶質疑官網標示美金價格與結帳頁台幣金額換算是否合理，語氣帶有質疑。",
+      "expected_difficulty": "edge",
+      "notes": "幣別混用（USD／TWD）＋輕微反諷語氣（「坑人」），且介於 billing 計價疑問與 general 詢價之間，是本組合最刁鑽的邊界案例之一。〔2026-07-20 定案原則：與 case-068 對照——尚未購買的 pre-sale 定價爭議→general；已發生扣款的帳務爭議→billing。〕",
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-021",
@@ -308,13 +308,13 @@
       "draft_category": "billing",
       "draft_summary": "客戶反映活動優惠碼結帳時顯示無效，但主辦方告知仍在有效期內。",
       "draft_difficulty": "ambiguous",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "billing",
+      "expected_summary": "客戶反映活動優惠碼結帳時顯示無效，但主辦方告知仍在有效期內。",
+      "expected_difficulty": "ambiguous",
       "notes": "客戶說法與系統行為互相矛盾（活動方說有效、系統顯示無效），需要後台查證才能判定是設定錯誤還是客戶誤解條件。",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-022",
@@ -323,13 +323,13 @@
       "draft_category": "technical",
       "draft_summary": "客戶反映知識庫文章圖片近期大量無法載入，懷疑是圖床服務異常。",
       "draft_difficulty": "easy",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "technical",
+      "expected_summary": "客戶反映知識庫文章圖片近期大量無法載入，懷疑是圖床服務異常。",
+      "expected_difficulty": "easy",
       "notes": "標準 technical 情境：靜態資源載入異常回報。",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-023",
@@ -338,13 +338,13 @@
       "draft_category": "account",
       "draft_summary": "客戶詢問如何調整團隊成員的角色權限，讓對方具備報表檢視與工單指派能力。",
       "draft_difficulty": "easy",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "account",
+      "expected_summary": "客戶詢問如何調整團隊成員的角色權限，讓對方具備報表檢視與工單指派能力。",
+      "expected_difficulty": "easy",
       "notes": "標準 account 情境：角色權限調整操作詢問。",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-024",
@@ -353,13 +353,13 @@
       "draft_category": "general",
       "draft_summary": "客戶建議新增工單自動標籤分類功能，並詢問是否已在規劃中。",
       "draft_difficulty": "easy",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "general",
+      "expected_summary": "客戶建議新增工單自動標籤分類功能，並詢問是否已在規劃中。",
+      "expected_difficulty": "easy",
       "notes": "標準 general 情境：功能建議。",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-025",
@@ -368,13 +368,13 @@
       "draft_category": "billing",
       "draft_summary": "客戶簡短詢問為何帳單金額變高。",
       "draft_difficulty": "edge",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "billing",
+      "expected_summary": "客戶簡短詢問為何帳單金額變高。",
+      "expected_difficulty": "edge",
       "notes": "極短句、缺乏上下文：考驗模型是否會過度腦補細節，或誠實地在資訊不足下仍給出合理的最佳猜測分類。",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-026",
@@ -383,13 +383,13 @@
       "draft_category": "technical",
       "draft_summary": "客戶反映後台工單列表載入速度明顯變慢，詢問是否為系統維護或已知效能問題。",
       "draft_difficulty": "ambiguous",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "technical",
+      "expected_summary": "客戶反映後台工單列表載入速度明顯變慢，詢問是否為系統維護或已知效能問題。",
+      "expected_difficulty": "ambiguous",
       "notes": "客戶明確提出兩種可能成因（維護／已知效能問題）自己也不確定，屬於需要後台狀態資訊才能定案的模糊案例。",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-027",
@@ -398,13 +398,13 @@
       "draft_category": "account",
       "draft_summary": "客戶詢問如何在後台為全團隊強制啟用雙因素驗證。",
       "draft_difficulty": "easy",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "account",
+      "expected_summary": "客戶詢問如何在後台為全團隊強制啟用雙因素驗證。",
+      "expected_difficulty": "easy",
       "notes": "標準 account 情境：2FA 強制啟用設定詢問。",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-028",
@@ -413,13 +413,13 @@
       "draft_category": "general",
       "draft_summary": "客戶對上週的緊急技術支援表達感謝。",
       "draft_difficulty": "easy",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "general",
+      "expected_summary": "客戶對上週的緊急技術支援表達感謝。",
+      "expected_difficulty": "easy",
       "notes": "標準 general 情境：純感謝信，無待辦事項。",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-029",
@@ -428,13 +428,13 @@
       "draft_category": "billing",
       "draft_summary": "客戶對續約價格調漲近 20% 表示不解，要求說明調漲原因以利內部簽核。",
       "draft_difficulty": "ambiguous",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "billing",
+      "expected_summary": "客戶對續約價格調漲近 20% 表示不解，要求說明調漲原因以利內部簽核。",
+      "expected_difficulty": "ambiguous",
       "notes": "價格爭議＋內部流程壓力（需要簽核說法），情緒偏向不滿但尚未到投訴等級，難度在於判斷這屬於一般billing 詢問還是需要升級處理的爭議。",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-030",
@@ -443,13 +443,13 @@
       "draft_category": "technical",
       "draft_summary": "客戶反映 CRM 資料同步出現 15-20 分鐘延遲，影響客服即時查看客戶狀態。",
       "draft_difficulty": "easy",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "technical",
+      "expected_summary": "客戶反映 CRM 資料同步出現 15-20 分鐘延遲，影響客服即時查看客戶狀態。",
+      "expected_difficulty": "easy",
       "notes": "標準 technical 情境：資料同步延遲回報。",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-031",
@@ -458,13 +458,13 @@
       "draft_category": "account",
       "draft_summary": "客戶詢問方案降級是否會影響歷史工單資料的保存。",
       "draft_difficulty": "ambiguous",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
-      "notes": "降級動作本身屬 billing，但客戶真正關切的是 account／資料保存政策，跨類別的典型案例。",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "expected_category": "billing",
+      "expected_summary": "客戶詢問方案降級是否會影響歷史工單資料的保存。",
+      "expected_difficulty": "ambiguous",
+      "notes": "降級動作本身屬 billing，但客戶真正關切的是 account／資料保存政策，跨類別的典型案例。〔2026-07-20 人工定案：原 draft 標 account，定案改 billing 與 case-052 統一——主動作「降級」屬帳務變更，資料保存為附帶疑問。〕",
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-032",
@@ -473,13 +473,13 @@
       "draft_category": "general",
       "draft_summary": "客戶詢問是否提供新進員工的教育訓練資源或線上教學安排。",
       "draft_difficulty": "easy",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "general",
+      "expected_summary": "客戶詢問是否提供新進員工的教育訓練資源或線上教學安排。",
+      "expected_difficulty": "easy",
       "notes": "標準 general 情境：教育訓練資源詢問。",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-033",
@@ -488,13 +488,13 @@
       "draft_category": "billing",
       "draft_summary": "客戶請求延長試用期或暫緩試用到期後的自動轉正式訂閱扣款。",
       "draft_difficulty": "ambiguous",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "billing",
+      "expected_summary": "客戶請求延長試用期或暫緩試用到期後的自動轉正式訂閱扣款。",
+      "expected_difficulty": "ambiguous",
       "notes": "同時提出兩個可能解法（延長試用／暫緩扣款），需要客服判斷哪個更符合客戶真正需求，非單一動作的請求。",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-034",
@@ -503,13 +503,13 @@
       "draft_category": "technical",
       "draft_summary": "客戶反映工單頁面持續讀取轉圈無法完成，疑似系統異常。",
       "draft_difficulty": "edge",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "technical",
+      "expected_summary": "客戶反映工單頁面持續讀取轉圈無法完成，疑似系統異常。",
+      "expected_difficulty": "edge",
       "notes": "刻意含注音文殘留字（「ㄓㄨㄥ」＝中／讀取中）與錯字（「我門」＝我們），測試模型對非標準輸入的穩健度。",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-035",
@@ -518,13 +518,13 @@
       "draft_category": "account",
       "draft_summary": "客戶詢問如何新增第二位帳號管理員角色。",
       "draft_difficulty": "easy",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "account",
+      "expected_summary": "客戶詢問如何新增第二位帳號管理員角色。",
+      "expected_difficulty": "easy",
       "notes": "標準 account 情境：新增管理員角色詢問。",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-036",
@@ -533,13 +533,13 @@
       "draft_category": "billing",
       "draft_summary": "Customer requests an update to their billing address before the next invoice is generated.",
       "draft_difficulty": "easy",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "billing",
+      "expected_summary": "Customer requests an update to their billing address before the next invoice is generated.",
+      "expected_difficulty": "easy",
       "notes": "Standard billing case: complete, unambiguous address-update request.",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-037",
@@ -548,13 +548,13 @@
       "draft_category": "technical",
       "draft_summary": "Customer reports webhook signature verification failures after rotating the signing secret.",
       "draft_difficulty": "easy",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "technical",
+      "expected_summary": "Customer reports webhook signature verification failures after rotating the signing secret.",
+      "expected_difficulty": "easy",
       "notes": "Standard technical case: integration failure tied to a specific recent action (secret rotation).",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-038",
@@ -563,13 +563,13 @@
       "draft_category": "account",
       "draft_summary": "Customer accidentally downgraded their own role and lost access to owner-level settings, with no other Owner on the team, blocking billing access too.",
       "draft_difficulty": "ambiguous",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "account",
+      "expected_summary": "Customer accidentally downgraded their own role and lost access to owner-level settings, with no other Owner on the team, blocking billing access too.",
+      "expected_difficulty": "ambiguous",
       "notes": "Self-inflicted permission lockout that also blocks billing access -- a genuine account/billing boundary case with real urgency.",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-039",
@@ -578,13 +578,13 @@
       "draft_category": "general",
       "draft_summary": "Customer requests a dark mode option for the agent dashboard.",
       "draft_difficulty": "easy",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "general",
+      "expected_summary": "Customer requests a dark mode option for the agent dashboard.",
+      "expected_difficulty": "easy",
       "notes": "Standard general case: feature request, no urgency.",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-040",
@@ -593,13 +593,13 @@
       "draft_category": "billing",
       "draft_summary": "Customer accidentally purchased the annual Enterprise plan and requests a refund plus reversion to their previous Pro plan.",
       "draft_difficulty": "easy",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "billing",
+      "expected_summary": "Customer accidentally purchased the annual Enterprise plan and requests a refund plus reversion to their previous Pro plan.",
+      "expected_difficulty": "easy",
       "notes": "Standard billing case: clear refund request with acknowledged root cause.",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-041",
@@ -608,13 +608,13 @@
       "draft_category": "technical",
       "draft_summary": "Customer's integration hits rate-limit errors during a daily traffic spike, unsure whether it's a plan limit or a configuration issue.",
       "draft_difficulty": "ambiguous",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "technical",
+      "expected_summary": "Customer's integration hits rate-limit errors during a daily traffic spike, unsure whether it's a plan limit or a configuration issue.",
+      "expected_difficulty": "ambiguous",
       "notes": "Customer explicitly frames two plausible causes (plan limit vs. misconfiguration) and can't tell which -- genuinely needs investigation to resolve.",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-042",
@@ -623,13 +623,13 @@
       "draft_category": "account",
       "draft_summary": "Customer requests guidance on transferring account ownership ahead of the current Owner's departure.",
       "draft_difficulty": "easy",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "account",
+      "expected_summary": "Customer requests guidance on transferring account ownership ahead of the current Owner's departure.",
+      "expected_difficulty": "easy",
       "notes": "Standard account case: ownership transfer procedure request.",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-043",
@@ -638,13 +638,13 @@
       "draft_category": "general",
       "draft_summary": "Customer sarcastically comments on an apparent service outage.",
       "draft_difficulty": "edge",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
-      "notes": "Very short input combined with sarcasm -- tests whether the model is misled by surface-positive words like 'love it' into missing the underlying outage complaint.",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "expected_category": "general",
+      "expected_summary": "Customer sarcastically comments on an apparent service outage.",
+      "expected_difficulty": "edge",
+      "notes": "Very short input combined with sarcasm -- tests whether the model is misled by surface-positive words like 'love it' into missing the underlying outage complaint.〔2026-07-20 labeling principle: concrete, troubleshootable symptoms → technical (cf. case-034); pure venting with no diagnostic detail → general.〕",
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-044",
@@ -653,13 +653,13 @@
       "draft_category": "billing",
       "draft_summary": "Customer asks whether adding seats mid-cycle is billed at full price or prorated.",
       "draft_difficulty": "easy",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "billing",
+      "expected_summary": "Customer asks whether adding seats mid-cycle is billed at full price or prorated.",
+      "expected_difficulty": "easy",
       "notes": "Standard billing case: proration policy question.",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-045",
@@ -668,13 +668,13 @@
       "draft_category": "technical",
       "draft_summary": "Customer's large-date-range CSV export times out, while smaller exports succeed, suggesting a size limit.",
       "draft_difficulty": "easy",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "technical",
+      "expected_summary": "Customer's large-date-range CSV export times out, while smaller exports succeed, suggesting a size limit.",
+      "expected_difficulty": "easy",
       "notes": "Standard technical case: export failure with a clear repro pattern (large range fails, small range works).",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-046",
@@ -683,13 +683,13 @@
       "draft_category": "account",
       "draft_summary": "Customer is unable to remove a former employee whose team member entry remains active despite SSO deactivation.",
       "draft_difficulty": "easy",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "account",
+      "expected_summary": "Customer is unable to remove a former employee whose team member entry remains active despite SSO deactivation.",
+      "expected_difficulty": "easy",
       "notes": "Standard account case: offboarding blocked by a UI/state inconsistency.",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-047",
@@ -698,13 +698,13 @@
       "draft_category": "general",
       "draft_summary": "Customer requests access to the SOC 2 Type II report for a security review ahead of an enterprise contract.",
       "draft_difficulty": "easy",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "general",
+      "expected_summary": "Customer requests access to the SOC 2 Type II report for a security review ahead of an enterprise contract.",
+      "expected_difficulty": "easy",
       "notes": "Standard general case: compliance-documentation request tied to a sales process.",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-048",
@@ -713,13 +713,13 @@
       "draft_category": "billing",
       "draft_summary": "Customer flags a currency discrepancy between the sales quote (EUR) and the actual invoice (USD).",
       "draft_difficulty": "ambiguous",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "billing",
+      "expected_summary": "Customer flags a currency discrepancy between the sales quote (EUR) and the actual invoice (USD).",
+      "expected_difficulty": "ambiguous",
       "notes": "Currency mixing (EUR quote vs. USD invoice) with an implicit dispute over which figure is contractually correct -- needs a definitive answer, not just an explanation.",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-049",
@@ -728,13 +728,13 @@
       "draft_category": "technical",
       "draft_summary": "Customer reports mobile push notifications have stopped since a recent app update, despite correct settings.",
       "draft_difficulty": "easy",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "technical",
+      "expected_summary": "Customer reports mobile push notifications have stopped since a recent app update, despite correct settings.",
+      "expected_difficulty": "easy",
       "notes": "Standard technical case: regression tied to a specific app update, settings already ruled out by the customer.",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-050",
@@ -743,13 +743,13 @@
       "draft_category": "account",
       "draft_summary": "Customer's SSO setup fails due to a domain-claim conflict, possibly from a forgotten old trial account.",
       "draft_difficulty": "easy",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "account",
+      "expected_summary": "Customer's SSO setup fails due to a domain-claim conflict, possibly from a forgotten old trial account.",
+      "expected_difficulty": "easy",
       "notes": "Standard account case: SSO domain conflict with a plausible self-diagnosed cause.",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-051",
@@ -758,13 +758,13 @@
       "draft_category": "general",
       "draft_summary": "Customer finds the pricing page confusing and requests a plain plan comparison table.",
       "draft_difficulty": "easy",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "general",
+      "expected_summary": "Customer finds the pricing page confusing and requests a plain plan comparison table.",
+      "expected_difficulty": "easy",
       "notes": "Standard general case: UX complaint paired with a concrete, actionable ask.",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-052",
@@ -773,13 +773,13 @@
       "draft_category": "billing",
       "draft_summary": "Customer wants to downgrade due to low seat usage and asks about the process, including data retention.",
       "draft_difficulty": "ambiguous",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
-      "notes": "Downgrade request (billing) intertwined with a data-retention condition (account/data) -- the answer has to cover both halves to actually satisfy the customer.",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "expected_category": "billing",
+      "expected_summary": "Customer wants to downgrade due to low seat usage and asks about the process, including data retention.",
+      "expected_difficulty": "ambiguous",
+      "notes": "Downgrade request (billing) intertwined with a data-retention condition (account/data) -- the answer has to cover both halves to actually satisfy the customer.〔2026-07-20 human-verified: kept billing; paired with case-031 (same construct), both unified under billing — the primary action (downgrade) is a billing change, data retention is the rider.〕",
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-053",
@@ -788,13 +788,13 @@
       "draft_category": "technical",
       "draft_summary": "Customer's dashboard charts display in UTC instead of their local timezone, unclear if a setting is missing.",
       "draft_difficulty": "easy",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "technical",
+      "expected_summary": "Customer's dashboard charts display in UTC instead of their local timezone, unclear if a setting is missing.",
+      "expected_difficulty": "easy",
       "notes": "Standard technical case: reporting/timezone configuration question.",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-054",
@@ -803,13 +803,13 @@
       "draft_category": "account",
       "draft_summary": "Customer's mandatory 2FA rollout is locking out half the team with persistent 'invalid code' errors.",
       "draft_difficulty": "easy",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "account",
+      "expected_summary": "Customer's mandatory 2FA rollout is locking out half the team with persistent 'invalid code' errors.",
+      "expected_difficulty": "easy",
       "notes": "Standard account case: security-feature rollout gone wrong, high urgency but clearly an account/access issue.",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-055",
@@ -818,13 +818,13 @@
       "draft_category": "general",
       "draft_summary": "Customer expresses vague dissatisfaction without specifying what is malfunctioning.",
       "draft_difficulty": "edge",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "general",
+      "expected_summary": "Customer expresses vague dissatisfaction without specifying what is malfunctioning.",
+      "expected_difficulty": "edge",
       "notes": "Deliberately vague, low-information complaint -- tests whether the model forces a specific, defensible category guess rather than stalling, while still flagging (in the summary) that detail is missing.",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-056",
@@ -833,13 +833,13 @@
       "draft_category": "billing",
       "draft_summary": "Customer's accounting team requests a signed W-9 form to process vendor payment.",
       "draft_difficulty": "easy",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "billing",
+      "expected_summary": "Customer's accounting team requests a signed W-9 form to process vendor payment.",
+      "expected_difficulty": "easy",
       "notes": "Standard billing case: vendor-documentation request tied to payment processing.",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-057",
@@ -848,13 +848,13 @@
       "draft_category": "technical",
       "draft_summary": "Customer observes stale data briefly returned by the API right after a ticket update, asking whether it's expected caching behavior.",
       "draft_difficulty": "easy",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "technical",
+      "expected_summary": "Customer observes stale data briefly returned by the API right after a ticket update, asking whether it's expected caching behavior.",
+      "expected_difficulty": "easy",
       "notes": "Standard technical case: API consistency-model question, well-specified repro.",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-058",
@@ -863,13 +863,13 @@
       "draft_category": "account",
       "draft_summary": "Customer wants billing visibility separated from the Admin role into its own granular permission.",
       "draft_difficulty": "easy",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "account",
+      "expected_summary": "Customer wants billing visibility separated from the Admin role into its own granular permission.",
+      "expected_difficulty": "easy",
       "notes": "Standard account case: permission-granularity request.",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-059",
@@ -878,13 +878,13 @@
       "draft_category": "general",
       "draft_summary": "Customer asks whether NebulaDesk natively integrates with Linear, or requires a custom API integration.",
       "draft_difficulty": "easy",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "general",
+      "expected_summary": "Customer asks whether NebulaDesk natively integrates with Linear, or requires a custom API integration.",
+      "expected_difficulty": "easy",
       "notes": "Standard general case: pre-sales/integration capability question.",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-060",
@@ -893,13 +893,13 @@
       "draft_category": "billing",
       "draft_summary": "Customer requests bulk access to two years of historical invoices for an internal audit.",
       "draft_difficulty": "easy",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "billing",
+      "expected_summary": "Customer requests bulk access to two years of historical invoices for an internal audit.",
+      "expected_difficulty": "easy",
       "notes": "Standard billing case: bulk historical invoice request.",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-061",
@@ -908,13 +908,13 @@
       "draft_category": "technical",
       "draft_summary": "Customer notices recently created tickets are missing from search results despite appearing in the manual list, suggesting an indexing delay.",
       "draft_difficulty": "ambiguous",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "technical",
+      "expected_summary": "Customer notices recently created tickets are missing from search results despite appearing in the manual list, suggesting an indexing delay.",
+      "expected_difficulty": "ambiguous",
       "notes": "Customer offers their own hypothesis (indexing delay) that is plausible but unconfirmed -- the model has to classify without knowing if that hypothesis is actually correct.",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-062",
@@ -923,13 +923,13 @@
       "draft_category": "account",
       "draft_summary": "Customer requests to change the email address associated with their account ahead of an IT policy change.",
       "draft_difficulty": "easy",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "account",
+      "expected_summary": "Customer requests to change the email address associated with their account ahead of an IT policy change.",
+      "expected_difficulty": "easy",
       "notes": "Standard account case: account email change request.",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-063",
@@ -938,13 +938,13 @@
       "draft_category": "general",
       "draft_summary": "Customer thanks the team for a helpful onboarding call.",
       "draft_difficulty": "easy",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "general",
+      "expected_summary": "Customer thanks the team for a helpful onboarding call.",
+      "expected_difficulty": "easy",
       "notes": "Standard general case: pure thank-you note, no action needed.",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-064",
@@ -953,13 +953,13 @@
       "draft_category": "billing",
       "draft_summary": "客戶詢問本月 invoice 的付款截止日期，表示 billing portal 上未清楚顯示。",
       "draft_difficulty": "easy",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "billing",
+      "expected_summary": "客戶詢問本月 invoice 的付款截止日期，表示 billing portal 上未清楚顯示。",
+      "expected_difficulty": "easy",
       "notes": "標準 billing 情境的中英夾雜版本：截止日期查詢。",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-065",
@@ -968,13 +968,13 @@
       "draft_category": "technical",
       "draft_summary": "客戶反映 production 環境的 API 整合出現 500 錯誤，sandbox 測試正常，懷疑近期有伺服器更新導致。",
       "draft_difficulty": "ambiguous",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "technical",
+      "expected_summary": "客戶反映 production 環境的 API 整合出現 500 錯誤，sandbox 測試正常，懷疑近期有伺服器更新導致。",
+      "expected_difficulty": "ambiguous",
       "notes": "客戶提出具體假設（近期部署導致），但無法自行確認，需後台查證，屬跨語言的模糊技術案例。",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-066",
@@ -983,13 +983,13 @@
       "draft_category": "account",
       "draft_summary": "客戶請求將自己的角色從 agent 升級為 admin，並附上主管核准的轉發信件。",
       "draft_difficulty": "easy",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "account",
+      "expected_summary": "客戶請求將自己的角色從 agent 升級為 admin，並附上主管核准的轉發信件。",
+      "expected_difficulty": "easy",
       "notes": "標準 account 情境的中英夾雜版本：角色升級請求，附核准佐證。",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-067",
@@ -998,13 +998,13 @@
       "draft_category": "general",
       "draft_summary": "客戶詢問服務的 uptime SLA 百分比，用於供應商評估文件。",
       "draft_difficulty": "easy",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "general",
+      "expected_summary": "客戶詢問服務的 uptime SLA 百分比，用於供應商評估文件。",
+      "expected_difficulty": "easy",
       "notes": "標準 general 情境的中英夾雜版本：合約/評估用的 SLA 數字詢問。",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-068",
@@ -1013,13 +1013,13 @@
       "draft_category": "billing",
       "draft_summary": "客戶質疑官網標示美金月費與信用卡實際扣款台幣金額之間的匯率換算，語氣帶諷刺。",
       "draft_difficulty": "edge",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
-      "notes": "中英夾雜＋幣別混用（USD／TWD）＋反諷（「佛心」為反話），是整份資料集中語言與語氣複雜度最高的案例之一。",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "expected_category": "billing",
+      "expected_summary": "客戶質疑官網標示美金月費與信用卡實際扣款台幣金額之間的匯率換算，語氣帶諷刺。",
+      "expected_difficulty": "edge",
+      "notes": "中英夾雜＋幣別混用（USD／TWD）＋反諷（「佛心」為反話），是整份資料集中語言與語氣複雜度最高的案例之一。〔2026-07-20 定案原則：與 case-020 對照——已發生信用卡扣款→billing；未購買的 pre-sale 詢價爭議→general。〕",
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-069",
@@ -1028,13 +1028,13 @@
       "draft_category": "technical",
       "draft_summary": "客戶在設定 SSO 時上傳 Okta 匯出的 metadata 檔案持續失敗，錯誤訊息顯示憑證格式無效，懷疑是解析器問題。",
       "draft_difficulty": "easy",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "technical",
+      "expected_summary": "客戶在設定 SSO 時上傳 Okta 匯出的 metadata 檔案持續失敗，錯誤訊息顯示憑證格式無效，懷疑是解析器問題。",
+      "expected_difficulty": "easy",
       "notes": "標準 technical 情境的中英夾雜版本：SSO metadata 上傳失敗，客戶已提供錯誤訊息與排除線索。",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     },
     {
       "id": "case-070",
@@ -1043,13 +1043,13 @@
       "draft_category": "general",
       "draft_summary": "客戶為非營利組織，詢問是否提供優惠折扣或特殊定價方案。",
       "draft_difficulty": "ambiguous",
-      "expected_category": null,
-      "expected_summary": null,
-      "expected_difficulty": null,
+      "expected_category": "general",
+      "expected_summary": "客戶為非營利組織，詢問是否提供優惠折扣或特殊定價方案。",
+      "expected_difficulty": "ambiguous",
       "notes": "介於 general 詢價與 billing 折扣申請之間的模糊案例：既是產品評估詢問，也隱含具體的價格協商請求。",
-      "label_status": "draft",
-      "labeled_by": null,
-      "labeled_at": null
+      "label_status": "confirmed",
+      "labeled_by": "Elijah Hsu",
+      "labeled_at": "2026-07-20"
     }
   ]
 }
