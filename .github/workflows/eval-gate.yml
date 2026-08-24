@@ -13,6 +13,10 @@ permissions:
 jobs:
   eval:
     runs-on: ubuntu-latest
+    env:
+      # secrets.* can't be referenced directly in `if:` conditionals, so it's
+      # mapped to a job-level env var here and checked explicitly below.
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -20,28 +24,37 @@ jobs:
           python-version: "3.12"
       - run: pip install -r requirements-dev.txt
 
-      # PR-triggered runs stay free: mocked pytest (AC1) plus an offline
-      # regression-diff smoke test against the pre-generated AC3 fixtures
-      # (tests/fixtures/) -- no ANTHROPIC_API_KEY needed. This exercises the
-      # real diff-and-comment pipeline on every prompts/** PR without
-      # spending API budget on every push. A full real-API evaluation of the
-      # PR's actual prompt change is deliberately deferred to a manual
-      # `workflow_dispatch` run below -- see SPEC.md §6 "Cost control" and
-      # docs/DECISIONS.md D-006.
-      - name: pytest (mocked, no API key)
-        if: github.event_name == 'pull_request'
-        run: pytest -q
+      # SPEC.md §6: both the prompts/**-scoped PR trigger and
+      # workflow_dispatch run the real-API eval -- no free/mocked substitute.
+      # Fail loud (not a silent pass, not a fixture fallback) when the
+      # secret this needs isn't provisioned.
+      - name: verify ANTHROPIC_API_KEY secret is configured
+        run: |
+          if [ -z "${ANTHROPIC_API_KEY:-}" ]; then
+            echo "::error::ANTHROPIC_API_KEY secret not configured"
+            echo "ANTHROPIC_API_KEY secret not configured" >&2
+            exit 1
+          fi
 
-      - name: offline regression-diff smoke test (fixtures, no API key)
-        if: github.event_name == 'pull_request'
+      - name: run real-API eval against the golden dataset
+        run: |
+          python -m evalkit.run_eval --prompt-version v1 --dataset golden_dataset.json --out eval_report.json
+
+      # eval_reports/baseline.json is the last successful run on main
+      # (SPEC.md §5). If it doesn't exist yet, evalkit.diff bootstraps it
+      # from this run and exits 0 -- see SPEC.md §5 and evalkit/diff.py.
+      # continue-on-error so a critical-severity exit (AC3) doesn't skip the
+      # PR comment step below; the job is still failed explicitly afterward.
+      - name: diff against baseline
+        id: diff
+        continue-on-error: true
         run: |
           python -m evalkit.diff \
-            --baseline tests/fixtures/baseline_report.json \
-            --candidate tests/fixtures/degraded_report.json \
+            --baseline eval_reports/baseline.json --candidate eval_report.json \
             --warn-threshold 0.03 --critical-threshold 0.08 \
-            --out diff_report.json || true
+            --out diff_report.json
 
-      - name: post PR scorecard comment (smoke-test data)
+      - name: post PR scorecard comment
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
@@ -49,18 +62,14 @@ jobs:
             const fs = require("fs");
             const d = JSON.parse(fs.readFileSync("diff_report.json", "utf8"));
             const body = [
-              "### eval-gate scorecard (PR smoke test -- no API key used)",
+              "### eval-gate scorecard (real-API eval)",
               "",
               `- candidate pass rate: ${d.candidate_pass_rate}`,
+              `- baseline pass rate: ${d.baseline_pass_rate}`,
               `- delta vs. baseline: ${d.overall_delta}`,
               `- severity: ${d.severity}`,
-              "",
-              "This is the free, PR-triggered smoke test: it exercises the " +
-                "regression-diff pipeline against fixed fixture reports " +
-                "(`tests/fixtures/`), not a real evaluation of this PR's " +
-                "prompt change. Run this workflow manually via " +
-                "`workflow_dispatch` with `ANTHROPIC_API_KEY` set to evaluate " +
-                "the actual prompt change against the golden dataset.",
+              `- regressions: ${d.regressions.length}`,
+              `- improvements: ${d.improvements.length}`,
             ].join("\n");
             await github.rest.issues.createComment({
               owner: context.repo.owner,
@@ -69,15 +78,13 @@ jobs:
               body,
             });
 
-      # Real-API evaluation: manual only, to control API cost (SPEC.md §6).
-      # Evaluates the checked-out prompt against the golden dataset for
-      # real, diffs against the committed baseline, and fails the job on a
-      # critical regression (evalkit.diff exits non-zero -- see AC3).
-      - name: real-API eval + diff against baseline
-        if: github.event_name == 'workflow_dispatch'
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      # AC3 / SPEC.md §5: critical severity must fail the check so branch
+      # protection can block the merge. The diff step above used
+      # continue-on-error so this runs (and the comment above gets posted)
+      # even when severity is critical; this step is what actually turns
+      # the job red.
+      - name: fail on critical regression
+        if: steps.diff.outcome == 'failure'
         run: |
-          python -m evalkit.run_eval --prompt-version v1 --dataset golden_dataset.json --out eval_report.json
-          python -m evalkit.diff --baseline eval_reports/baseline.json --candidate eval_report.json \
-            --warn-threshold 0.03 --critical-threshold 0.08 --out diff_report.json
+          echo "::error::eval-gate: evalkit.diff exited non-zero (critical regression) -- see diff_report.json / the PR comment above"
+          exit 1

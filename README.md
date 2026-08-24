@@ -12,7 +12,9 @@ Most teams ship prompt changes blind: edit a string, deploy, hope. This project 
 
 - **Bilingual golden dataset** — Traditional Chinese / English / mixed-language customer support emails, hand-verified labels (never LLM-generated ground truth).
 - **Regression diffing** — per-case pass/fail flips, per-category deltas, configurable warning (3%) and critical (8%) thresholds.
-- **CI gate** — every PR touching `prompts/**` gets a free, no-API-key smoke test (mocked pytest + a fixture-based diff) with a scorecard comment; a full real-API evaluation of the actual prompt change — the one that can block the merge on a critical regression — runs on a manually triggered `workflow_dispatch`, to keep API spend off of every push. See [SPEC.md §6](SPEC.md#6-ci-gate).
+- **CI gate** — every PR touching `prompts/**`, and manual `workflow_dispatch` runs, evaluate the prompt against the real API, diff the result against the committed baseline, post a scorecard comment on the PR, and fail the check on a critical regression. See [SPEC.md §6](SPEC.md#6-ci-gate).
+
+  **Current status: not yet enforcing.** The repo has no `ANTHROPIC_API_KEY` secret configured, so `eval-gate.yml` fails loud (explicit "ANTHROPIC_API_KEY secret not configured" error, not a silent pass) on every run until that secret is provisioned. Branch protection also isn't yet set to require this check. Neither has been done as part of this fix — provisioning the secret is a key-management step, out of scope here.
 
 ## Setup
 
