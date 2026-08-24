@@ -54,6 +54,12 @@ else
 fi
 
 step "AC4 (manual): open a test PR touching prompts/** and verify eval-gate + scorecard comment"
-[ -f .github/workflows/eval-gate.yml ] && echo "workflow file present" || { echo "eval-gate.yml missing"; fail=1; }
+if [ ! -f .github/workflows/eval-gate.yml ]; then
+  echo "AC4 FAIL: eval-gate.yml missing"; fail=1
+elif grep -q 'TODO(S2)' .github/workflows/eval-gate.yml; then
+  echo "AC4 FAIL: eval-gate.yml is still a stub (TODO(S2) marker present)"; fail=1
+else
+  echo "AC4 PARTIAL: workflow file present and implemented (no stub marker) -- open a real test PR to confirm green + PR comment end-to-end, this script can't drive GitHub Actions itself"
+fi
 
 exit $fail
