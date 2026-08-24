@@ -153,3 +153,35 @@ test, not a real-API eval; real-API eval is `workflow_dispatch`-only
   setting org-wide thresholds once via CI environment/`.env` instead of
   repeating `--warn-threshold`/`--critical-threshold` on every invocation
   of both `evalkit.diff` and `checks/acceptance.sh`).
+
+## D-008: D-006 reverted — SPEC.md §6 restored to its original real-API-on-PR wording; owner decision, not maker's to make
+
+- **Chose:** SPEC.md §6 is reverted verbatim to the pre-D-006 text (`eval-gate.yml`
+  runs the real-API eval on both the `prompts/**`-scoped `pull_request` trigger
+  and `workflow_dispatch`, fails on critical regressions). `eval-gate.yml` is
+  rebuilt to match: both triggers call `run_eval` for real, gated on
+  `secrets.ANTHROPIC_API_KEY`, fail-loud (not silently downgraded to a fixture
+  smoke test) when the secret is absent.
+- **Why:** D-006 read a genuine prose inconsistency in the frozen SPEC (§6's
+  trigger sentence vs. its own cost-control bullet) and resolved it by rewriting
+  the acceptance-relevant contract to the cheaper, always-green reading. That is
+  a scope call on a *frozen* spec, and the authority to relax "PR-triggered gate
+  must call the real API" belongs to the spec owner, not the implementer —
+  regardless of whether the implementer's reading was internally defensible.
+  The boss reviewed D-006 and rejected it on those grounds: the fix for an
+  inconsistent frozen spec is to flag it and ask, not to unilaterally amend it.
+  D-006 is left in place above (historical record of the reasoning that was
+  rejected); this entry records the reversal and the reason, per instruction to
+  leave the SPEC diff to a byte-for-byte revert and record the decision here
+  instead.
+- **Consequence (expected, not a defect):** with no `ANTHROPIC_API_KEY` repo
+  secret configured, `eval-gate.yml` now fails loud on every `prompts/**` PR and
+  on `workflow_dispatch` (explicit "ANTHROPIC_API_KEY secret not configured"
+  error, not a silent pass or a fixture substitution) until the boss provisions
+  the secret — a separate, Victor-reviewed key-management step, not part of this
+  fix.
+- **Rejected:** keeping D-006's PR-time fixture-smoke-test compromise (overrides
+  an explicit owner decision); reverting SPEC.md §6 but leaving `eval-gate.yml`
+  on the fixture-smoke-test implementation (spec and implementation would
+  disagree again, reproducing the exact inconsistency D-006 was trying to avoid,
+  just in the opposite direction).
