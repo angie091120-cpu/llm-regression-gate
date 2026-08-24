@@ -53,3 +53,5 @@ few_shot_examples:
 output_schema:
   category: enum[billing, technical, account, general]
   summary: string
+
+# CI smoke test note: verifies eval-gate.yml (S3 blind-review fix, C1) runs on a prompts/** PR. Safe no-op comment, remove after AC4 is confirmed.
