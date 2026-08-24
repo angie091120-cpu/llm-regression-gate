@@ -16,6 +16,15 @@ jobs:
 
   gitleaks:
     runs-on: ubuntu-latest
+    # Repo default token permission is "read repository contents and packages
+    # only" (all other scopes none) -- gitleaks-action v2 unconditionally
+    # calls GET /repos/{owner}/{repo}/pulls/{pull_number}/commits on every
+    # pull_request event before it does anything else, which 403s without an
+    # explicit pull-requests:read grant. Declared here at job level (not
+    # workflow level) so the pytest job's token is untouched.
+    permissions:
+      contents: read
+      pull-requests: read
     steps:
       - uses: actions/checkout@v4
         with:
