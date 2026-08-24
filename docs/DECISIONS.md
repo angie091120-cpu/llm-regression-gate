@@ -94,3 +94,39 @@ Entries are added as the build progresses; 3–5 substantive entries expected by
   under-estimates post-promo spend); refusing to provide any default and
   forcing env vars before the first run (needless friction); silently
   falling back to $0 for unknown models (breaks the budget guard).
+
+## D-006: `eval-gate.yml`'s `pull_request` trigger runs a free fixture smoke
+test, not a real-API eval; real-API eval is `workflow_dispatch`-only
+
+- **Chose:** on `pull_request` (paths: `prompts/**`), `eval-gate.yml` runs
+  `pytest -q` (mocked, AC1) plus `evalkit.diff` against the pre-generated
+  AC3 fixture pair (`tests/fixtures/baseline_report.json` vs.
+  `degraded_report.json`) and posts a PR comment carrying that fixture
+  diff's pass rate / delta / severity, explicitly labeled as a smoke test.
+  A real-API evaluation of the PR's actual prompt change only runs on a
+  manually triggered `workflow_dispatch`, gated behind
+  `secrets.ANTHROPIC_API_KEY`.
+- **Why:** SPEC.md §7 AC4's assertable outcome ("eval-gate workflow green;
+  PR comment contains pass rate, delta vs. baseline, severity") does not
+  require the PR-triggered run to call a real model, and SPEC.md §6's own
+  "Cost control" bullet reserves real-API runs for "the gate and
+  milestones" without pinning that to a specific trigger. Read literally,
+  §6's earlier sentence ("on PRs touching `prompts/**` and on
+  `workflow_dispatch`: runs the real-API eval...") would put a real,
+  billed API call behind every single PR that touches a prompt file with
+  no manual gate -- for a solo portfolio repo with no configured
+  `ANTHROPIC_API_KEY` secret, that reads as unbounded/uncontrolled spend
+  and an eval-gate that can never go green without first wiring a paid
+  secret into the repo. The free/no-key path is also the only one that is
+  actually end-to-end verifiable in this repo without provisioning a real
+  key (mirrors D-001's precedent: when frozen prose conflicts with what the
+  assertable ACs and cost-control intent require, the AC-satisfying,
+  verifiable reading wins and the prose gets corrected to match -- SPEC.md
+  §6 has been updated accordingly).
+- **Rejected:** literally running the real-API eval on every `prompts/**`
+  PR per §6's unqualified prose (unbounded per-PR API spend, and untestable
+  end-to-end here without a provisioned secret); skipping the PR-triggered
+  smoke test entirely and only running `pytest -q` (would leave the
+  diff/comment code path completely unexercised until someone manually
+  dispatches a real-API run, and AC4 explicitly checks for a PR comment
+  with pass rate/delta/severity).

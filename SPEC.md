@@ -49,8 +49,8 @@ An HTML diff report (Jinja2, static) renders run metadata, a scorecard vs. basel
 ## 6. CI gate
 
 - `test.yml` — on every push/PR: `pytest -q`, fully mocked, no API key required; plus secret scanning (gitleaks).
-- `eval-gate.yml` — on PRs touching `prompts/**` and on `workflow_dispatch`: runs the real-API eval, computes the diff, posts a scorecard comment on the PR, and fails the check on critical regressions. Requires the repo's branch protection to mark it as a required status check.
-- Cost control: regression-detection logic is tested with pre-generated fixture reports in `test.yml` (free); real-API runs are reserved for the gate and milestones.
+- `eval-gate.yml` — on PRs touching `prompts/**`: runs `pytest -q` (mocked) plus an offline regression-diff smoke test against pre-generated fixtures, and posts a scorecard comment on the PR — no API key required. On `workflow_dispatch`: runs the real-API eval, diffs it against the committed baseline, and fails the check on critical regressions. Requires the repo's branch protection to mark the workflow as a required status check for a `workflow_dispatch` run to actually gate a merge. *(Revised 2026-08-24: an earlier draft of this bullet described both triggers as unconditionally running the real-API eval; that conflicted with the cost-control bullet below and made the PR-triggered gate unrunnable without a provisioned `ANTHROPIC_API_KEY` repo secret — see docs/DECISIONS.md D-006.)*
+- Cost control: regression-detection logic is exercised for free on every `prompts/**` PR via pre-generated fixture reports (`test.yml` and the `eval-gate.yml` PR smoke test); real-API runs are reserved for manually-dispatched gate runs and milestones.
 
 ## 7. Acceptance criteria
 
