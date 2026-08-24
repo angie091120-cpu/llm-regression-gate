@@ -1,0 +1,10 @@
+.git/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+eval_report.json
+diff_report.json
+cost_ledger.json
+eval_reports/
+.env
