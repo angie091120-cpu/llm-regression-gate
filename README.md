@@ -8,11 +8,11 @@ CI-style regression testing for LLM prompt changes — every prompt edit is eval
 
 ## Why
 
-Most teams ship prompt changes blind: edit a string, deploy, hope. This project treats prompts as versioned artifacts and runs a full evaluation suite (exact-match scoring + LLM-as-judge + latency + token cost) on every pull request that touches `prompts/**`, diffs the results against a baseline, and blocks the merge when a critical regression is detected.
+Most teams ship prompt changes blind: edit a string, deploy, hope. This project treats prompts as versioned artifacts and runs a full evaluation suite (exact-match scoring + LLM-as-judge + latency + token cost) against a human-verified golden dataset, diffs the results against a baseline, and can block the merge when a critical regression is detected.
 
 - **Bilingual golden dataset** — Traditional Chinese / English / mixed-language customer support emails, hand-verified labels (never LLM-generated ground truth).
 - **Regression diffing** — per-case pass/fail flips, per-category deltas, configurable warning (3%) and critical (8%) thresholds.
-- **CI gate** — GitHub Actions posts a scorecard comment on the PR and fails the check on critical regressions.
+- **CI gate** — every PR touching `prompts/**` gets a free, no-API-key smoke test (mocked pytest + a fixture-based diff) with a scorecard comment; a full real-API evaluation of the actual prompt change — the one that can block the merge on a critical regression — runs on a manually triggered `workflow_dispatch`, to keep API spend off of every push. See [SPEC.md §6](SPEC.md#6-ci-gate).
 
 ## Setup
 
