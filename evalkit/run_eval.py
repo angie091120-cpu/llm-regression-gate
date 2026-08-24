@@ -111,7 +111,7 @@ def run_eval(
             "(after an optional --limit). Golden dataset cases need "
             "expected_category/expected_summary filled in and label_status "
             "flipped to 'confirmed' by a human reviewer before they can be "
-            "evaluated -- see SPEC.md §3.1(c)."
+            "evaluated -- see SPEC.md §3."
         )
 
     results = asyncio.run(_run_all(cases, prompt_config, concurrency, pass_threshold))

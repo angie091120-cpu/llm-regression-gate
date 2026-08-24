@@ -42,7 +42,7 @@ def load_all_cases(path: str | Path) -> list[GoldenCase]:
 
 def load_confirmed_cases(path: str | Path) -> list[GoldenCase]:
     """Load only label_status == 'confirmed' cases, with a loud UserWarning
-    listing everything that was excluded (SPEC.md §3.1(c) step 3).
+    listing everything that was excluded (SPEC.md §3).
 
     Fails loudly (raises) if a case claims to be confirmed but is missing
     expected_category/expected_summary -- that combination means the record

@@ -1,5 +1,5 @@
 """Structural integrity checks on the shipped golden_dataset.json draft
-(SPEC.md §3.1(c)). These guard the W1 deliverable itself, independent of any
+(SPEC.md §3). These guard the W1 deliverable itself, independent of any
 LLM call: schema validity, id uniqueness, size bounds, and the language
 quota (the one hard percentage split in the spec)."""
 from __future__ import annotations
