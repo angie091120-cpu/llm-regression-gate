@@ -36,13 +36,13 @@ it in locally, or export the variables directly. Key ones:
 
 Full list in [`.env.example`](.env.example).
 
-**Golden dataset status:** `golden_dataset.json` currently ships as a **draft** --
-70 cases with agent-drafted `draft_category`/`draft_summary`/`draft_difficulty`,
-all `label_status: draft`. The eval engine only evaluates `label_status: confirmed`
-cases (and warns loudly about everything it skips), so `evalkit.run_eval` will
-correctly refuse to run against an empty confirmed set until a human reviewer
-fills in `expected_category`/`expected_summary`/`expected_difficulty` and flips
-`label_status` to `confirmed` per case (SPEC.md §3.1(c)).
+**Golden dataset status:** `golden_dataset.json` ships with all 70 cases at
+`label_status: confirmed` -- every `expected_category`/`expected_summary`/
+`expected_difficulty` was written by a human reviewer, not the agent-drafted
+`draft_category`/`draft_summary`/`draft_difficulty` fields. `evalkit.run_eval`
+only ever evaluates `label_status: confirmed` cases and warns loudly about
+(and refuses to run against) anything that reverts to draft or is missing an
+expected label (SPEC.md §3).
 
 See [SPEC.md](SPEC.md) for the frozen specification and acceptance criteria, and [docs/DECISIONS.md](docs/DECISIONS.md) for design decisions.
 
