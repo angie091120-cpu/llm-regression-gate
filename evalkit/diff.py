@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from pathlib import Path
 
 
@@ -93,8 +94,13 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Diff two eval reports and gate on regression severity.")
     parser.add_argument("--baseline", required=True)
     parser.add_argument("--candidate", required=True)
-    parser.add_argument("--warn-threshold", type=float, default=0.03)
-    parser.add_argument("--critical-threshold", type=float, default=0.08)
+    # Defaults fall back to WARN_THRESHOLD / CRITICAL_THRESHOLD env vars
+    # (see .env.example) when the flag isn't passed; an explicit CLI flag
+    # always wins over the env var. See docs/DECISIONS.md D-007.
+    parser.add_argument("--warn-threshold", type=float, default=float(os.environ.get("WARN_THRESHOLD", 0.03)))
+    parser.add_argument(
+        "--critical-threshold", type=float, default=float(os.environ.get("CRITICAL_THRESHOLD", 0.08))
+    )
     parser.add_argument("--out", default="diff_report.json")
     parser.add_argument("--html-out", default=None, help="optional path to also render a static HTML diff report")
     args = parser.parse_args(argv)

@@ -113,6 +113,44 @@ def test_diff_main_bootstraps_baseline_when_missing(tmp_path):
     assert json.loads(baseline_path.read_text(encoding="utf-8")) == json.loads(candidate_path.read_text(encoding="utf-8"))
 
 
+def test_diff_main_reads_threshold_env_vars_when_no_cli_flag(tmp_path, monkeypatch):
+    """WARN_THRESHOLD/CRITICAL_THRESHOLD (.env.example) must actually be
+    read when no --warn-threshold/--critical-threshold flag is passed."""
+    baseline = _load("baseline_report.json")
+    warm = json.loads(json.dumps(baseline))  # deep copy
+    warm["pass_rate"] = 0.95  # 5% drop -- "warning" at the 0.03/0.08 defaults
+    baseline_path, candidate_path, out_path = tmp_path / "baseline.json", tmp_path / "warm.json", tmp_path / "diff_report.json"
+    baseline_path.write_text(json.dumps(baseline), encoding="utf-8")
+    candidate_path.write_text(json.dumps(warm), encoding="utf-8")
+
+    monkeypatch.setenv("CRITICAL_THRESHOLD", "0.02")  # below the 5% drop -> should escalate to critical via env alone
+    exit_code = main(["--baseline", str(baseline_path), "--candidate", str(candidate_path), "--out", str(out_path)])
+
+    assert exit_code != 0
+    assert json.loads(out_path.read_text(encoding="utf-8"))["severity"] == "critical"
+
+
+def test_diff_main_cli_flag_overrides_threshold_env_var(tmp_path, monkeypatch):
+    baseline = _load("baseline_report.json")
+    warm = json.loads(json.dumps(baseline))
+    warm["pass_rate"] = 0.95  # same 5% drop as above
+    baseline_path, candidate_path, out_path = tmp_path / "baseline.json", tmp_path / "warm.json", tmp_path / "diff_report.json"
+    baseline_path.write_text(json.dumps(baseline), encoding="utf-8")
+    candidate_path.write_text(json.dumps(warm), encoding="utf-8")
+
+    # Env says "critical" past 2%, but an explicit CLI flag raises the bar to 50% -- CLI must win.
+    monkeypatch.setenv("CRITICAL_THRESHOLD", "0.02")
+    exit_code = main(
+        [
+            "--baseline", str(baseline_path), "--candidate", str(candidate_path),
+            "--critical-threshold", "0.5", "--out", str(out_path),
+        ]
+    )
+
+    assert exit_code == 0
+    assert json.loads(out_path.read_text(encoding="utf-8"))["severity"] != "critical"
+
+
 def test_diff_main_html_out(tmp_path):
     html_path = tmp_path / "report.html"
     out_path = tmp_path / "diff_report.json"

@@ -130,3 +130,26 @@ test, not a real-API eval; real-API eval is `workflow_dispatch`-only
   diff/comment code path completely unexercised until someone manually
   dispatches a real-API run, and AC4 explicitly checks for a PR comment
   with pass rate/delta/severity).
+
+## D-007: `WARN_THRESHOLD`/`CRITICAL_THRESHOLD` env vars are wired into
+`evalkit/diff.py`'s CLI defaults, not dropped from `.env.example`
+
+- **Chose:** `evalkit/diff.py`'s `--warn-threshold`/`--critical-threshold`
+  argparse defaults now read `WARN_THRESHOLD`/`CRITICAL_THRESHOLD` from the
+  environment (falling back to the existing 0.03/0.08 literals when unset).
+  An explicit CLI flag still overrides the env var, since argparse only
+  falls back to `default=` when the flag is absent.
+- **Why:** `.env.example` already documented both variables as "eval engine
+  tuning" next to `EVAL_CONCURRENCY` (which *is* read, by
+  `evalkit/run_eval.py`), so a reader has every reason to expect setting
+  them changes gate behavior; silently ignoring them is exactly the kind of
+  "looks configured, does nothing" gap this project's own honesty
+  discipline (D-005) argues against. This mirrors the existing
+  `PRICE_<MODEL>_<DIRECTION>` override pattern in `evalkit/cost.py` --
+  CLI-flag-wins-over-env is the established precedent in this repo, not a
+  new convention.
+- **Rejected:** deleting the two lines from `.env.example` instead (would
+  have been the smaller diff, but throws away a legitimate use case --
+  setting org-wide thresholds once via CI environment/`.env` instead of
+  repeating `--warn-threshold`/`--critical-threshold` on every invocation
+  of both `evalkit.diff` and `checks/acceptance.sh`).
