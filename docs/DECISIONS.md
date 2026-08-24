@@ -185,3 +185,39 @@ test, not a real-API eval; real-API eval is `workflow_dispatch`-only
   on the fixture-smoke-test implementation (spec and implementation would
   disagree again, reproducing the exact inconsistency D-006 was trying to avoid,
   just in the opposite direction).
+
+## D-009: no committed baseline yet -- `eval-gate.yml` will bootstrap, not compare, until someone runs a real eval and commits `eval_reports/baseline.json`
+
+- **Chose:** document, rather than silently rely on, the gap between SPEC.md
+  §5's bootstrap semantics ("first run bootstraps the baseline and exits 0")
+  and the fact that no workflow step commits the bootstrapped
+  `eval_reports/baseline.json` back to `main`. `evalkit.diff` writes the
+  bootstrap file to the *runner's* filesystem, which is discarded when the
+  job ends -- it never reaches the repo. Until a human runs
+  `python -m evalkit.run_eval` + `python -m evalkit.diff` locally (or via a
+  `workflow_dispatch` run whose output is then committed) and commits
+  `eval_reports/baseline.json`, every `eval-gate.yml` run will keep
+  bootstrapping from scratch and never actually compute a regression diff --
+  `diff_report.json` never gets produced, and the PR comment step
+  (D-009's companion fix, see `.github/workflows/eval-gate.yml`) will keep
+  logging the "no baseline yet" skip instead of a scorecard.
+- **Why:** this was found by Ryan's third-round local reproduction: with no
+  `eval_reports/baseline.json` committed, the PR scorecard comment step
+  unconditionally did `readFileSync("diff_report.json")`, which doesn't exist
+  in the bootstrap case, crashing the step the first time the boss's
+  provisioned API key actually lets the workflow run past the secret check --
+  a misleading "read failed" crash instead of the honest "no baseline yet"
+  state. The comment step is fixed to detect the missing file and skip
+  gracefully with a clear log line; this entry is the other half of that
+  fix -- recording that the underlying gap (no committed baseline) is a
+  go-live prerequisite, not a bug that code alone resolves. No workflow step
+  was added to auto-commit the baseline back to `main` on a passing run --
+  that's a write-to-main-branch design decision (permissions, security,
+  who/what triggers it) flagged as an open question in the S3 revert task
+  and still unresolved; auto-committing was out of scope for this patch too.
+- **Rejected:** silently leaving the crash in place (misleads whoever runs
+  the first real eval into thinking something is broken, when the real issue
+  is a missing one-time setup step); having this patch also add a
+  baseline-auto-commit step (that's exactly the kind of scope decision this
+  patch's brief said not to make unilaterally -- documenting the gap is the
+  right-sized fix here, not solving it).

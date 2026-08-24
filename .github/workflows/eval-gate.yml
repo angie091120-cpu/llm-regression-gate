@@ -60,6 +60,16 @@ jobs:
         with:
           script: |
             const fs = require("fs");
+            if (!fs.existsSync("diff_report.json")) {
+              // evalkit.diff bootstraps the baseline when eval_reports/baseline.json
+              // doesn't exist yet (SPEC.md §5): it copies this run's report to that
+              // path, exits 0, and deliberately writes no diff_report.json -- there
+              // is nothing to diff against yet. Skip the comment instead of crashing
+              // on a readFileSync of a file that was never produced (see
+              // docs/DECISIONS.md D-009).
+              console.log("no baseline yet -- bootstrapped from this run, commit eval_reports/baseline.json to enable regression comparison");
+              return;
+            }
             const d = JSON.parse(fs.readFileSync("diff_report.json", "utf8"));
             const body = [
               "### eval-gate scorecard (real-API eval)",

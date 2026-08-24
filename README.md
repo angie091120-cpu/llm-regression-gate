@@ -14,7 +14,7 @@ Most teams ship prompt changes blind: edit a string, deploy, hope. This project 
 - **Regression diffing** — per-case pass/fail flips, per-category deltas, configurable warning (3%) and critical (8%) thresholds.
 - **CI gate** — every PR touching `prompts/**`, and manual `workflow_dispatch` runs, evaluate the prompt against the real API, diff the result against the committed baseline, post a scorecard comment on the PR, and fail the check on a critical regression. See [SPEC.md §6](SPEC.md#6-ci-gate).
 
-  **Current status: not yet enforcing.** The repo has no `ANTHROPIC_API_KEY` secret configured, so `eval-gate.yml` fails loud (explicit "ANTHROPIC_API_KEY secret not configured" error, not a silent pass) on every run until that secret is provisioned. Branch protection also isn't yet set to require this check. Neither has been done as part of this fix — provisioning the secret is a key-management step, out of scope here.
+  **Current status: not yet enforcing.** The repo has no `ANTHROPIC_API_KEY` secret configured, so `eval-gate.yml` fails loud (explicit "ANTHROPIC_API_KEY secret not configured" error, not a silent pass) on every run until that secret is provisioned. Branch protection also isn't yet set to require this check. Neither has been done as part of this fix — provisioning the secret is a key-management step, out of scope here. Separately, `eval_reports/baseline.json` has never been committed, so once the secret is in place, the gate will keep *bootstrapping* the baseline (SPEC.md §5) instead of actually diffing until someone runs a real eval once and commits that file — see [docs/DECISIONS.md D-009](docs/DECISIONS.md).
 
 ## Setup
 
