@@ -10,9 +10,11 @@ estimate or a documentation page:
 
 Prices used throughout: Haiku 4.5 $1.00 / $5.00 and Sonnet 5 $2.00 / $10.00
 per 1M input/output tokens. `experiments/runner.py` refuses to start if the
-effective price table differs (`main`'s `evalkit/cost.py` still carries the
-old $3/$15 Sonnet price, so the `PRICE_CLAUDE_SONNET_5_*` overrides from
-`docs/DECISIONS.md` D-005 have to be exported).
+effective price table differs. The measurements below were taken on a
+checkout whose `evalkit/cost.py` still carried the pre-D-005 Sonnet price of
+$3/$15, so they were produced with the `PRICE_CLAUDE_SONNET_5_*` overrides
+exported; on a checkout that already has D-005 the overrides are redundant
+and the guard passes either way.
 
 ## 1. Measured per-call cost
 

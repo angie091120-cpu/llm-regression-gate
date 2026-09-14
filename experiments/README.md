@@ -77,8 +77,8 @@ Environment variables:
 | Name | Where | Note |
 |------|-------|------|
 | `ANTHROPIC_API_KEY` | `.env` at the repo root (gitignored, mode 600) | loaded by `runner.py`; names are logged, values never |
-| `PRICE_CLAUDE_SONNET_5_INPUT=2.00` | export before every run | `main`'s `evalkit/cost.py` still has $3/$15; the runner aborts on a mismatch |
-| `PRICE_CLAUDE_SONNET_5_OUTPUT=10.00` | export before every run | same |
+| `PRICE_CLAUDE_SONNET_5_INPUT=2.00` | export before a run on any checkout that predates D-005 | this branch was cut from a `main` whose `evalkit/cost.py` still had $3/$15; the runner aborts unless the effective price is $2/$10, whichever way it gets there |
+| `PRICE_CLAUDE_SONNET_5_OUTPUT=10.00` | same | same |
 | `LLM_CLASSIFIER_MODEL` / `LLM_JUDGE_MODEL` | optional | same contract as production `llm.py` |
 | `EXP_PYTHON` | optional | interpreter used by `checks/experiments_acceptance.sh` |
 
