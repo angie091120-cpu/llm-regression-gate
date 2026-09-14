@@ -4,7 +4,7 @@ CI-style regression testing for LLM prompt changes — every prompt edit is eval
 
 > Spec'd, directed, and reviewed by me; implemented with an AI engineering team I orchestrate.
 
-**Status:** MVP built — 46 tests pass (fully mocked, no API key needed) and the acceptance script in [`checks/acceptance.sh`](checks/acceptance.sh) runs the machine-checkable criteria from SPEC.md §7. The regression baseline (`eval_reports/baseline.json`) has not been bootstrapped yet, so the gate has nothing to compare a run against — see *CI gate* below.
+**Status:** MVP built — 46 tests pass (fully mocked, no API key needed) and the acceptance script in [`checks/acceptance.sh`](checks/acceptance.sh) runs the machine-checkable criteria from SPEC.md §7. The regression baseline (`eval_reports/baseline.json`) was bootstrapped on 2026-09-14 from a real-API run of `prompts/v1` over all 70 confirmed cases (pass rate 0.9143), so the gate now has a fixed reference to diff against — see *CI gate* below.
 
 ## Why
 
@@ -17,7 +17,7 @@ Most teams ship prompt changes blind: edit a string, deploy, hope. This project 
   **Today this check does not block a merge.** Making it one that does requires all of the following:
 
   - an `ANTHROPIC_API_KEY` repository secret is provisioned — until then, `eval-gate.yml` fails loud on every run with an explicit "ANTHROPIC_API_KEY secret not configured" error rather than passing silently;
-  - a committed `eval_reports/baseline.json` exists — until it does, each run *bootstraps* a baseline (SPEC.md §5) and posts no scorecard, see [docs/DECISIONS.md D-009](docs/DECISIONS.md);
+  - ~~a committed `eval_reports/baseline.json` exists~~ — done 2026-09-14 (SPEC.md §5, [docs/DECISIONS.md D-009](docs/DECISIONS.md)); runs now diff against it instead of re-bootstrapping;
   - the repository's branch protection lists this check as required — a repository-owner setting, not configured yet.
 
   Today it only turns the check red; the scorecard comment is posted once the secret and baseline are in place.
