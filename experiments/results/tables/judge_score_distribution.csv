@@ -1,4 +1,14 @@
 exp_id,run_id,prompt_version,score,n,share,n_total,method
+e0_judge_iso,e0_judge_iso_20260914T120557Z,v1,1,0,0.000000,279,count
+e0_judge_iso,e0_judge_iso_20260914T120557Z,v1,2,1,0.003584,279,count
+e0_judge_iso,e0_judge_iso_20260914T120557Z,v1,3,19,0.068100,279,count
+e0_judge_iso,e0_judge_iso_20260914T120557Z,v1,4,60,0.215054,279,count
+e0_judge_iso,e0_judge_iso_20260914T120557Z,v1,5,199,0.713262,279,count
+e0_noise,e0_noise_20260914T115913Z,v1,1,0,0.000000,350,count
+e0_noise,e0_noise_20260914T115913Z,v1,2,0,0.000000,350,count
+e0_noise,e0_noise_20260914T115913Z,v1,3,21,0.060000,350,count
+e0_noise,e0_noise_20260914T115913Z,v1,4,79,0.225714,350,count
+e0_noise,e0_noise_20260914T115913Z,v1,5,250,0.714286,350,count
 smoke,smoke_2026-09-14,v1,1,0,0.000000,10,count
 smoke,smoke_2026-09-14,v1,2,0,0.000000,10,count
 smoke,smoke_2026-09-14,v1,3,0,0.000000,10,count

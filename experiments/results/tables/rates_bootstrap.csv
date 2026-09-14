@@ -1,3 +1,5 @@
 exp_id,run_id,prompt_version,metric,n_cases,n_observations,estimate,ci_low,ci_high,method,seed,n_boot
+e0_noise,e0_noise_20260914T115913Z,v1,category_match,70,350,0.914286,0.842857,0.971429,case_cluster_bootstrap_percentile,20260920,10000
+e0_noise,e0_noise_20260914T115913Z,v1,passed,70,350,0.914286,0.842857,0.971429,case_cluster_bootstrap_percentile,20260920,10000
 smoke,smoke_2026-09-14,v1,category_match,10,10,0.900000,0.700000,1.000000,case_cluster_bootstrap_percentile,20260920,10000
 smoke,smoke_2026-09-14,v1,passed,10,10,0.900000,0.700000,1.000000,case_cluster_bootstrap_percentile,20260920,10000

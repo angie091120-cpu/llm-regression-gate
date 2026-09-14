@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-09-14T11:45:58.811067Z",
+  "generated_at_utc": "2026-09-14T12:11:34.333588Z",
   "analysis": {
     "seed": 20260920,
     "n_boot": 10000,
@@ -16,6 +16,48 @@
     }
   },
   "raw_files": [
+    {
+      "path": "experiments/results/raw/e0_judge_iso/e0_judge_iso_20260914T120557Z.jsonl",
+      "sha256": "c2d6b95598e8b16fff9eb9d6e15e94f329864545524d35c146c7bf462e5cd417",
+      "lines": 280,
+      "ok": 279,
+      "failed": 1,
+      "cache_hits": 0,
+      "calls_by_tier": {
+        "judge": 280
+      },
+      "request_to_response_model": {
+        "claude-sonnet-5": [
+          "claude-sonnet-5"
+        ]
+      },
+      "cost_usd": 1.078802,
+      "first_timestamp_utc": "2026-09-14T12:05:59.135596Z",
+      "last_timestamp_utc": "2026-09-14T12:09:09.267754Z"
+    },
+    {
+      "path": "experiments/results/raw/e0_noise/e0_noise_20260914T115913Z.jsonl",
+      "sha256": "8bb421cbd51c5684ccc58966c42b0f7730cad8178febaafc2758b4c019af7643",
+      "lines": 700,
+      "ok": 700,
+      "failed": 0,
+      "cache_hits": 0,
+      "calls_by_tier": {
+        "classifier": 350,
+        "judge": 350
+      },
+      "request_to_response_model": {
+        "claude-haiku-4-5": [
+          "claude-haiku-4-5-20251001"
+        ],
+        "claude-sonnet-5": [
+          "claude-sonnet-5"
+        ]
+      },
+      "cost_usd": 2.080951,
+      "first_timestamp_utc": "2026-09-14T11:59:14.778116Z",
+      "last_timestamp_utc": "2026-09-14T12:05:28.312057Z"
+    },
     {
       "path": "experiments/results/raw/smoke/smoke_2026-09-14.jsonl",
       "sha256": "0b829365a2d3e64c7de365c4532102673a36049e9329722d21c1a2ace97fe52d",
@@ -55,25 +97,30 @@
     }
   ],
   "totals": {
-    "raw_lines": 20,
-    "raw_cost_usd": 0.059746,
+    "raw_lines": 1000,
+    "raw_cost_usd": 3.219499,
     "probes_cost_usd": 0.012594,
-    "total_cost_usd": 0.07234,
-    "cost_ledger_cumulative_usd": 0.059746,
+    "total_cost_usd": 3.232093,
+    "cost_ledger_cumulative_usd": 3.219499,
     "cost_ledger_note": "the ledger records runner runs only; probe scripts are accounted separately"
   },
   "outputs": {
     "tables": [
       "experiments/results/tables/per_case_outcomes.csv",
       "experiments/results/tables/rates_by_run.csv",
+      "experiments/results/tables/rates_run_spread.csv",
+      "experiments/results/tables/per_case_instability.csv",
       "experiments/results/tables/rates_by_stratum.csv",
       "experiments/results/tables/rates_bootstrap.csv",
       "experiments/results/tables/paired_mcnemar.csv",
       "experiments/results/tables/tokens_latency_by_tier.csv",
-      "experiments/results/tables/judge_score_distribution.csv"
+      "experiments/results/tables/judge_score_distribution.csv",
+      "experiments/results/tables/judge_rescore_stability.csv",
+      "experiments/results/tables/judge_rescore_summary.csv"
     ],
     "figures": [
       "experiments/results/figures/primary_metric_by_run.png",
+      "experiments/results/figures/noise_floor_vs_gate_thresholds.png",
       "experiments/results/figures/judge_score_distribution.png"
     ]
   }

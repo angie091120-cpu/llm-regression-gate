@@ -148,4 +148,30 @@ estimable -- the kappa interval reflects sampling of cases only.
 Any departure from this document is recorded here, dated, with the reason,
 and stays visible in the git history.
 
-_None as of 2026-09-14._
+**2026-09-14, E0 judge-isolation arm, one call short.** 280 calls planned,
+279 succeeded. `case-003` repeat 3 returned a tool input with no `score`
+field and failed Pydantic validation, so that case has 3 re-scores instead of
+4. Handled by section 7 as written: the row stays in the raw file with
+`ok: false`, it is excluded from the denominator rather than scored as a
+disagreement, and the run was not repeated -- repeat counts are fixed in
+advance and re-rolling a bad draw is exactly what section 5 forbids.
+Reason: a model formatting error, not a rate limit or a timeout.
+
+**2026-09-14, descriptive tables added to `analyze.py` after this document
+was written.** `rates_run_spread.csv`, `per_case_instability.csv`,
+`judge_rescore_stability.csv`, `judge_rescore_summary.csv` and
+`figures/noise_floor_vs_gate_thresholds.png` did not exist when section 6 was
+committed; they implement the sentence in section 6 that promised E0's
+run-to-run variation would be reported against the 3% / 8% thresholds. All of
+them are counts, a mean, a sample standard deviation and a range. No
+hypothesis test, no interval and no estimator was added, and the confirmatory
+family in section 4 is untouched. The threshold values drawn on the figure
+are read out of `evalkit/diff.py` at analysis time rather than retyped, so
+the annotation cannot go stale.
+
+**2026-09-14, cost accounting.** `runner.cost_for()` records $0 for a failed
+call even when the API billed it, so the isolation arm's ledger entry
+understates real spend by $0.005338. Cost is descriptive here and is never an
+outcome (section 3), so no result changes; the amount is documented in
+`experiments/COST_CALIBRATION.md` section 3 and the runner fix is listed as
+due before E1.

@@ -1,3 +1,6 @@
 exp_id,run_id,tier,request_model,response_model,n_calls,n_ok,n_failed,input_tokens_mean,input_tokens_median,output_tokens_mean,output_tokens_median,latency_ms_p50,latency_ms_p95,cost_usd_total,cost_usd_per_call
+e0_judge_iso,e0_judge_iso_20260914T120557Z,judge,claude-sonnet-5,claude-sonnet-5,280,279,1,1083.068100,1082,170.053763,160,2625.430000,3766.410000,1.078802,0.003853
+e0_noise,e0_noise_20260914T115913Z,classifier,claude-haiku-4-5,claude-haiku-4-5-20251001,350,350,0,1668.000000,1666.500000,77.265714,76.000000,1409.315000,1731.800000,0.719015,0.002054
+e0_noise,e0_noise_20260914T115913Z,judge,claude-sonnet-5,claude-sonnet-5,350,350,0,1084.008571,1084.000000,172.322857,159.000000,2611.910000,4162.400000,1.361936,0.003891
 smoke,smoke_2026-09-14,classifier,claude-haiku-4-5,claude-haiku-4-5-20251001,10,10,0,1689.400000,1685.500000,84.800000,88.500000,1470.080000,1636.570000,0.021134,0.002113
 smoke,smoke_2026-09-14,judge,claude-sonnet-5,claude-sonnet-5,10,10,0,1100.600000,1099.500000,166.000000,163.500000,2505.650000,3764.440000,0.038612,0.003861

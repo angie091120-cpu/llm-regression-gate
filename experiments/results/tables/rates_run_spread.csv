@@ -1,0 +1,5 @@
+exp_id,run_id,prompt_version,metric,n_runs,n_per_run,mean,sd_sample,min,max,range,max_pairwise_abs_delta,warn_threshold,critical_threshold,runs_over_warn_vs_first,runs_over_critical_vs_first,n_cases,unstable_cases,instability_rate
+e0_noise,e0_noise_20260914T115913Z,v1,category_match,5,70,0.914286,0.000000,0.914286,0.914286,0.000000,0.000000,0.030000,0.080000,0,0,70,0,0.000000
+e0_noise,e0_noise_20260914T115913Z,v1,passed,5,70,0.914286,0.000000,0.914286,0.914286,0.000000,0.000000,0.030000,0.080000,0,0,70,0,0.000000
+smoke,smoke_2026-09-14,v1,category_match,1,10,0.900000,,0.900000,0.900000,0.000000,0.000000,0.030000,0.080000,0,0,10,0,0.000000
+smoke,smoke_2026-09-14,v1,passed,1,10,0.900000,,0.900000,0.900000,0.000000,0.000000,0.030000,0.080000,0,0,10,0,0.000000

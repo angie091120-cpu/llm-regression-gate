@@ -141,6 +141,35 @@ Three properties are load-bearing:
 3. **Cost is recomputed from `usage`,** by `analyze.py`, from the raw files --
    not carried over from whatever the runner printed.
 
+## Runs completed
+
+| Date | exp_id | Design | Calls (ok/planned) | Cost | Raw file |
+|------|--------|--------|--------------------|------|----------|
+| 2026-09-14 | `smoke` | 10 cases x 1, cost calibration only | 20/20 | $0.059746 | `results/raw/smoke/smoke_2026-09-14.jsonl` |
+| 2026-09-14 | `e0_noise` | E0 main arm: v1 x 70 cases x 5 repeats, classifier + judge | 700/700 | $2.080951 | `results/raw/e0_noise/e0_noise_20260914T115913Z.jsonl` |
+| 2026-09-14 | `e0_judge_iso` | E0 judge-isolation arm: repeat 0 classifier output frozen, judge re-scores 4x | 279/280 | $1.078802 | `results/raw/e0_judge_iso/e0_judge_iso_20260914T120557Z.jsonl` |
+
+Neither E0 arm used `--cache`; `cache_hits` is 0 in both meta files.
+`response_model` came back as `claude-haiku-4-5-20251001` for every classifier
+call and as the bare alias `claude-sonnet-5` for every judge call, which is
+what section 4.2 of COST_CALIBRATION.md predicted.
+
+The one failed call is `case-003` repeat 3 in the isolation arm: a schema
+violation, not a network error -- the judge returned a tool input with no
+`score` field. Per PREREGISTRATION section 7 the row stays in the raw file,
+is excluded from that case's denominator (3 scores instead of 4), and the run
+was not repeated to replace it.
+
+What E0 produced: `results/tables/rates_by_run.csv`,
+`rates_run_spread.csv`, `per_case_instability.csv`,
+`judge_rescore_stability.csv`, `judge_rescore_summary.csv` and
+`results/figures/noise_floor_vs_gate_thresholds.png`. Fleiss kappa and
+Krippendorff alpha are still `NotImplementedError` items, so the two columns
+reserved for them in the judge tables are empty and carry a note saying why --
+no approximation is written there.
+
+Still to run: E1, E2, E4, E5.
+
 ## What is implemented, and what is not
 
 Implemented and self-checked against published worked examples and scipy
@@ -155,6 +184,7 @@ approximation:
 |------|-----------|-----|
 | Newcombe method 10 CI for a paired risk difference | E1 | 2026-09-21 |
 | Fleiss kappa | E0 | 2026-09-19 |
+| Charging failed-but-billed calls in `cost_for()` | cost accounting | before E1 |
 | Krippendorff alpha | E0 / E4 | 2026-09-24 |
 | Logistic model with case-clustered standard errors | E5 | 2026-09-22 |
 | Power curve simulation (n = 30/50/70) | E1 figure | 2026-09-21 |

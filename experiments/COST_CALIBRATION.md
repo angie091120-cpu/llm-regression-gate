@@ -61,7 +61,13 @@ Lever if the budget tightens: E1's primary metric is `category_match`, which
 needs no judge call. Running E1 with `--skip-judge` costs $1.78 instead of
 $5.02 and loses only the secondary metric.
 
-## 3. Spend this session
+**Projection vs. outcome, E0 (2026-09-14).** Main arm projected $2.09, actual
+$2.080951 (-0.4%). Judge-isolation arm projected $1.08, actual $1.078802
+(-0.1%). The per-call figures in section 1 hold at 35x the sample they were
+measured on, so the remaining projections are treated as good to about a
+percent -- except E2, which is still priced off a prompt that does not exist.
+
+## 3. Spend to date
 
 | Item | Calls | Cost |
 |------|-------|------|
@@ -69,13 +75,33 @@ $5.02 and loses only the secondary metric.
 | probes, SDK 0.117.0 | 6 | $0.006922 |
 | probes, SDK 1.5.0 | 6 | $0.005672 |
 | first probe script iteration, artifact deleted | 4 (2 successful) | $0.004692 |
-| **Total** | 36 | **$0.077032** |
+| E0 main arm (`e0_noise_20260914T115913Z.jsonl`) | 700 | $2.080951 |
+| E0 judge-isolation arm (`e0_judge_iso_20260914T120557Z.jsonl`) | 280 (279 successful) | $1.078802 |
+| **Total** | 1,016 | **$3.236785** |
 
 The fourth row has no artifact in the repository: it was the first version of
 `experiments/probes.py`, whose output file was deleted when the script was
 rewritten to record the SDK version. The money was spent, so it is listed.
-`experiments/results/cost_ledger.json` therefore shows $0.059746 (runner runs
-only) while `MANIFEST.json` totals $0.072340 (runner + surviving probe files).
+`experiments/results/cost_ledger.json` therefore shows $3.219499 (runner runs
+only) while `MANIFEST.json` totals $3.232093 (runner + surviving probe files);
+the $0.004692 gap is that deleted probe file.
+
+**One call is billed but recorded at $0.** `runner.cost_for()` returns 0 for
+any row with `ok: false`, and the judge-isolation arm has one such row
+(`case-003`, repeat 3): the request reached the API, returned
+`stop_reason: tool_use` and 1,144 input / 305 output tokens, and then failed
+Pydantic validation because the returned tool input had no `score` field. At
+the pinned Sonnet 5 price that call cost $0.005338, so both the ledger and the
+MANIFEST understate real spend by that much. Recorded here rather than
+back-filled into the raw row, which stays exactly as the runner wrote it;
+charging failed-but-billed calls is a runner change to make before E1, where
+1,680 calls give the same bug more room.
+
+Not in the table above and not in this package's ledger: the production
+baseline bootstrap run on `main` (70 cases, 140 calls,
+`eval_reports/baseline.json`, commit fe1cea8) cost $0.415487 through
+`evalkit.cost`. It is listed here only so the workspace-level total is
+findable in one place: **$3.652272 against the $20 spend limit (18%).**
 
 ## 4. Measured API behaviour
 
