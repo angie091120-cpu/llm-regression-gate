@@ -5,6 +5,10 @@ branch is the evidence for that ordering: this file and `experiments/analyze.py`
 are committed before the first degraded-prompt run, so the analysis could not
 have been chosen after seeing the result.
 
+**Last substantive revision 2026-09-14**, adding section 10 (E1 in full) and
+the deviations dated that day in section 9. Still before the first E1 call.
+Once this document is signed off, changes go in section 9 and nowhere else.
+
 Only the 10-case smoke run (`experiments/results/raw/smoke/`, 20 calls, cost
 calibration only) exists at the time of writing. It is not part of any
 hypothesis test and its cases are re-used in the confirmatory runs.
@@ -52,6 +56,11 @@ baseline on the **primary** metric, paired by case, using **exact McNemar**:
 | H3 | v2c | category definitions and the tie-break rule removed |
 | H4 | v2d | bilingual / typo handling rules removed |
 
+Section 10 carries the rest of E1: the file names, what "paired by case" means
+when a case is measured three times, which baseline run the pairs come from,
+and how the power curve is produced. `docs/DEGRADATION_DESIGN.md` carries the
+diffs and the predictions.
+
 - Direction: all four are one-directional expectations (degraded <= baseline),
   tested two-sided and reported with the sign of the risk difference.
 - Multiplicity: **Holm** across these four p-values, family-wise alpha = 0.05.
@@ -83,9 +92,11 @@ first. The detectable-effect question is therefore reported as an outcome
 - Proportions: Wilson score interval (primary display) and Clopper-Pearson
   (conservative cross-check), both at 95%.
 - Paired comparisons: exact McNemar on discordant pairs; risk difference
-  reported as a point estimate. A Newcombe method 10 interval is added only
-  after it is validated against the published worked example; until then the
-  cell counts (a, b, c, d) are printed so any reader can recompute.
+  reported as a point estimate with a Newcombe method 10 interval. The
+  validation that interval actually got is not the one this section originally
+  promised -- see the 2026-09-14 entry in section 9, and the `note` column that
+  travels with every published interval. The cell counts (a, b, c, d) are
+  printed either way, so any reader can recompute.
 - Repeated measurements of the same case are dependent. Pooled rates carry a
   case-level cluster bootstrap interval (10,000 resamples, seed 20260920).
 - Run-to-run variation (E0) is reported as the spread of the five per-run
@@ -175,3 +186,227 @@ understates real spend by $0.005338. Cost is descriptive here and is never an
 outcome (section 3), so no result changes; the amount is documented in
 `experiments/COST_CALIBRATION.md` section 3 and the runner fix is listed as
 due before E1.
+
+**2026-09-14, cost accounting, closed.** `runner.cost_for()` now charges any
+call that reported token usage, failed or not, and `analyze.py` recomputes
+every published cost from the raw `usage` objects at the pinned prices instead
+of summing the `cost_usd` field the runner wrote. The E0 raw files are not
+back-filled -- a raw file is evidence -- so MANIFEST.json now carries both
+totals and their difference, and the $0.005338 appears in the recomputed one.
+`experiments/COST_CALIBRATION.md` section 3 states which number is which.
+
+**2026-09-14, Newcombe method 10 shipped with a different validation than
+section 6 promised.** Section 6 said the interval would be added "only after it
+is validated against the published worked example" in Newcombe (1998). The
+paper was not reachable from the machine this was written on, and E1 needs the
+interval, so the estimator ships validated three other ways instead: the
+formula is written out line by line in the `newcombe_paired_diff_ci`
+docstring; `python -m experiments.stats` asserts its structural invariants
+(symmetry when b == c, containment of the point estimate, the continuity
+correction widening rather than narrowing, degenerate tables staying inside
+[-1, 1]); and `python -m experiments.stats --coverage` runs a Monte-Carlo
+coverage study over five paired-outcome distributions at n = 30 and n = 70.
+Measured on 2026-09-14 at 20,000 replicates per cell: coverage of the shipped
+form (continuity correction on) ranged 0.9520 to 0.9941 against a nominal
+0.95, and the uncorrected form dipped to 0.9341, which is why the corrected
+form is the default. The check against the paper's printed example remains
+open and is listed in `experiments/README.md`. Every interval this function
+produces carries `experiments.stats.NEWCOMBE_VALIDATION` in its own table row
+and figure footnote, so the caveat cannot be separated from the number.
+
+**2026-09-14, confirmatory unit of analysis stated explicitly.** Section 4 says
+the four tests are "paired by case", and `analyze.py` was pairing every
+(case, repeat) observation, which would have treated 210 dependent
+observations as 210 independent pairs and made the exact McNemar p-value
+anticonservative. Section 10.4 now fixes the rule the tests actually use --
+one value per case, repeats collapsed by majority vote -- and the
+(case, repeat) version stays in `paired_mcnemar.csv` labelled
+`sensitivity_per_repeat_pairing`, with no interval and no multiplicity
+adjustment. No data existed for either version when this was written.
+
+**2026-09-14, one evaluation case is inside the baseline prompt.** Few-shot
+example 4 of `prompts/v1.yaml` is case-043 verbatim, label included. Found
+while building the degraded prompts, after E0 had run. The dataset is frozen
+(section 2) so nothing is edited; instead section 10.10 pre-specifies the
+sensitivity analysis (H1 and H2 recomputed with case-043 dropped) and
+`docs/DEGRADATION_DESIGN.md` states the consequence for v2a and v2b, which
+remove that example along with the degradation being tested.
+
+## 10. E1 in full
+
+Written 2026-09-14, before the first degraded-prompt call. Section 4 fixes
+the four hypotheses and the multiplicity rule; this section fixes everything
+else that could otherwise be decided after seeing a number.
+
+### 10.1 The four versions
+
+| # | File | Edit | sha256 |
+|---|------|------|--------|
+| H1 | `prompts/v2a.yaml` | few-shot examples 4 -> 2 (account and general removed) | recorded in `experiments/results/MANIFEST.json` under `inputs.prompts` |
+| H2 | `prompts/v2b.yaml` | few-shot examples 4 -> 0 | same |
+| H3 | `prompts/v2c.yaml` | the four category definitions and the tie-break rule removed | same |
+| H4 | `prompts/v2d.yaml` | the bilingual / typo / zhuyin / sarcasm paragraph removed | same |
+
+Every line each file keeps is byte-identical to `prompts/v1.yaml`; the diffs
+and the predicted effects are in `docs/DEGRADATION_DESIGN.md`. The prompt
+files are frozen from this point: a change to any of them after E1 starts is a
+new experiment, not a revision of this one.
+
+### 10.2 Runs
+
+Each version: 70 cases x 3 repeats, classifier and judge, `exp_id = e1_<version>`,
+420 calls per version and 1,680 in total. Repeat counts are fixed here and are
+not extended to chase significance; there is no interim look and no optional
+stopping. All four versions are run before any confirmatory test is computed.
+
+### 10.3 Which baseline the pairs come from (frozen: E0, no new baseline run)
+
+**The paired baseline is the E0 main arm, `experiments/results/raw/e0_noise/e0_noise_20260914T115913Z.jsonl`,
+repeats 0, 1 and 2.** No fresh v1 arm is run alongside E1.
+
+Three reasons, in the order they matter:
+
+1. **The primary metric can verify the thing a time gap threatens.** The
+   classifier is Haiku 4.5, and `response.model` comes back as a dated
+   snapshot (`claude-haiku-4-5-20251001`) on every call, recorded per row.
+   Whether E0 and E1 ran against the same model version is therefore a fact
+   in the raw data, not an assumption. The judge has no such handle -- Sonnet
+   echoes the bare alias (section 8.2) -- which is one more reason the
+   confirmatory family is `category_match` only.
+2. **The baseline has no measurable run-to-run variance to re-estimate.**
+   Across E0's five repeats the per-run rate was 0.914286 every time, sample
+   SD 0, and not one of the 70 cases changed its verdict between repeats
+   (`rates_run_spread.csv`, `per_case_instability.csv`). A second baseline of
+   the same size is expected to return the same 64/70.
+3. **Cost.** A concurrent baseline is 420 more calls, about $2.09 at the
+   measured per-case price. E2 and E4 have no cheaper fallback; E1's baseline
+   does.
+
+A fourth, smaller reason: one baseline number means every figure in the study
+refers to the same v1 rate. Running a second one would put two v1 rates in the
+write-up and force every caption to say which.
+
+**What this choice cannot exclude:** a change in the serving stack behind an
+unchanged snapshot id, and judge-side drift of any kind. Both are disclosed
+rather than ruled out, in the terms section 8.2 already fixes. A concurrent
+baseline would remove the first; nothing available here removes the second.
+
+**Pre-specified reversal.** The frozen choice is void, and a concurrent
+baseline arm (`exp_id = e1_v1_concurrent`, v1 x 70 x 3, run in the same
+session as the degraded versions) becomes the paired baseline, if any of the
+following is true when E1 runs:
+
+- (a) any E1 classifier call returns a `response_model` other than
+  `claude-haiku-4-5-20251001`;
+- (b) the E1 runs execute after 2026-09-28, fourteen days after E0;
+- (c) E1 runs with a different `LLM_CLASSIFIER_MODEL`, a different `anthropic`
+  major version, or a different price table than E0 did.
+
+If the fallback triggers, the E0-paired results are still computed and
+reported, labelled exploratory, next to the concurrent-baseline ones. The
+trigger is a property of the raw data, so it is checked by reading files, not
+by judgement at analysis time.
+
+### 10.4 Unit of analysis
+
+One outcome per case per version. A case measured three times is collapsed by
+**majority vote** across its repeats -- for the candidate over its three E1
+repeats, for the baseline over E0 repeats 0-2. n = 70 pairs.
+
+- The baseline uses three repeats rather than all five so that both sides of
+  every pair are the same kind of estimate. On the observed E0 data the choice
+  is inert anyway: no case changed its verdict across the five repeats.
+- A tied vote can only arise if a failed call leaves an even number of
+  observations. Those cases are excluded from the pairing and counted in
+  `n_excluded_tie`; no tie-breaking rule is invented after the fact.
+- Cases missing from either side (all repeats failed) are excluded and counted
+  in `n_excluded_missing`.
+
+Treating each (case, repeat) as a separate pair would inflate n to 210 and
+make the exact test anticonservative, because three repeats of one email are
+not three independent observations. That view is still produced, as
+`paired_mcnemar.csv` with `family = sensitivity_per_repeat_pairing`, without
+an interval or a multiplicity adjustment.
+
+### 10.5 The test
+
+Exact McNemar on the discordant pairs of each 2x2 table:
+
+| | candidate correct | candidate wrong |
+|---|---|---|
+| **baseline correct** | a | **b** |
+| **baseline wrong** | **c** | d |
+
+b = the baseline got it right and the degraded version did not; c = the
+reverse. The test is the two-sided exact binomial on b out of b + c against
+0.5, computed once, after all 1,680 calls are in. Tables report a, b, c and d
+so any reader can recompute every number in the row.
+
+### 10.6 Multiplicity
+
+Holm across exactly four p-values -- the four primary-metric tests of section
+4 -- at family-wise alpha 0.05. The secondary metric `passed` gets
+Benjamini-Hochberg within its own family and is labelled `exploratory_bh` in
+every row; its adjusted value never appears in the `p_holm` column. Output:
+`experiments/results/tables/e1_main.csv`, one row per (metric, version).
+
+### 10.7 Effect size
+
+- Risk difference `rd = (c - b) / n`, signed so that a degradation is negative.
+- 95% interval: Newcombe (1998) method 10 for paired proportions, with the phi
+  continuity correction on. Validation status travels in the row's `note`
+  column; see the 2026-09-14 entry in section 9.
+- Odds ratio `c / b`, left empty when b = 0 rather than patched with a
+  continuity constant, with the reason in the `note` column.
+
+### 10.8 Power simulation
+
+`experiments/results/tables/e1_power.csv` and `figures/e1_power.png`.
+
+For each primary-metric comparison and each n in {30, 50, 70}: draw n paired
+cases from that comparison's 70 observed pairs **with replacement**, recompute
+the exact McNemar test, repeat B = 2000 times, and report the share that
+rejects. Analysis seed 20260920; the generator is seeded from (seed, version,
+n) so the result does not depend on evaluation order. Two levels are reported
+per point: alpha = 0.05 (nominal) and alpha = 0.0125 (what Holm charges the
+first test in a family of four -- the worst case for this design).
+
+This is **conditional power**: it answers what a study of size n would find if
+the true effect were the one observed here, and it inherits every peculiarity
+of these 70 cases. It is not a design power calculation, and section 5 already
+records that the sample size was fixed by the dataset before any of this ran.
+
+Figure rules, fixed here so they cannot be relaxed later: simulated points are
+open markers on a dashed line; the single realized decision at n = 70 -- did
+the test that actually ran reject under Holm -- is a filled diamond at 0 or 1.
+Simulated and measured points are never averaged, never joined by a line, and
+the footnote states that one realized decision is not a rate.
+
+### 10.9 Failures
+
+Per section 7, unchanged. A call that fails produces a row with `ok: false`,
+is excluded from the denominator of its case, and is never scored as a wrong
+answer. If failures leave a case with no usable observation on either side,
+that case leaves the pairing and is counted; the counts sit next to n in
+`e1_main.csv`.
+
+### 10.10 Pre-specified sensitivity analyses
+
+Both are computed whatever the primary result says, and neither can replace it.
+
+1. **The leaked case.** `prompts/v1.yaml`'s fourth few-shot example is case-043
+   verbatim, so v2a and v2b remove a leak at the same time as they remove
+   examples. H1 and H2 are recomputed with case-043 dropped (n = 69) and
+   reported next to the primary rows.
+2. **The pairing unit.** The (case, repeat) pairing of `paired_mcnemar.csv`
+   is reported as a sensitivity view of section 10.4's case-level test.
+
+### 10.11 Outputs fixed in advance
+
+`e1_main.csv` (one row per metric and version: n, exclusions, a/b/c/d, p_raw,
+p_holm or p_bh, rd, CI, odds ratio, family, methods), `e1_power.csv`,
+`figures/e1_forest.png`, `figures/e1_power.png`. Before E1 raw data exists the
+two CSVs are written with their headers and no rows, and the two figures are
+skipped -- `python -m experiments.analyze --self-check` exercises the same
+estimators on E0 repeat 1 against repeat 2, a pairing whose true difference is
+zero by construction.

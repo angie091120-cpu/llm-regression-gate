@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-09-14T12:11:34.333588Z",
+  "generated_at_utc": "2026-09-14T12:50:02.335752Z",
   "analysis": {
     "seed": 20260920,
     "n_boot": 10000,
@@ -12,7 +12,11 @@
       "sha256": "af33d77841d9c17f55f4acd3abbe241d237333e433cf4545263a6e4d6fa1c3d9"
     },
     "prompts": {
-      "prompts/v1.yaml": "26302a1dea259ac4e881c2ad3f166e6bf95fbf3da93e997462f1fa48a64b9e55"
+      "prompts/v1.yaml": "26302a1dea259ac4e881c2ad3f166e6bf95fbf3da93e997462f1fa48a64b9e55",
+      "prompts/v2a.yaml": "c13cfe94df44558aa161a829a7920814af9d19358f26b8f9156359cd811b374b",
+      "prompts/v2b.yaml": "44206f35f2e3c65385afacb09b4f10e8a063671706d5f157980910e38a6d295a",
+      "prompts/v2c.yaml": "aab4fe1349111a9c82c5bb5430d6b05d3ebba2ebd8d624009e4390b534bfff67",
+      "prompts/v2d.yaml": "8bcd3838d009473e08daf5b59cbb035a36931878371ecfc7b382d90054d328a6"
     }
   },
   "raw_files": [
@@ -31,7 +35,9 @@
           "claude-sonnet-5"
         ]
       },
-      "cost_usd": 1.078802,
+      "cost_usd": 1.08414,
+      "cost_usd_recorded_by_runner": 1.078802,
+      "cost_usd_unrecorded_at_run_time": 0.005338,
       "first_timestamp_utc": "2026-09-14T12:05:59.135596Z",
       "last_timestamp_utc": "2026-09-14T12:09:09.267754Z"
     },
@@ -55,6 +61,8 @@
         ]
       },
       "cost_usd": 2.080951,
+      "cost_usd_recorded_by_runner": 2.080951,
+      "cost_usd_unrecorded_at_run_time": 0.0,
       "first_timestamp_utc": "2026-09-14T11:59:14.778116Z",
       "last_timestamp_utc": "2026-09-14T12:05:28.312057Z"
     },
@@ -78,6 +86,8 @@
         ]
       },
       "cost_usd": 0.059746,
+      "cost_usd_recorded_by_runner": 0.059746,
+      "cost_usd_unrecorded_at_run_time": 0.0,
       "first_timestamp_utc": "2026-09-14T11:35:42.115507Z",
       "last_timestamp_utc": "2026-09-14T11:35:51.277465Z"
     }
@@ -98,11 +108,14 @@
   ],
   "totals": {
     "raw_lines": 1000,
-    "raw_cost_usd": 3.219499,
+    "raw_cost_usd": 3.224837,
+    "raw_cost_usd_recorded_by_runner": 3.219499,
+    "raw_cost_usd_unrecorded_at_run_time": 0.005338,
     "probes_cost_usd": 0.012594,
-    "total_cost_usd": 3.232093,
+    "total_cost_usd": 3.237431,
     "cost_ledger_cumulative_usd": 3.219499,
-    "cost_ledger_note": "the ledger records runner runs only; probe scripts are accounted separately"
+    "cost_ledger_note": "the ledger records runner runs only; probe scripts are accounted separately",
+    "cost_method_note": "raw_cost_usd is recomputed from each row's usage at the pinned prices in experiments/__init__.py; raw_cost_usd_recorded_by_runner is what the runner wrote into the raw files at run time. The gap is billed-but-unrecorded spend on calls that returned tokens and then failed validation (experiments/COST_CALIBRATION.md section 3)"
   },
   "outputs": {
     "tables": [
@@ -113,6 +126,8 @@
       "experiments/results/tables/rates_by_stratum.csv",
       "experiments/results/tables/rates_bootstrap.csv",
       "experiments/results/tables/paired_mcnemar.csv",
+      "experiments/results/tables/e1_main.csv",
+      "experiments/results/tables/e1_power.csv",
       "experiments/results/tables/tokens_latency_by_tier.csv",
       "experiments/results/tables/judge_score_distribution.csv",
       "experiments/results/tables/judge_rescore_stability.csv",

@@ -51,6 +51,7 @@ from classifier import _few_shot_messages as build_few_shot_messages  # noqa: E4
 from evalkit.cost import _price, record_usage  # noqa: E402
 from evalkit.dataset import GoldenCase, load_confirmed_cases  # noqa: E402
 from evalkit.judge import JUDGE_SYSTEM_PROMPT, JudgeVerdict  # noqa: E402
+from experiments import PINNED_PRICES, price_key  # noqa: E402
 from experiments.client import CallRecord, call_structured  # noqa: E402
 
 DEFAULT_DATASET = REPO_ROOT / "golden_dataset.json"
@@ -60,15 +61,13 @@ DEFAULT_LEDGER = REPO_ROOT / "experiments" / "results" / "cost_ledger.json"
 DEFAULT_CONCURRENCY = 4
 SCHEMA_VERSION = "1.0"
 
-# List price per 1M tokens that every cost figure in this study assumes.
-# evalkit/cost.py on `main` still carries the pre-2026-09 Sonnet price, so the
-# run aborts unless the PRICE_* overrides from docs/DECISIONS.md D-005 are
-# exported. Changing a price means changing this table *and* re-running, not
-# silently reinterpreting old numbers.
-EXPECTED_PRICES: dict[str, tuple[float, float]] = {
-    "claude-haiku-4-5": (1.00, 5.00),
-    "claude-sonnet-5": (2.00, 10.00),
-}
+# List price per 1M tokens that every cost figure in this study assumes; the
+# table itself lives in experiments/__init__.py, because analyze.py recomputes
+# cost against the same pinned numbers. evalkit/cost.py on `main` still carries
+# the pre-2026-09 Sonnet price, so the run aborts unless the PRICE_* overrides
+# from docs/DECISIONS.md D-005 are exported. Changing a price means changing
+# that table *and* re-running, not silently reinterpreting old numbers.
+EXPECTED_PRICES: dict[str, tuple[float, float]] = dict(PINNED_PRICES)
 
 
 # --------------------------------------------------------------------------
@@ -120,19 +119,24 @@ def assert_prices_current() -> dict[str, dict[str, float]]:
     return effective
 
 
-def price_key(response_model: str | None, request_model: str) -> str:
-    """Map a dated snapshot id (claude-haiku-4-5-20251001) back to the price
-    table key (claude-haiku-4-5). Falls back to the request string when the
-    call failed and there is no response model."""
-    name = response_model or request_model
-    parts = name.rsplit("-", 1)
-    if len(parts) == 2 and parts[1].isdigit() and len(parts[1]) == 8:
-        return parts[0]
-    return name
-
-
 def cost_for(record: CallRecord) -> float:
-    if record.cache_hit or not record.ok:
+    """Dollars for one call, from the usage the API reported.
+
+    A failed call is charged whenever the API still reported token usage. The
+    original version returned $0 for every `ok: false` row, which is right for
+    a request the API rejected (a 400 carries no usage) and wrong for a
+    request that returned 200, burned tokens and then failed validation on our
+    side -- and the second kind is exactly what a large batch produces. The
+    E0 judge-isolation arm hit this once, for $0.005338; at E1's call volume
+    the same bug has far more room (experiments/COST_CALIBRATION.md section 3).
+
+    Cache hits are $0 by definition. A record with no usage at all is $0,
+    which also keeps the price lookup away from the placeholder request model
+    written when a call never reached the API.
+    """
+    if record.cache_hit:
+        return 0.0
+    if not record.input_tokens and not record.output_tokens:
         return 0.0
     key = price_key(record.response_model, record.request_model)
     return (record.input_tokens * _price(key, "input") + record.output_tokens * _price(key, "output")) / 1_000_000

@@ -30,6 +30,7 @@ from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 from statistics import median, stdev
+from typing import Sequence
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
@@ -37,7 +38,18 @@ if str(REPO_ROOT) not in sys.path:
 
 from evalkit.dataset import load_all_cases  # noqa: E402
 from evalkit.run_eval import DEFAULT_PASS_THRESHOLD  # noqa: E402
-from experiments.stats import bootstrap_ci, clopper_pearson_ci, holm_adjust, mcnemar_exact, wilson_ci  # noqa: E402
+from experiments import cost_from_usage, price_key  # noqa: E402
+from experiments.stats import (  # noqa: E402
+    NEWCOMBE_VALIDATION,
+    bh_adjust,
+    bootstrap_ci,
+    clopper_pearson_ci,
+    holm_adjust,
+    mcnemar_exact,
+    newcombe_paired_diff_ci,
+    paired_power_simulation,
+    wilson_ci,
+)
 
 DEFAULT_SEED = 20260920
 DEFAULT_N_BOOT = 10000
@@ -48,6 +60,22 @@ NOT_IMPLEMENTED_NOTE = (
     "fleiss_kappa and krippendorff_alpha are not implemented; "
     "left empty rather than approximated (experiments/README.md)"
 )
+
+# ---- E1, frozen by docs/PREREGISTRATION.md section 10 ---------------------
+# The paired baseline is E0's first three repeats, not a fresh v1 run, and the
+# unit of analysis is the case (repeats collapsed by majority vote), not the
+# (case, repeat) observation. Both are pre-registered decisions; changing
+# either one here without changing section 10 breaks the pre-registration.
+E1_BASELINE_EXP_ID = "e0_noise"
+E1_BASELINE_REPEATS = (0, 1, 2)
+E1_VERSIONS = ("v2a", "v2b", "v2c", "v2d")
+E1_PRIMARY_METRIC = "category_match"
+E1_POWER_SIZES = (30, 50, 70)
+E1_POWER_N_SIM = 2000
+# alpha = 0.05 is the nominal per-test level; 0.0125 is what Holm charges the
+# first-rejected test in a family of four, i.e. the worst case for this design.
+E1_POWER_ALPHAS = ((0.05, "nominal"), (0.0125, "holm_worst_case"))
+E1_EMPTY_NOTE = "no E1 raw data under experiments/results/raw/ yet; header written, no rows"
 
 
 def gate_thresholds() -> tuple[float, float]:
@@ -83,6 +111,30 @@ def rel_to_repo(path: Path) -> str:
         return str(path.relative_to(REPO_ROOT))
     except ValueError:
         return str(path)
+
+
+def row_cost(row: dict) -> float:
+    """Cost of one raw call, recomputed here from the `usage` object the API
+    returned and the pinned price table in `experiments/__init__.py`.
+
+    The runner also writes a `cost_usd` field, and this function -- not that
+    field -- is what every published cost number comes from. The two differ on
+    calls that returned 200, burned tokens and then failed validation: the
+    runner recorded $0 for those until 2026-09-14, and the E0 raw files are
+    never rewritten (a raw file is evidence, not a working copy). MANIFEST.json
+    carries both totals and their difference so the correction is visible
+    rather than applied silently.
+    """
+    if row.get("cache_hit"):
+        return 0.0
+    usage = row.get("usage") or {}
+    input_tokens = usage.get("input_tokens") or row.get("input_tokens") or 0
+    output_tokens = usage.get("output_tokens") or row.get("output_tokens") or 0
+    return cost_from_usage(
+        price_key(row.get("response_model"), row.get("request_model") or ""),
+        int(input_tokens),
+        int(output_tokens),
+    )
 
 
 def sha256_file(path: Path) -> str:
@@ -166,7 +218,9 @@ def build_observations(rows: list[dict], dataset_path: Path) -> list[dict]:
             "judge_output_tokens": (judge or {}).get("output_tokens"),
             "classifier_latency_ms": (clf or {}).get("latency_ms"),
             "judge_latency_ms": (judge or {}).get("latency_ms"),
-            "cost_usd": round((clf or {}).get("cost_usd", 0.0) + (judge or {}).get("cost_usd", 0.0), 8),
+            "cost_usd": round(
+                (row_cost(clf) if clf else 0.0) + (row_cost(judge) if judge else 0.0), 8
+            ),
             "classifier_response_model": (clf or {}).get("response_model"),
             "judge_response_model": (judge or {}).get("response_model"),
         }
@@ -281,8 +335,16 @@ def table_bootstrap(observations: list[dict], seed: int, n_boot: int) -> tuple[l
 
 
 def table_mcnemar(observations: list[dict]) -> tuple[list[str], list[list]]:
-    """Paired comparison of each non-baseline prompt version against v1 on the
-    cases both versions scored. Empty until a v2* run exists."""
+    """Paired comparison of each non-baseline prompt version against v1,
+    pairing every (case, repeat) observation. Empty until a v2* run exists.
+
+    **This is the sensitivity view, not the confirmatory test.** Three repeats
+    of one case are not three independent pairs, so treating 210 observations
+    as 210 pairs makes the exact McNemar p-value anticonservative. The
+    confirmatory family collapses repeats to one value per case first and
+    lives in `e1_main.csv` (docs/PREREGISTRATION.md section 10). Keeping this
+    table lets a reader see how much the choice of unit moved the answer.
+    """
     header = [
         "metric", "baseline_version", "candidate_version", "n_pairs",
         "both_correct", "baseline_only_correct", "candidate_only_correct", "both_wrong",
@@ -300,7 +362,6 @@ def table_mcnemar(observations: list[dict]) -> tuple[list[str], list[list]]:
         return header, []
 
     raw_rows: list[list] = []
-    pvals_primary: list[float] = []
     for metric in METRICS:
         for candidate in versions:
             base = by_version[BASELINE_PROMPT_VERSION]
@@ -314,22 +375,317 @@ def table_mcnemar(observations: list[dict]) -> tuple[list[str], list[list]]:
             d = sum(1 for k in keys if base[k] == 0 and cand[k] == 0)
             res = mcnemar_exact(b, c)
             rd = (c - b) / len(keys)
-            family = "confirmatory_holm" if metric == "category_match" else "exploratory_bh"
-            if family == "confirmatory_holm":
-                pvals_primary.append(res["p_value"])
             raw_rows.append([
                 metric, BASELINE_PROMPT_VERSION, candidate, len(keys), a, b, c, d, rd,
-                res["p_value"], None, res["method"], family,
-                "CI omitted: newcombe_paired_diff_ci not implemented yet (experiments/stats.py)",
+                res["p_value"], None, res["method"], "sensitivity_per_repeat_pairing",
+                "no interval and no multiplicity adjustment here: repeats of one case are "
+                "not independent pairs; the confirmatory test is in e1_main.csv",
             ])
-
-    adjusted = holm_adjust(pvals_primary)
-    idx = 0
-    for row in raw_rows:
-        if row[12] == "confirmatory_holm":
-            row[10] = adjusted[idx]
-            idx += 1
     return header, raw_rows
+
+
+# --------------------------------------------------------------------------
+# E1: the confirmatory comparison (docs/PREREGISTRATION.md section 10)
+# --------------------------------------------------------------------------
+def majority_vote(values: list[int]) -> int | None:
+    """Collapse one case's repeats into one outcome.
+
+    Returns None for an empty list and for a tie. A tie can only happen when a
+    failed call has already removed one of an odd number of repeats, and
+    section 10 excludes those cases from the pairing instead of inventing a
+    rule for them; the count of exclusions is reported next to n.
+    """
+    if not values:
+        return None
+    ones = sum(values)
+    zeros = len(values) - ones
+    if ones == zeros:
+        return None
+    return int(ones > zeros)
+
+
+def _case_outcomes(
+    observations: list[dict], metric: str, prompt_version: str,
+    exp_id: str | None = None, repeats: Sequence[int] | None = None,
+) -> tuple[dict[str, int], int]:
+    """One outcome per case for one prompt version, with the number of cases
+    dropped for a tied vote."""
+    buckets: dict[str, list[int]] = defaultdict(list)
+    for obs in observations:
+        if obs["prompt_version"] != prompt_version or obs[metric] is None:
+            continue
+        if exp_id is not None and obs["exp_id"] != exp_id:
+            continue
+        if repeats is not None and obs["repeat_idx"] not in repeats:
+            continue
+        buckets[obs["case_id"]].append(obs[metric])
+    out: dict[str, int] = {}
+    ties = 0
+    for case_id, values in buckets.items():
+        vote = majority_vote(values)
+        if vote is None:
+            ties += 1
+            continue
+        out[case_id] = vote
+    return out, ties
+
+
+def e1_pair_sets(observations: list[dict]) -> dict[tuple[str, str], dict]:
+    """Build the pre-registered pairing: baseline = E0 repeats 0-2 of v1,
+    candidates = whichever of v2a..v2d have raw data. Returns {} when none do,
+    which is how the whole E1 block gets skipped rather than raising."""
+    out: dict[tuple[str, str], dict] = {}
+    present = sorted({obs["prompt_version"] for obs in observations} & set(E1_VERSIONS))
+    if not present:
+        return out
+    for metric in METRICS:
+        base, base_ties = _case_outcomes(
+            observations, metric, BASELINE_PROMPT_VERSION,
+            exp_id=E1_BASELINE_EXP_ID, repeats=E1_BASELINE_REPEATS,
+        )
+        for version in present:
+            cand, cand_ties = _case_outcomes(observations, metric, version)
+            shared = sorted(set(base) & set(cand))
+            out[(metric, version)] = {
+                "pairs": [(cid, base[cid], cand[cid]) for cid in shared],
+                "n_tie": base_ties + cand_ties,
+                "n_missing": len(set(base) ^ set(cand)),
+                "baseline_label": (
+                    f"{BASELINE_PROMPT_VERSION} ({E1_BASELINE_EXP_ID} repeats "
+                    f"{'+'.join(str(r) for r in E1_BASELINE_REPEATS)})"
+                ),
+            }
+    return out
+
+
+def paired_cells(pairs: Sequence[tuple[str, int, int]]) -> dict:
+    a = sum(1 for _, x, y in pairs if x == 1 and y == 1)
+    b = sum(1 for _, x, y in pairs if x == 1 and y == 0)
+    c = sum(1 for _, x, y in pairs if x == 0 and y == 1)
+    d = sum(1 for _, x, y in pairs if x == 0 and y == 0)
+    return {"a": a, "b": b, "c": c, "d": d, "n": a + b + c + d}
+
+
+E1_MAIN_HEADER = [
+    "metric", "baseline_version", "candidate_version", "n", "n_excluded_tie", "n_excluded_missing",
+    "pass_base", "pass_deg", "a", "b", "c", "d",
+    "p_raw", "p_holm", "p_bh", "rd", "ci_low", "ci_high", "or",
+    "family", "method", "ci_method", "note",
+]
+
+
+def table_e1_main(pair_sets: dict[tuple[str, str], dict]) -> tuple[list[str], list[list]]:
+    """One row per (metric, degraded version): the confirmatory test.
+
+    Holm runs across the four primary-metric tests and nothing else, which is
+    the family fixed in docs/PREREGISTRATION.md section 4. The secondary
+    metric gets Benjamini-Hochberg within its own exploratory family and keeps
+    `p_holm` empty, so no reader can mistake one for the other.
+    """
+    if not pair_sets:
+        return E1_MAIN_HEADER, []
+    rows: list[list] = []
+    index_by_metric: dict[str, list[int]] = defaultdict(list)
+    for (metric, version) in sorted(pair_sets):
+        info = pair_sets[(metric, version)]
+        pairs = info["pairs"]
+        if not pairs:
+            continue
+        cells = paired_cells(pairs)
+        a, b, c, d, n = cells["a"], cells["b"], cells["c"], cells["d"], cells["n"]
+        mc = mcnemar_exact(b, c)
+        ci = newcombe_paired_diff_ci(a, b, c, d)
+        odds = (c / b) if b > 0 else None
+        primary = metric == E1_PRIMARY_METRIC
+        index_by_metric[metric].append(len(rows))
+        rows.append([
+            metric, info["baseline_label"], version, n, info["n_tie"], info["n_missing"],
+            a + b, a + c, a, b, c, d,
+            mc["p_value"], None, None, ci["rd"], ci["ci_low"], ci["ci_high"], odds,
+            "confirmatory_holm" if primary else "exploratory_bh",
+            mc["method"], ci["method"],
+            (NEWCOMBE_VALIDATION if primary else NEWCOMBE_VALIDATION + "; secondary metric, exploratory")
+            + ("" if b > 0 else "; odds ratio undefined (b = 0)"),
+        ])
+    p_col = E1_MAIN_HEADER.index("p_raw")
+    for metric, idxs in index_by_metric.items():
+        pvals = [rows[i][p_col] for i in idxs]
+        adjusted = holm_adjust(pvals) if metric == E1_PRIMARY_METRIC else bh_adjust(pvals)
+        target = E1_MAIN_HEADER.index("p_holm" if metric == E1_PRIMARY_METRIC else "p_bh")
+        for i, value in zip(idxs, adjusted):
+            rows[i][target] = value
+    return E1_MAIN_HEADER, rows
+
+
+E1_POWER_HEADER = [
+    "metric", "candidate_version", "n", "alpha", "alpha_basis", "power", "n_sim", "seed",
+    "n_observed_pairs", "observed_b", "observed_c", "mean_b", "mean_c", "method", "note",
+]
+
+
+def table_e1_power(pair_sets: dict[tuple[str, str], dict], seed: int, n_sim: int = E1_POWER_N_SIM) -> tuple[list[str], list[list]]:
+    """Conditional power at n = 30 / 50 / 70 for the primary metric.
+
+    Simulated, and labelled as such in every row: the n = 70 column is a
+    resample of the observed pairs, not a second experiment. The realized test
+    at n = 70 is the `p_holm` column of `e1_main.csv`.
+    """
+    if not pair_sets:
+        return E1_POWER_HEADER, []
+    rows: list[list] = []
+    for (metric, version) in sorted(pair_sets):
+        if metric != E1_PRIMARY_METRIC:
+            continue
+        pairs = [(x, y) for _, x, y in pair_sets[(metric, version)]["pairs"]]
+        if not pairs:
+            continue
+        results = paired_power_simulation(
+            pairs, E1_POWER_SIZES, seed=seed, label=f"{metric}|{version}",
+            n_sim=n_sim, alphas=tuple(a for a, _ in E1_POWER_ALPHAS),
+        )
+        basis = dict(E1_POWER_ALPHAS)
+        for res in results:
+            rows.append([
+                metric, version, res["n"], res["alpha"], basis[res["alpha"]], res["power"],
+                res["n_sim"], res["seed"], res["n_observed_pairs"], res["observed_b"], res["observed_c"],
+                res["mean_b"], res["mean_c"], res["method"],
+                "simulated by resampling the observed pairs with replacement; "
+                "conditional on the observed effect, not a design power calculation",
+            ])
+    return E1_POWER_HEADER, rows
+
+
+def figure_e1_forest(main_rows: list[list], out_path: Path, seed: int) -> str | None:
+    """Risk difference with its 95% interval, one line per degraded version.
+    Primary metric filled, secondary metric open, never merged."""
+    try:
+        import matplotlib
+
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+    except ImportError as exc:  # pragma: no cover -- documented fallback
+        print(f"!! matplotlib unavailable ({exc}); CSV tables were still written", file=sys.stderr)
+        return None
+    if not main_rows:
+        return None
+    col = {name: i for i, name in enumerate(E1_MAIN_HEADER)}
+    primary = [r for r in main_rows if r[col["metric"]] == E1_PRIMARY_METRIC]
+    secondary = [r for r in main_rows if r[col["metric"]] != E1_PRIMARY_METRIC]
+    if not primary:
+        return None
+    versions = [r[col["candidate_version"]] for r in primary]
+    ypos = list(range(len(versions)))[::-1]
+    footnote = _wrap(
+        f"n={primary[0][col['n']]} paired cases per row, repeats collapsed by majority vote; baseline "
+        f"{primary[0][col['baseline_version']]}; 95% interval: {primary[0][col['note']]}; "
+        f"exact McNemar, Holm across the four primary tests only; analysis seed={seed}.",
+        width=104,
+    )
+    footnote_lines = footnote.count("\n") + 1
+
+    fig, ax = plt.subplots(figsize=(7.2, 1.1 * len(versions) + 2.0 + 0.16 * footnote_lines))
+    for series, offset, style in (
+        (primary, 0.0, dict(fmt="o", color="#1f4e79", label=f"{E1_PRIMARY_METRIC} (primary, Holm)")),
+        (secondary, -0.22, dict(fmt="s", markerfacecolor="none", color="#7c4a2d",
+                                label="passed (secondary, exploratory)")),
+    ):
+        if not series:
+            continue
+        order = {r[col["candidate_version"]]: i for i, r in enumerate(series)}
+        xs, ys, lo, hi = [], [], [], []
+        for y, version in zip(ypos, versions):
+            if version not in order:
+                continue
+            r = series[order[version]]
+            xs.append(r[col["rd"]])
+            ys.append(y + offset)
+            lo.append(r[col["rd"]] - r[col["ci_low"]])
+            hi.append(r[col["ci_high"]] - r[col["rd"]])
+        ax.errorbar(xs, ys, xerr=[lo, hi], capsize=4, **style)
+
+    ax.axvline(0.0, color="#555555", lw=1.0)
+    ax.set_ylim(-0.6, len(versions) - 0.4)
+    ax.set_yticks(ypos)
+    ax.set_yticklabels([v if len(v) <= 14 else v[:13] + "…" for v in versions])
+    ax.set_xlabel("risk difference (degraded - baseline)")
+    ax.set_title("E1: effect of each degradation on the primary metric")
+    ax.grid(axis="x", alpha=0.3)
+    ax.legend(fontsize=7, loc="best", framealpha=0.95)
+    for y, r in zip(ypos, primary):
+        p_holm = r[col["p_holm"]]
+        label = f"n={r[col['n']]}  b={r[col['b']]}, c={r[col['c']]}"
+        if isinstance(p_holm, float):
+            label += f"  p_Holm={p_holm:.3f}"
+        ax.annotate(label, (0.02, y + 0.18), xycoords=("axes fraction", "data"), fontsize=7, color="#333333")
+    fig.text(0.01, 0.01, footnote, fontsize=7, va="bottom")
+    fig.subplots_adjust(bottom=(0.55 + 0.14 * footnote_lines) / fig.get_figheight(), left=0.19, right=0.97, top=0.90)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(out_path, dpi=160, metadata={"Software": "experiments/analyze.py"})
+    plt.close(fig)
+    return rel_to_repo(out_path)
+
+
+def figure_e1_power(power_rows: list[list], main_rows: list[list], out_path: Path, seed: int) -> str | None:
+    """Conditional power curve. Simulated points are open markers on a dashed
+    line; the one measured point per version -- did the test that actually ran
+    at n = 70 reject? -- is a filled marker at 0 or 1. Two different
+    quantities, two different markers, never averaged together."""
+    try:
+        import matplotlib
+
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+    except ImportError as exc:  # pragma: no cover -- documented fallback
+        print(f"!! matplotlib unavailable ({exc}); CSV tables were still written", file=sys.stderr)
+        return None
+    if not power_rows:
+        return None
+    pcol = {name: i for i, name in enumerate(E1_POWER_HEADER)}
+    mcol = {name: i for i, name in enumerate(E1_MAIN_HEADER)}
+    nominal = [r for r in power_rows if r[pcol["alpha_basis"]] == "nominal"]
+    if not nominal:
+        return None
+    versions = sorted({r[pcol["candidate_version"]] for r in nominal})
+    colours = ["#1f4e79", "#7c4a2d", "#2e6f40", "#8a2b5e", "#555555"]
+
+    fig, ax = plt.subplots(figsize=(7.2, 4.6))
+    for i, version in enumerate(versions):
+        pts = sorted((r for r in nominal if r[pcol["candidate_version"]] == version), key=lambda r: r[pcol["n"]])
+        colour = colours[i % len(colours)]
+        ax.plot([r[pcol["n"]] for r in pts], [r[pcol["power"]] for r in pts],
+                marker="o", mfc="none", ls="--", color=colour, label=f"{version} simulated")
+        realized = [r for r in main_rows
+                    if r[mcol["candidate_version"]] == version and r[mcol["metric"]] == E1_PRIMARY_METRIC]
+        if realized and isinstance(realized[0][mcol["p_holm"]], float):
+            rejected = 1.0 if realized[0][mcol["p_holm"]] < 0.05 else 0.0
+            # nudge the measured markers apart: versions that agree would
+            # otherwise stack into one diamond at the same coordinates
+            jitter = (i - (len(versions) - 1) / 2) * 0.9
+            ax.plot([max(E1_POWER_SIZES) + jitter], [rejected], marker="D", ms=7, ls="none",
+                    color=colour, label=f"{version} measured (1 = rejected)")
+    ax.axhline(0.8, color="#999999", lw=1.0, ls=":", label="80% power")
+    ax.set_xticks(list(E1_POWER_SIZES))
+    ax.set_ylim(-0.05, 1.05)
+    ax.set_xlabel("cases (n)")
+    ax.set_ylabel("share of simulated studies that reject")
+    ax.set_title("E1: conditional power of the 70-case gate")
+    ax.grid(alpha=0.3)
+    ax.legend(fontsize=7, ncol=2, framealpha=0.95)
+    n_sim = nominal[0][pcol["n_sim"]]
+    footnote = _wrap(
+        f"Open markers: {n_sim} resamples of the observed paired cases at each n, exact McNemar at "
+        f"alpha=0.05, analysis seed={seed} -- conditional on the effect this study observed, not a "
+        f"design power calculation. Filled diamonds: the single test that actually ran at n=70, plotted "
+        f"as 1 if it rejected under Holm and 0 if it did not; one realized decision is not a rate. "
+        f"Holm's worst-case level (alpha=0.0125) is in e1_power.csv.",
+        width=104,
+    )
+    fig.text(0.01, 0.01, footnote, fontsize=7, va="bottom")
+    fig.tight_layout(rect=(0, 0.08 + 0.035 * footnote.count("\n"), 1, 1))
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(out_path, dpi=160, metadata={"Software": "experiments/analyze.py"})
+    plt.close(fig)
+    return rel_to_repo(out_path)
 
 
 def table_tokens(rows: list[dict]) -> tuple[list[str], list[list]]:
@@ -348,7 +704,7 @@ def table_tokens(rows: list[dict]) -> tuple[list[str], list[list]]:
         ins = [r["input_tokens"] for r in ok]
         outs = [r["output_tokens"] for r in ok]
         lats = sorted(r["latency_ms"] for r in ok if r["latency_ms"] is not None)
-        total = sum(r.get("cost_usd", 0.0) for r in group)
+        total = sum(row_cost(r) for r in group)
         p50 = median(lats) if lats else None
         p95 = lats[min(len(lats) - 1, int(round(0.95 * (len(lats) - 1))))] if lats else None
         out.append([
@@ -660,6 +1016,102 @@ def figure_judge_scores(score_rows: list[list], out_path: Path, seed: int) -> st
 
 
 # --------------------------------------------------------------------------
+# self-check: run the E1 estimators on a pairing whose answer is known
+# --------------------------------------------------------------------------
+def selfcheck_pair_sets(observations: list[dict]) -> dict[tuple[str, str], dict]:
+    """Pair E0's repeat 1 against its repeat 2 -- same prompt, same day, so the
+    true difference is zero by construction.
+
+    This exists so the E1 code path is exercised before E1 exists. It is a
+    plumbing check, not a result: it cannot show that the estimators
+    discriminate, only that they run end to end and return zero when they
+    should. `experiments/stats.py` carries the non-null cases.
+    """
+    out: dict[tuple[str, str], dict] = {}
+    for metric in METRICS:
+        sides = []
+        for repeat in (0, 1):
+            sides.append({
+                obs["case_id"]: obs[metric]
+                for obs in observations
+                if obs["exp_id"] == E1_BASELINE_EXP_ID
+                and obs["prompt_version"] == BASELINE_PROMPT_VERSION
+                and obs["repeat_idx"] == repeat
+                and obs[metric] is not None
+            })
+        base, cand = sides
+        shared = sorted(set(base) & set(cand))
+        out[(metric, "e0_repeat2_vs_repeat1")] = {
+            "pairs": [(cid, base[cid], cand[cid]) for cid in shared],
+            "n_tie": 0,
+            "n_missing": len(set(base) ^ set(cand)),
+            "baseline_label": f"{BASELINE_PROMPT_VERSION} ({E1_BASELINE_EXP_ID} repeat 0)",
+        }
+    return out
+
+
+def run_self_check(observations: list[dict], seed: int, out_dir: Path | None, n_sim: int) -> int:
+    pair_sets = {k: v for k, v in selfcheck_pair_sets(observations).items() if v["pairs"]}
+    if not pair_sets:
+        print("self-check: no E0 baseline observations found; nothing to check", file=sys.stderr)
+        return 1
+    header, rows = table_e1_main(pair_sets)
+    p_header, p_rows = table_e1_power(pair_sets, seed, n_sim=n_sim)
+    widths = {"metric": 16, "candidate_version": 22}
+    print("\ne1_main.csv on the zero-difference pairing (E0 repeat 1 vs repeat 2)")
+    show = ["metric", "candidate_version", "n", "a", "b", "c", "d", "p_raw", "p_holm", "p_bh",
+            "rd", "ci_low", "ci_high", "or"]
+    print("  " + "  ".join(f"{name:>{widths.get(name, 9)}}" for name in show))
+    for row in rows:
+        cells = []
+        for name in show:
+            value = row[header.index(name)]
+            text = "" if value is None else (f"{value:.6f}" if isinstance(value, float) else str(value))
+            cells.append(f"{text:>{widths.get(name, 9)}}")
+        print("  " + "  ".join(cells))
+    print("\ne1_power.csv on the same pairing")
+    p_show = ["metric", "candidate_version", "n", "alpha", "alpha_basis", "power", "observed_b", "observed_c"]
+    print("  " + "  ".join(f"{name:>{widths.get(name, 11)}}" for name in p_show))
+    for row in p_rows:
+        cells = []
+        for name in p_show:
+            value = row[p_header.index(name)]
+            text = "" if value is None else (f"{value:.6f}" if isinstance(value, float) else str(value))
+            cells.append(f"{text:>{widths.get(name, 11)}}")
+        print("  " + "  ".join(cells))
+
+    failures = []
+    for row in rows:
+        if row[header.index("b")] != 0 or row[header.index("c")] != 0:
+            failures.append(f"{row[0]}: expected no discordant pairs, got b={row[header.index('b')]} "
+                            f"c={row[header.index('c')]}")
+        if abs(row[header.index("rd")]) > 1e-12:
+            failures.append(f"{row[0]}: expected rd = 0, got {row[header.index('rd')]}")
+        if not (row[header.index("ci_low")] < 0 < row[header.index("ci_high")]):
+            failures.append(f"{row[0]}: interval does not straddle zero")
+    for row in p_rows:
+        if row[p_header.index("power")] != 0.0:
+            failures.append(f"power at n={row[p_header.index('n')]} should be 0 on a null pairing")
+
+    if out_dir is not None:
+        write_csv(out_dir / "tables" / "e1_main.csv", header, rows)
+        write_csv(out_dir / "tables" / "e1_power.csv", p_header, p_rows)
+        for fig in (
+            figure_e1_forest(rows, out_dir / "figures" / "e1_forest.png", seed),
+            figure_e1_power(p_rows, rows, out_dir / "figures" / "e1_power.png", seed),
+        ):
+            print(f"self-check figure -> {fig}")
+        print(f"self-check artifacts written under {out_dir}")
+
+    if failures:
+        print("\nself-check FAILED:\n  " + "\n  ".join(failures), file=sys.stderr)
+        return 1
+    print("\nself-check PASSED: zero discordant pairs, rd = 0, interval straddles 0, "
+          "simulated power 0 at every n. This checks the plumbing, not the discrimination.")
+    return 0
+
+
+# --------------------------------------------------------------------------
 # manifest
 # --------------------------------------------------------------------------
 def build_manifest(files: list[Path], rows: list[dict], out_dir: Path, seed: int, n_boot: int, tables: list[str], figures: list[str], dataset_path: Path) -> dict:
@@ -669,11 +1121,14 @@ def build_manifest(files: list[Path], rows: list[dict], out_dir: Path, seed: int
 
     entries = []
     raw_cost = 0.0
+    raw_cost_recorded = 0.0
     for path in files:
         rel = rel_to_repo(path)
         group = by_file.get(rel, [])
-        cost = sum(r.get("cost_usd", 0.0) for r in group)
+        cost = sum(row_cost(r) for r in group)
+        recorded = sum(r.get("cost_usd", 0.0) for r in group)
         raw_cost += cost
+        raw_cost_recorded += recorded
         stamps = sorted(r["timestamp_utc"] for r in group if r.get("timestamp_utc"))
         models: dict[str, list[str]] = defaultdict(list)
         for r in group:
@@ -688,6 +1143,8 @@ def build_manifest(files: list[Path], rows: list[dict], out_dir: Path, seed: int
             "calls_by_tier": {t: sum(1 for r in group if r["tier"] == t) for t in sorted({r["tier"] for r in group})},
             "request_to_response_model": {k: sorted(set(v)) for k, v in sorted(models.items())},
             "cost_usd": round(cost, 8),
+            "cost_usd_recorded_by_runner": round(recorded, 8),
+            "cost_usd_unrecorded_at_run_time": round(cost - recorded, 8),
             "first_timestamp_utc": stamps[0] if stamps else None,
             "last_timestamp_utc": stamps[-1] if stamps else None,
         })
@@ -725,10 +1182,19 @@ def build_manifest(files: list[Path], rows: list[dict], out_dir: Path, seed: int
         "totals": {
             "raw_lines": sum(e["lines"] for e in entries),
             "raw_cost_usd": round(raw_cost, 8),
+            "raw_cost_usd_recorded_by_runner": round(raw_cost_recorded, 8),
+            "raw_cost_usd_unrecorded_at_run_time": round(raw_cost - raw_cost_recorded, 8),
             "probes_cost_usd": round(probe_cost, 8),
             "total_cost_usd": round(raw_cost + probe_cost, 8),
             "cost_ledger_cumulative_usd": ledger_cumulative,
             "cost_ledger_note": "the ledger records runner runs only; probe scripts are accounted separately",
+            "cost_method_note": (
+                "raw_cost_usd is recomputed from each row's usage at the pinned prices in "
+                "experiments/__init__.py; raw_cost_usd_recorded_by_runner is what the runner "
+                "wrote into the raw files at run time. The gap is billed-but-unrecorded spend "
+                "on calls that returned tokens and then failed validation "
+                "(experiments/COST_CALIBRATION.md section 3)"
+            ),
         },
         "outputs": {"tables": tables, "figures": figures},
     }
@@ -746,6 +1212,11 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--n-boot", type=int, default=DEFAULT_N_BOOT)
     p.add_argument("--exp-ids", default=None, help="comma-separated subset of experiment ids")
     p.add_argument("--no-figures", action="store_true")
+    p.add_argument("--power-n-sim", type=int, default=E1_POWER_N_SIM, help="resamples per point in e1_power.csv")
+    p.add_argument("--self-check", action="store_true",
+                   help="run the E1 estimators on E0's repeat 1 vs repeat 2 (true difference zero) and exit")
+    p.add_argument("--self-check-out", default=None,
+                   help="with --self-check, also write the tables and figures here (not into results/)")
     args = p.parse_args(argv)
 
     raw_dir = Path(args.raw_dir)
@@ -758,8 +1229,21 @@ def main(argv: list[str] | None = None) -> int:
         raise SystemExit(f"no raw JSONL rows under {raw_dir} (run experiments/runner.py first)")
     observations = build_observations(rows, dataset_path)
 
+    if args.self_check:
+        return run_self_check(
+            observations, args.seed,
+            Path(args.self_check_out) if args.self_check_out else None,
+            args.power_n_sim,
+        )
+
     tables_dir = out_dir / "tables"
     figures_dir = out_dir / "figures"
+
+    pair_sets = e1_pair_sets(observations)
+    if not pair_sets:
+        print(f"e1: {E1_EMPTY_NOTE}")
+    e1_main_spec = table_e1_main(pair_sets)
+    e1_power_spec = table_e1_power(pair_sets, args.seed, n_sim=args.power_n_sim)
 
     rescore_header, rescore_rows = table_judge_rescore(rows)
     specs = [
@@ -770,6 +1254,8 @@ def main(argv: list[str] | None = None) -> int:
         ("rates_by_stratum.csv", table_strata(observations)),
         ("rates_bootstrap.csv", table_bootstrap(observations, args.seed, args.n_boot)),
         ("paired_mcnemar.csv", table_mcnemar(observations)),
+        ("e1_main.csv", e1_main_spec),
+        ("e1_power.csv", e1_power_spec),
         ("tokens_latency_by_tier.csv", table_tokens(rows)),
         ("judge_score_distribution.csv", table_judge_scores(observations)),
         ("judge_rescore_stability.csv", (rescore_header, rescore_rows)),
@@ -790,6 +1276,8 @@ def main(argv: list[str] | None = None) -> int:
             figure_rates(rate_rows, figures_dir / "primary_metric_by_run.png", args.seed),
             figure_noise_floor(rate_rows, figures_dir / "noise_floor_vs_gate_thresholds.png", args.seed),
             figure_judge_scores(score_rows, figures_dir / "judge_score_distribution.png", args.seed),
+            figure_e1_forest(e1_main_spec[1], figures_dir / "e1_forest.png", args.seed),
+            figure_e1_power(e1_power_spec[1], e1_main_spec[1], figures_dir / "e1_power.png", args.seed),
         ):
             if fig:
                 figures.append(fig)

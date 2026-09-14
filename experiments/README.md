@@ -111,6 +111,15 @@ Useful flags: `--cases 10` or `--cases case-001,case-064` or `--cases @ids.txt`;
 `--concurrency` (default 4); `--skip-judge`; `--classifier-temperature`;
 `--max-cost-usd` (hard stop, default $1.00); `--temperature-transport`.
 
+Two free checks that call nothing:
+
+```bash
+# the E1 estimators on E0 repeat 1 vs repeat 2, where the answer must be zero
+python -m experiments.analyze --self-check
+# coverage evidence for the paired risk-difference interval
+python -m experiments.stats --coverage
+```
+
 ### The cache is off by default and refuses to run with repeats
 
 `--cache` stores responses by a hash of the full request. Serving a repeated
@@ -138,8 +147,13 @@ Three properties are load-bearing:
    violations are recorded with the error and the batch continues, so
    "1,680 planned, 1,676 succeeded" is visible in the data instead of being a
    crashed job.
-3. **Cost is recomputed from `usage`,** by `analyze.py`, from the raw files --
-   not carried over from whatever the runner printed.
+3. **Cost is recomputed from `usage`,** by `analyze.py`, from the raw files at
+   the prices pinned in `experiments/__init__.py` -- not carried over from the
+   `cost_usd` field the runner wrote, and not affected by a `PRICE_*` override
+   in whatever shell the analysis happens to run in. A call that returned
+   tokens and then failed validation is charged; `MANIFEST.json` reports the
+   recomputed total, the runner's total and the difference between them
+   (COST_CALIBRATION.md section 3).
 
 ## Runs completed
 
@@ -147,7 +161,11 @@ Three properties are load-bearing:
 |------|--------|--------|--------------------|------|----------|
 | 2026-09-14 | `smoke` | 10 cases x 1, cost calibration only | 20/20 | $0.059746 | `results/raw/smoke/smoke_2026-09-14.jsonl` |
 | 2026-09-14 | `e0_noise` | E0 main arm: v1 x 70 cases x 5 repeats, classifier + judge | 700/700 | $2.080951 | `results/raw/e0_noise/e0_noise_20260914T115913Z.jsonl` |
-| 2026-09-14 | `e0_judge_iso` | E0 judge-isolation arm: repeat 0 classifier output frozen, judge re-scores 4x | 279/280 | $1.078802 | `results/raw/e0_judge_iso/e0_judge_iso_20260914T120557Z.jsonl` |
+| 2026-09-14 | `e0_judge_iso` | E0 judge-isolation arm: repeat 0 classifier output frozen, judge re-scores 4x | 279/280 | $1.084140 | `results/raw/e0_judge_iso/e0_judge_iso_20260914T120557Z.jsonl` |
+
+The isolation arm's cost is $0.005338 higher than the figure the runner
+printed on the day: the one failed call was billed and recorded at $0, and
+cost is now recomputed from `usage` (COST_CALIBRATION.md section 3).
 
 Neither E0 arm used `--cache`; `cache_hits` is 0 in both meta files.
 `response_model` came back as `claude-haiku-4-5-20251001` for every classifier
@@ -170,30 +188,45 @@ no approximation is written there.
 
 Still to run: E1, E2, E4, E5.
 
+E1's four degraded prompts exist (`prompts/v2a.yaml` .. `prompts/v2d.yaml`,
+built 2026-09-14) and its analysis path is written and self-checked, but no
+E1 call has been made. The design is frozen in
+[`docs/PREREGISTRATION.md` section 10](../docs/PREREGISTRATION.md) and the
+prompts in [`docs/DEGRADATION_DESIGN.md`](../docs/DEGRADATION_DESIGN.md).
+
 ## What is implemented, and what is not
 
 Implemented and self-checked against published worked examples and scipy
-(`python -m experiments.stats --cross-check`, 19/19): Wilson interval,
+(`python -m experiments.stats --cross-check`, 25/25): Wilson interval,
 Clopper-Pearson interval, exact binomial test, exact McNemar, case-level
-cluster bootstrap, Holm, Benjamini-Hochberg, Cohen's kappa.
+cluster bootstrap, Holm, Benjamini-Hochberg, Cohen's kappa, Newcombe method 10
+paired risk-difference interval, conditional power by case resampling.
+
+One estimator ships with weaker validation than the rest, and says so in every
+row it produces: **Newcombe method 10**. The paper's printed worked example was
+not reachable from this machine, so it is checked by structural invariants and
+by a Monte-Carlo coverage study (`--coverage`: 0.9520 to 0.9941 against a
+nominal 0.95 across ten scenario/size cells at 20,000 replicates) instead. The
+full reasoning is the 2026-09-14 entry in `docs/PREREGISTRATION.md` section 9.
 
 Deliberately raising `NotImplementedError` instead of shipping an unvalidated
 approximation:
 
 | Item | Needed for | Due |
 |------|-----------|-----|
-| Newcombe method 10 CI for a paired risk difference | E1 | 2026-09-21 |
 | Fleiss kappa | E0 | 2026-09-19 |
-| Charging failed-but-billed calls in `cost_for()` | cost accounting | before E1 |
 | Krippendorff alpha | E0 / E4 | 2026-09-24 |
 | Logistic model with case-clustered standard errors | E5 | 2026-09-22 |
-| Power curve simulation (n = 30/50/70) | E1 figure | 2026-09-21 |
-| Forest plot figure | E1 figure | 2026-09-21 |
 | Pairwise judge prompt and position-bias analysis | E2 | 2026-09-23 |
 | Second-annotator ingestion, kappa matrix, rank-flip check | E4 | 2026-09-24 |
+| Newcombe method 10 checked against the paper's printed example | E1 write-up | before any submitted document quotes the interval |
 
-`paired_mcnemar.csv` is generated with zero data rows until a v2* run exists;
-its `ci_note` column states why the interval column is empty.
+`paired_mcnemar.csv`, `e1_main.csv` and `e1_power.csv` are generated with zero
+data rows until a v2* run exists, and `figures/e1_forest.png` /
+`figures/e1_power.png` are skipped rather than drawn empty.
+`paired_mcnemar.csv` is the per-(case, repeat) sensitivity view; the
+confirmatory test, which collapses repeats to one outcome per case, is
+`e1_main.csv`.
 
 ## Honesty rules for anything built on this data
 

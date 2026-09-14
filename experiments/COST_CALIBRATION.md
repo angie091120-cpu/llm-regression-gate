@@ -76,32 +76,55 @@ percent -- except E2, which is still priced off a prompt that does not exist.
 | probes, SDK 1.5.0 | 6 | $0.005672 |
 | first probe script iteration, artifact deleted | 4 (2 successful) | $0.004692 |
 | E0 main arm (`e0_noise_20260914T115913Z.jsonl`) | 700 | $2.080951 |
-| E0 judge-isolation arm (`e0_judge_iso_20260914T120557Z.jsonl`) | 280 (279 successful) | $1.078802 |
-| **Total** | 1,016 | **$3.236785** |
+| E0 judge-isolation arm (`e0_judge_iso_20260914T120557Z.jsonl`) | 280 (279 successful) | $1.084140 |
+| **Total** | 1,016 | **$3.242123** |
 
 The fourth row has no artifact in the repository: it was the first version of
 `experiments/probes.py`, whose output file was deleted when the script was
 rewritten to record the SDK version. The money was spent, so it is listed.
-`experiments/results/cost_ledger.json` therefore shows $3.219499 (runner runs
-only) while `MANIFEST.json` totals $3.232093 (runner + surviving probe files);
-the $0.004692 gap is that deleted probe file.
 
-**One call is billed but recorded at $0.** `runner.cost_for()` returns 0 for
-any row with `ok: false`, and the judge-isolation arm has one such row
+**One call was billed and recorded at $0; the accounting is now fixed, and the
+E0 raw file is not.** The judge-isolation arm has one `ok: false` row
 (`case-003`, repeat 3): the request reached the API, returned
 `stop_reason: tool_use` and 1,144 input / 305 output tokens, and then failed
 Pydantic validation because the returned tool input had no `score` field. At
-the pinned Sonnet 5 price that call cost $0.005338, so both the ledger and the
-MANIFEST understate real spend by that much. Recorded here rather than
-back-filled into the raw row, which stays exactly as the runner wrote it;
-charging failed-but-billed calls is a runner change to make before E1, where
-1,680 calls give the same bug more room.
+the pinned Sonnet 5 price that call cost $0.005338. `runner.cost_for()`
+returned $0 for it, because it returned $0 for every failed row.
+
+What changed on 2026-09-14, before E1:
+
+- `runner.cost_for()` now charges any call that reported token usage, whether
+  or not the call succeeded. A request the API rejected outright still costs
+  $0, because a 400 carries no usage.
+- `analyze.py` recomputes every published cost from each row's `usage` object
+  at the prices pinned in `experiments/__init__.py`, instead of summing the
+  `cost_usd` field the runner wrote. So **the $0.005338 is now included**, in
+  `MANIFEST.json`'s `raw_cost_usd`, without anything in the raw file changing.
+- The E0 raw JSONL is **not** back-filled. It stays exactly as the runner
+  wrote it, `cost_usd: 0.0` and all -- a raw file is evidence of what happened,
+  not a working copy.
+- `cost_ledger.json` is **not** back-filled either. It is append-only and each
+  entry records what that run knew at the time, so it still reads $3.219499.
+
+Where each number now lives:
+
+| Number | Value | Meaning |
+|--------|-------|---------|
+| `MANIFEST.totals.raw_cost_usd` | $3.224837 | recomputed from `usage` at pinned prices -- the published figure |
+| `MANIFEST.totals.raw_cost_usd_recorded_by_runner` | $3.219499 | what the runner wrote into the raw files at run time |
+| `MANIFEST.totals.raw_cost_usd_unrecorded_at_run_time` | $0.005338 | the difference, i.e. this one call |
+| `cost_ledger.json` `cumulative_usd` | $3.219499 | append-only, runner runs only, never edited afterwards |
+| `MANIFEST.totals.total_cost_usd` | $3.237431 | raw (recomputed) + the two surviving probe files |
+
+`checks/experiments_acceptance.sh` C4 reconciles the first against the fourth
+and needs them within 1%; the gap is 0.17%, and it is now a number with a
+named cause rather than a silent agreement.
 
 Not in the table above and not in this package's ledger: the production
 baseline bootstrap run on `main` (70 cases, 140 calls,
 `eval_reports/baseline.json`, commit fe1cea8) cost $0.415487 through
 `evalkit.cost`. It is listed here only so the workspace-level total is
-findable in one place: **$3.652272 against the $20 spend limit (18%).**
+findable in one place: **$3.657610 against the $20 spend limit (18%).**
 
 ## 4. Measured API behaviour
 

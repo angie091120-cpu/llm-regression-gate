@@ -9,3 +9,11 @@ __pycache__/
 diff_report.json
 eval_report.json
 reports/latest/
+# Run artifact: evalkit/cost.py appends a ledger in whatever directory the
+# eval was started from, so a repo-root cost_ledger.json appears after any
+# local run and is not evidence of anything.
+cost_ledger.json
+# The one exception, deliberately committed: the experiments ledger is what
+# checks/experiments_acceptance.sh C4 reconciles MANIFEST.json against, so a
+# fresh clone has to have it.
+!experiments/results/cost_ledger.json

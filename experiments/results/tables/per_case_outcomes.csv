@@ -211,7 +211,7 @@ e0_judge_iso,e0_judge_iso_20260914T120557Z,v1,2,case-069,mixed,easy,technical,,,
 e0_judge_iso,e0_judge_iso_20260914T120557Z,v1,2,case-070,mixed,ambiguous,general,,,5,,False,True,frozen_classifier_output,,,1064,147,,2377.520000,0.003598,,claude-sonnet-5
 e0_judge_iso,e0_judge_iso_20260914T120557Z,v1,3,case-001,zh-tw,easy,billing,,,5,,False,True,frozen_classifier_output,,,1113,144,,2196.900000,0.003666,,claude-sonnet-5
 e0_judge_iso,e0_judge_iso_20260914T120557Z,v1,3,case-002,zh-tw,easy,technical,,,5,,False,True,frozen_classifier_output,,,1103,141,,2111.660000,0.003616,,claude-sonnet-5
-e0_judge_iso,e0_judge_iso_20260914T120557Z,v1,3,case-003,zh-tw,ambiguous,account,,,,,False,False,frozen_classifier_output,,,1144,305,,4401.580000,0.000000,,claude-sonnet-5
+e0_judge_iso,e0_judge_iso_20260914T120557Z,v1,3,case-003,zh-tw,ambiguous,account,,,,,False,False,frozen_classifier_output,,,1144,305,,4401.580000,0.005338,,claude-sonnet-5
 e0_judge_iso,e0_judge_iso_20260914T120557Z,v1,3,case-004,zh-tw,easy,general,,,5,,False,True,frozen_classifier_output,,,1055,154,,2734.760000,0.003650,,claude-sonnet-5
 e0_judge_iso,e0_judge_iso_20260914T120557Z,v1,3,case-005,zh-tw,easy,billing,,,5,,False,True,frozen_classifier_output,,,1077,219,,3150.820000,0.004344,,claude-sonnet-5
 e0_judge_iso,e0_judge_iso_20260914T120557Z,v1,3,case-006,zh-tw,ambiguous,technical,,,5,,False,True,frozen_classifier_output,,,1147,197,,3002.760000,0.004264,,claude-sonnet-5
