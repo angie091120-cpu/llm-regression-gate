@@ -12,9 +12,15 @@ Most teams ship prompt changes blind: edit a string, deploy, hope. This project 
 
 - **Bilingual golden dataset** — Traditional Chinese / English / mixed-language customer support emails, hand-verified labels (never LLM-generated ground truth).
 - **Regression diffing** — per-case pass/fail flips, per-category deltas, configurable warning (3%) and critical (8%) thresholds.
-- **CI gate** — every PR touching `prompts/**`, and manual `workflow_dispatch` runs, evaluate the prompt against the real API, diff the result against the committed baseline, post a scorecard comment on the PR, and fail the check on a critical regression. See [SPEC.md §6](SPEC.md#6-ci-gate).
+- **CI gate** — every PR touching `prompts/**`, and manual `workflow_dispatch` runs, is designed to evaluate the prompt against the real API, diff the result against the committed baseline, post a scorecard comment on the PR, and fail the check on a critical regression. See [SPEC.md §6](SPEC.md#6-ci-gate).
 
-  **What the gate does today.** It fails the check and comments on the PR; on its own it does not prevent a merge — that requires the repository's branch protection to list this check as required, which is a repository-owner setting and is not configured yet. Two further conditions gate what the run can report: (1) an `ANTHROPIC_API_KEY` repository secret — until one is provisioned, `eval-gate.yml` fails loud on every run with an explicit "ANTHROPIC_API_KEY secret not configured" error rather than passing silently; (2) a committed `eval_reports/baseline.json` — until it exists, each run *bootstraps* a baseline (SPEC.md §5) and posts no scorecard, see [docs/DECISIONS.md D-009](docs/DECISIONS.md). Provisioning the secret and configuring branch protection are owner-side setup steps, not code changes.
+  **Today this check does not block a merge.** Making it one that does requires all of the following:
+
+  - an `ANTHROPIC_API_KEY` repository secret is provisioned — until then, `eval-gate.yml` fails loud on every run with an explicit "ANTHROPIC_API_KEY secret not configured" error rather than passing silently;
+  - a committed `eval_reports/baseline.json` exists — until it does, each run *bootstraps* a baseline (SPEC.md §5) and posts no scorecard, see [docs/DECISIONS.md D-009](docs/DECISIONS.md);
+  - the repository's branch protection lists this check as required — a repository-owner setting, not configured yet.
+
+  Today it only turns the check red; the scorecard comment is posted once the secret and baseline are in place.
 
 ## Setup
 
