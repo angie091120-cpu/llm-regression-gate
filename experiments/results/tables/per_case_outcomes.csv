@@ -1,0 +1,11 @@
+exp_id,run_id,prompt_version,repeat_idx,case_id,language,difficulty,expected_category,predicted_category,category_match,judge_score,passed,classifier_ok,judge_ok,judged_summary_source,classifier_input_tokens,classifier_output_tokens,judge_input_tokens,judge_output_tokens,classifier_latency_ms,judge_latency_ms,cost_usd,classifier_response_model,judge_response_model
+smoke,smoke_2026-09-14,v1,0,case-001,zh-tw,easy,billing,billing,1,5,1,True,True,same_run_classifier,1706,93,1115,154,1468.230000,2566.340000,0.005941,claude-haiku-4-5-20251001,claude-sonnet-5
+smoke,smoke_2026-09-14,v1,0,case-002,zh-tw,easy,technical,technical,1,5,1,True,True,same_run_classifier,1692,92,1105,164,1483.630000,2536.060000,0.006002,claude-haiku-4-5-20251001,claude-sonnet-5
+smoke,smoke_2026-09-14,v1,0,case-003,zh-tw,ambiguous,account,account,1,4,1,True,True,same_run_classifier,1712,91,1151,286,1636.570000,3764.440000,0.007329,claude-haiku-4-5-20251001,claude-sonnet-5
+smoke,smoke_2026-09-14,v1,0,case-004,zh-tw,easy,general,general,1,5,1,True,True,same_run_classifier,1673,70,1052,107,1381.490000,2321.550000,0.005197,claude-haiku-4-5-20251001,claude-sonnet-5
+smoke,smoke_2026-09-14,v1,0,case-005,zh-tw,easy,billing,billing,1,5,1,True,True,same_run_classifier,1669,90,1084,169,1471.930000,2550.060000,0.005977,claude-haiku-4-5-20251001,claude-sonnet-5
+smoke,smoke_2026-09-14,v1,0,case-006,zh-tw,ambiguous,technical,technical,1,5,1,True,True,same_run_classifier,1716,99,1152,191,1507.060000,2609.690000,0.006425,claude-haiku-4-5-20251001,claude-sonnet-5
+smoke,smoke_2026-09-14,v1,0,case-007,zh-tw,easy,account,account,1,5,1,True,True,same_run_classifier,1666,72,1056,89,1349.140000,1847.260000,0.005028,claude-haiku-4-5-20251001,claude-sonnet-5
+smoke,smoke_2026-09-14,v1,0,case-008,zh-tw,easy,general,general,1,5,1,True,True,same_run_classifier,1676,82,1073,160,1369.760000,2214.980000,0.005832,claude-haiku-4-5-20251001,claude-sonnet-5
+smoke,smoke_2026-09-14,v1,0,case-009,zh-tw,ambiguous,billing,account,0,5,0,True,True,same_run_classifier,1705,87,1124,163,1594.640000,2299.190000,0.006018,claude-haiku-4-5-20251001,claude-sonnet-5
+smoke,smoke_2026-09-14,v1,0,case-010,zh-tw,easy,technical,technical,1,5,1,True,True,same_run_classifier,1679,72,1094,177,1343.070000,2475.240000,0.005997,claude-haiku-4-5-20251001,claude-sonnet-5

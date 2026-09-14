@@ -1,0 +1,7 @@
+exp_id,run_id,prompt_version,stratum_kind,stratum,metric,n,k,estimate,ci_low,ci_high,method
+smoke,smoke_2026-09-14,v1,difficulty,ambiguous,category_match,3,2,0.666667,0.207660,0.938508,wilson
+smoke,smoke_2026-09-14,v1,difficulty,ambiguous,passed,3,2,0.666667,0.207660,0.938508,wilson
+smoke,smoke_2026-09-14,v1,difficulty,easy,category_match,7,7,1.000000,0.645670,1.000000,wilson
+smoke,smoke_2026-09-14,v1,difficulty,easy,passed,7,7,1.000000,0.645670,1.000000,wilson
+smoke,smoke_2026-09-14,v1,language,zh-tw,category_match,10,9,0.900000,0.595850,0.982124,wilson
+smoke,smoke_2026-09-14,v1,language,zh-tw,passed,10,9,0.900000,0.595850,0.982124,wilson

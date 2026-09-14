@@ -1,0 +1,58 @@
+{
+  "run_id": "smoke_2026-09-14",
+  "exp_id": "smoke",
+  "prompt_version": "v1",
+  "cases": 10,
+  "case_ids": [
+    "case-001",
+    "case-002",
+    "case-003",
+    "case-004",
+    "case-005",
+    "case-006",
+    "case-007",
+    "case-008",
+    "case-009",
+    "case-010"
+  ],
+  "repeats": 1,
+  "planned_calls": 20,
+  "classifier_model_requested": "claude-haiku-4-5",
+  "judge_model_requested": "claude-sonnet-5",
+  "classifier_temperature": null,
+  "judge_temperature": null,
+  "temperature_transport": "auto",
+  "concurrency": 4,
+  "cache_enabled": false,
+  "judge_only_from": null,
+  "skip_judge": false,
+  "max_cost_usd": 0.3,
+  "prices_per_mtok": {
+    "claude-haiku-4-5": {
+      "input": 1.0,
+      "output": 5.0
+    },
+    "claude-sonnet-5": {
+      "input": 2.0,
+      "output": 10.0
+    }
+  },
+  "git_commit": "2727d9e8039e6ca595ed1692f7a199d1c684aa1a",
+  "dataset": "/home/angie091120/portfolio-3case/lrg-exp/golden_dataset.json",
+  "started_utc": "2026-09-14T11:35:41.004976Z",
+  "finished_utc": "2026-09-14T11:35:53.758289Z",
+  "executed_calls": 20,
+  "ok_calls": 20,
+  "failed_calls": 0,
+  "failure_types": [],
+  "cache_hits": 0,
+  "run_cost_usd": 0.059746,
+  "ledger_cumulative_usd": 0.059746,
+  "aborted_on_cost_cap": false,
+  "response_models_seen": [
+    "claude-haiku-4-5-20251001",
+    "claude-sonnet-5"
+  ],
+  "sdk_max_retries": 2,
+  "raw_path": "experiments/results/raw/smoke/smoke_2026-09-14.jsonl"
+}

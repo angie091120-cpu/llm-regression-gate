@@ -1,0 +1,5 @@
+# The content-hash cache is a local speed/cost aid, never evidence.
+# Raw JSONL, tables, figures, MANIFEST.json and cost_ledger.json ARE committed:
+# the honesty claim of this study is "raw data published, analysis fully
+# reproducible", and that only holds if the raw files are in the repo.
+cache/

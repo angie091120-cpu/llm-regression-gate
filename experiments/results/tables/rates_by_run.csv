@@ -1,0 +1,9 @@
+exp_id,run_id,prompt_version,repeat_idx,metric,n,k,estimate,ci_low,ci_high,method
+smoke,smoke_2026-09-14,v1,0,category_match,10,9,0.900000,0.595850,0.982124,wilson
+smoke,smoke_2026-09-14,v1,0,category_match,10,9,0.900000,0.554984,0.997471,clopper_pearson
+smoke,smoke_2026-09-14,v1,0,passed,10,9,0.900000,0.595850,0.982124,wilson
+smoke,smoke_2026-09-14,v1,0,passed,10,9,0.900000,0.554984,0.997471,clopper_pearson
+smoke,smoke_2026-09-14,v1,pooled,category_match,10,9,0.900000,0.595850,0.982124,wilson
+smoke,smoke_2026-09-14,v1,pooled,category_match,10,9,0.900000,0.554984,0.997471,clopper_pearson
+smoke,smoke_2026-09-14,v1,pooled,passed,10,9,0.900000,0.595850,0.982124,wilson
+smoke,smoke_2026-09-14,v1,pooled,passed,10,9,0.900000,0.554984,0.997471,clopper_pearson

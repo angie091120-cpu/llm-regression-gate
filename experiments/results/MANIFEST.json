@@ -1,0 +1,80 @@
+{
+  "generated_at_utc": "2026-09-14T11:45:58.811067Z",
+  "analysis": {
+    "seed": 20260920,
+    "n_boot": 10000,
+    "pass_threshold": 3,
+    "python": "3.14.4"
+  },
+  "inputs": {
+    "dataset": {
+      "path": "golden_dataset.json",
+      "sha256": "af33d77841d9c17f55f4acd3abbe241d237333e433cf4545263a6e4d6fa1c3d9"
+    },
+    "prompts": {
+      "prompts/v1.yaml": "26302a1dea259ac4e881c2ad3f166e6bf95fbf3da93e997462f1fa48a64b9e55"
+    }
+  },
+  "raw_files": [
+    {
+      "path": "experiments/results/raw/smoke/smoke_2026-09-14.jsonl",
+      "sha256": "0b829365a2d3e64c7de365c4532102673a36049e9329722d21c1a2ace97fe52d",
+      "lines": 20,
+      "ok": 20,
+      "failed": 0,
+      "cache_hits": 0,
+      "calls_by_tier": {
+        "classifier": 10,
+        "judge": 10
+      },
+      "request_to_response_model": {
+        "claude-haiku-4-5": [
+          "claude-haiku-4-5-20251001"
+        ],
+        "claude-sonnet-5": [
+          "claude-sonnet-5"
+        ]
+      },
+      "cost_usd": 0.059746,
+      "first_timestamp_utc": "2026-09-14T11:35:42.115507Z",
+      "last_timestamp_utc": "2026-09-14T11:35:51.277465Z"
+    }
+  ],
+  "probe_files": [
+    {
+      "path": "experiments/results/probes/probes_sdk0.117.0_20260914T113405Z.json",
+      "sha256": "ec063d6e0f9f03f3ef2bd229c9a21259857e0f547c97ae56a3d427a1a82d35d1",
+      "anthropic_version": "0.117.0",
+      "cost_usd": 0.006922
+    },
+    {
+      "path": "experiments/results/probes/probes_sdk1.5.0_20260914T113518Z.json",
+      "sha256": "6877a6e1b5979711c71fe57a2933d12db4757c70acdede5a37a522925b211e3a",
+      "anthropic_version": "1.5.0",
+      "cost_usd": 0.005672
+    }
+  ],
+  "totals": {
+    "raw_lines": 20,
+    "raw_cost_usd": 0.059746,
+    "probes_cost_usd": 0.012594,
+    "total_cost_usd": 0.07234,
+    "cost_ledger_cumulative_usd": 0.059746,
+    "cost_ledger_note": "the ledger records runner runs only; probe scripts are accounted separately"
+  },
+  "outputs": {
+    "tables": [
+      "experiments/results/tables/per_case_outcomes.csv",
+      "experiments/results/tables/rates_by_run.csv",
+      "experiments/results/tables/rates_by_stratum.csv",
+      "experiments/results/tables/rates_bootstrap.csv",
+      "experiments/results/tables/paired_mcnemar.csv",
+      "experiments/results/tables/tokens_latency_by_tier.csv",
+      "experiments/results/tables/judge_score_distribution.csv"
+    ],
+    "figures": [
+      "experiments/results/figures/primary_metric_by_run.png",
+      "experiments/results/figures/judge_score_distribution.png"
+    ]
+  }
+}

@@ -1,0 +1,6 @@
+exp_id,run_id,prompt_version,score,n,share,n_total,method
+smoke,smoke_2026-09-14,v1,1,0,0.000000,10,count
+smoke,smoke_2026-09-14,v1,2,0,0.000000,10,count
+smoke,smoke_2026-09-14,v1,3,0,0.000000,10,count
+smoke,smoke_2026-09-14,v1,4,1,0.100000,10,count
+smoke,smoke_2026-09-14,v1,5,9,0.900000,10,count
