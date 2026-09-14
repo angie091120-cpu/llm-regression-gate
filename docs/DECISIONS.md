@@ -221,3 +221,31 @@ test, not a real-API eval; real-API eval is `workflow_dispatch`-only
   baseline-auto-commit step (that's exactly the kind of scope decision this
   patch's brief said not to make unilaterally -- documenting the gap is the
   right-sized fix here, not solving it).
+
+## D-010: Sonnet 5 pricing corrected to $2/$10; env-var override stays the only
+no-code way to change a price
+
+- **Chose:** `_DEFAULT_PRICING` in `evalkit/cost.py` now carries
+  `claude-sonnet-5` at $2 in / $10 out per 1M tokens (was $3/$15) with
+  `claude-haiku-4-5` unchanged at $1/$5, and the docstring/comment dates move
+  to 2026-09-14. The `PRICE_<MODEL>_<DIRECTION>` override from D-005 is
+  untouched and remains the supported way to change a price without editing
+  code -- `PRICE_CLAUDE_SONNET_5_INPUT` / `PRICE_CLAUDE_SONNET_5_OUTPUT` for
+  this model.
+- **Why:** $3/$15 was the post-introductory list price announced at Sonnet 5 launch, but the
+  official pricing page (platform.claude.com/docs/en/about-claude/pricing, checked
+  2026-09-14) states the $2/$10 introductory price is now the standard price and the
+  scheduled 2026-09-01 increase will not occur; so
+  every judge-tier `cost_usd` in `eval_report.json`, and every total derived
+  from it in `cost_ledger.json`, over-stated that tier by 50%. Over-estimating
+  is the safe direction for a budget guard, but it is still a wrong number in a
+  project whose entire premise is that reported evaluation numbers can be
+  trusted, and it would trip the SPEC.md 3.4 report/stop thresholds earlier
+  than real spend warrants. Model identifiers
+  stay date-suffix-free (`claude-haiku-4-5`, `claude-sonnet-5`); a repo-wide
+  check found no date-suffixed identifier, so none needed changing.
+- **Rejected:** leaving the stale price and documenting it as conservative
+  (a knowingly wrong constant is not a caveat); deleting the defaults and
+  requiring `PRICE_*` env vars before any run (needless friction, and D-005
+  already rejected it); adding a pricing-fetch call at runtime (a network
+  dependency and a moving target inside a module that is otherwise pure math).
