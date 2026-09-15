@@ -23,7 +23,12 @@ experiments/
   analyze.py       raw JSONL -> CSV tables + PNG figures + MANIFEST.json (no API)
   stats.py         estimators, standard library only, self-checked
   probes.py        four API-behaviour probes quoted in COST_CALIBRATION.md
-  data/            second annotator's labels (E4), added 2026-09-23
+  import_annotator2.py
+                   validate and ingest the E4 second annotator sheet (no API,
+                   reads no gold label)
+  data/            E4 handout (annotator2_sheet.csv,
+                   annotator2_instructions_zh.md) and the returned labels
+                   (annotator2_labels.json), ingested by import_annotator2.py
   results/
     raw/<exp_id>/<run_id>.jsonl        raw calls, committed
     raw/<exp_id>/<run_id>.meta.json    run provenance, committed
@@ -270,6 +275,79 @@ cases nobody expected to be carrying them.
 The design is frozen in
 [`docs/PREREGISTRATION.md` section 10](../docs/PREREGISTRATION.md) and the
 prompts in [`docs/DEGRADATION_DESIGN.md`](../docs/DEGRADATION_DESIGN.md).
+
+## E4 second annotator
+
+A person outside the project labels the same 70 cases from the email text and
+the four category definitions alone. What that person is given, and what is
+deliberately withheld, is the measurement, so it is written down here rather
+than left to whoever hands the files over.
+
+The handout, both in `experiments/data/`:
+
+| File | Contents |
+|------|----------|
+| `annotator2_sheet.csv` | UTF-8 with BOM, CRLF, header plus 70 rows, columns `case_id, email_body, your_label, notes`. The last two ship empty. |
+| `annotator2_instructions_zh.md` | One page, Traditional Chinese. The four category definitions (`prompts/v1.yaml` lines 10-19) and the tie-break rule (lines 24-29) quoted verbatim, with a Chinese gloss marked non-authoritative. |
+
+Withheld: `expected_category`, `expected_summary`, `expected_difficulty`,
+`language`, the four few-shot examples, every model output and every E0/E1
+number. The instructions carry no example email at all. `golden_dataset.json`
+has no subject field, so the sheet has no `email_subject` column and
+`email_body` is the whole email as the classifier saw it.
+
+Row order is shuffled, so that position in the sheet says nothing about
+difficulty or category. The shuffle is seeded and the sheet regenerates byte
+for byte:
+
+```python
+import csv, json, random
+
+cases = json.load(open("golden_dataset.json", encoding="utf-8"))["cases"]
+rows = [{"case_id": c["id"], "email_body": c["input_text"]} for c in cases]
+rows.sort(key=lambda r: r["case_id"])
+random.Random(20260916).shuffle(rows)
+with open("experiments/data/annotator2_sheet.csv", "w", encoding="utf-8-sig", newline="") as fh:
+    writer = csv.DictWriter(fh, fieldnames=["case_id", "email_body", "your_label", "notes"])
+    writer.writeheader()
+    for row in rows:
+        writer.writerow({**row, "your_label": "", "notes": ""})
+```
+
+Seed 20260916; sha256 of the sheet as handed out,
+`c7abaf6fe77dc204549f31853ef348c1b370240737a0b1a55e4b758ea2a462ba`. Two of the
+70 rows land on their `golden_dataset.json` index by chance, which is what
+shuffling 70 items does and not a seed that failed to apply.
+
+Ingestion, once the sheet comes back:
+
+```bash
+python -m experiments.import_annotator2 --sheet ~/Downloads/annotator2_sheet.csv \
+    --annotated-on 2026-09-23
+```
+
+`import_annotator2.py` validates the whole file before it writes anything: 70
+rows, every case id present exactly once, `your_label` one of the four values,
+and `email_body` unchanged from `golden_dataset.json`. Surrounding whitespace
+and capitalisation in the label are normalised and the normalisation is printed;
+nothing else is repaired silently. An edited `email_body` is an error rather
+than a warning, because such a row carries a label for text the case does not
+contain, and `--allow-body-drift` is the documented way past it. Every problem
+is listed in one pass; exit 1 writes no file.
+
+The importer reads `id` and `input_text` from the dataset and nothing else. No
+gold label is printed or compared at ingestion time, so the decision to accept
+or reject a returned sheet cannot be made after seeing how well it agrees.
+Agreement is computed later, by the analysis step.
+
+`experiments/data/annotator2_labels.json` holds `annotator: "human-2
+(non-member)"` (no name is recorded), `annotated_on`, `sheet_seed`,
+`sheet_sha256`, `dataset_version` and 70 `{case_id, label, notes}` records
+sorted by case id.
+
+Status on 2026-09-16: sheet and instructions produced, annotation not started.
+Kappa matrix, bootstrap interval and the rank-flip check remain
+`NotImplementedError` items in the table below, due 2026-09-24.
 
 ## What is implemented, and what is not
 
