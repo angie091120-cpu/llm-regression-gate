@@ -232,6 +232,47 @@ sensitivity analysis (H1 and H2 recomputed with case-043 dropped) and
 `docs/DEGRADATION_DESIGN.md` states the consequence for v2a and v2b, which
 remove that example along with the degradation being tested.
 
+**2026-09-15, Newcombe method 10 now checked against the paper's printed
+example; the 2026-09-14 deviation above is closed.** The open item that entry
+left -- and that `experiments/README.md` listed as due before any submitted
+document quoted the interval -- was the check against Newcombe (1998)
+itself. Table III of that paper was located and transcribed on 2026-09-15:
+e=20, f=12, g=2, h=16, n=50, theta-hat = (f - g)/n = 0.2000, printed 95%
+interval 0.0562 to 0.3292 for method 10 and 0.0618 to 0.3242 for the
+uncorrected method 8. `newcombe_paired_diff_ci` returns 0.056156 to 0.329207
+and, with `continuity=False`, 0.061805 to 0.324162 -- both agree with the
+paper at every digit it prints, so the continuity correction is pinned as
+well as the formula. Nothing was changed to reach this agreement: the diff on
+`experiments/stats.py` removes no line of arithmetic, only comment and
+docstring text. The edits are the example constant, the assertions over it,
+the rewritten validation notes, and this entry.
+
+Three assertions now run in `python -m experiments.stats` (28/28 on
+2026-09-15) at a tolerance of 1e-4, the precision the paper prints: method 10
+against the printed interval, `continuity=False` against the printed method 8
+row, and a guard that transposing f and g negates the interval and therefore
+fails the printed endpoints. The last one exists because the paper's e/f/g/h
+and this codebase's (a, b, c, d) are the same 2x2 table in a different order
+(a=e, b=g, c=f, d=h, documented on `NEWCOMBE_TABLE3_EXAMPLE`); a transposition
+there would leave every interval the right width and the wrong sign, which no
+structural invariant catches. Both negative controls were run before this was
+written: transposing the mapping, and moving a printed constant by 2e-4, each
+turn the self-check red.
+
+Two notes on what this check is not. It does not supersede the Monte-Carlo
+coverage study -- one table at one alpha cannot show coverage, so `--coverage`
+stays as the evidence for that. And R's `PropCIs` and `DescTools` were not
+used as the reference: their paired-proportion functions cite Agresti & Min
+(2005) and Tango (1998), and `DescTools::BinomDiffCI(method="scorecc")` cites
+Newcombe's *independent*-samples paper, Stat Med 17(8):873-890, not this one.
+The source is the printed paper.
+
+`experiments.stats.NEWCOMBE_VALIDATION`, which travels in the `note` column of
+every row and figure footnote that carries a Newcombe interval, has been
+updated to state the new status. Section 6 and section 10.7 point at this
+section for validation status and so need no edit; the caveat they refer to
+is now the paragraph above rather than the 2026-09-14 one.
+
 ## 10. E1 in full
 
 Written 2026-09-14, before the first degraded-prompt call. Section 4 fixes

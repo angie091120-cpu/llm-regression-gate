@@ -43,6 +43,7 @@ __all__ = [
     "cohen_kappa",
     "newcombe_paired_diff_ci",
     "NEWCOMBE_VALIDATION",
+    "NEWCOMBE_TABLE3_EXAMPLE",
     "paired_power_simulation",
     "fleiss_kappa",
     "krippendorff_alpha",
@@ -50,13 +51,52 @@ __all__ = [
 
 _TOL = 1e-12
 
+# Worked example transcribed from Newcombe (1998), Statistics in Medicine
+# 17(22):2635-2650, Table III -- the row carrying the paper's dagger footnote
+# ("From reference 10, p. 122", i.e. Armitage & Berry). Used by `_selftest()`.
+#
+# The paper's cell letters (its section 2 and Table I) are e, f, g, h:
+#
+#     e  positive on both occasions
+#     f  positive on the first occasion only
+#     g  positive on the second occasion only
+#     h  negative on both
+#
+# with theta-hat = (f - g) / n. This module writes the same table as
+# (a, b, c, d) in candidate-vs-baseline order, so the translation is
+#
+#     a = e,  b = g,  c = f,  d = h
+#
+# and rd = (c - b) / n = (f - g) / n = theta-hat. Reading f and g the wrong way
+# round negates the interval without changing its width, which is the failure
+# this example is here to catch: the self-check asserts the signed endpoints
+# and asserts that the transposed table does *not* satisfy them.
+#
+# `method10_ci` is the shipped default (phi continuity correction on);
+# `method8_ci` is the same table's uncorrected row, which the paper also
+# prints, so `continuity=False` is pinned to published values as well.
+NEWCOMBE_TABLE3_EXAMPLE = {
+    "source": "Newcombe (1998), Stat Med 17(22):2635-2650, Table III",
+    "e": 20,
+    "f": 12,
+    "g": 2,
+    "h": 16,
+    "n": 50,
+    "theta_hat": 0.2000,
+    "method10_ci": (0.0562, 0.3292),
+    "method8_ci": (0.0618, 0.3242),
+    "tolerance": 1e-4,  # the paper prints 4 decimal places
+}
+
 # Carried into every table and figure that shows a Newcombe interval, so the
 # validation status travels with the number instead of living in a doc.
-# See docs/PREREGISTRATION.md section 9 (2026-09-14 deviation entry).
+# See docs/PREREGISTRATION.md section 9 (2026-09-14 and 2026-09-15 entries).
 NEWCOMBE_VALIDATION = (
     "Newcombe (1998) method 10, square-and-add with phi continuity correction; "
-    "checked by structural invariants and Monte-Carlo coverage "
-    "(experiments/stats.py --coverage), not against the paper's printed example"
+    "reproduces the paper's Table III worked example (e=20, f=12, g=2, h=16: "
+    "0.0562 to 0.3292) to the 4 dp it is printed at, and also checked by "
+    "structural invariants and Monte-Carlo coverage (experiments/stats.py "
+    "--coverage)"
 )
 
 
@@ -234,16 +274,21 @@ def newcombe_paired_diff_ci(
     with `phi` from `phi_paired()`. Both radicands are non-negative for any
     phi <= 1, because x^2 - 2*phi*x*y + y^2 >= (x - y)^2 when x, y >= 0.
 
-    **Validation status.** The printed worked example in Newcombe (1998) was
-    not available on the machine where this was written, so this function is
-    checked three other ways instead of being taken on trust: the formula is
-    reproduced above line by line, `_selftest()` asserts the structural
-    invariants (symmetry at b == c, containment of the point estimate, the
-    continuity correction widening rather than narrowing, and degenerate
-    tables), and `--coverage` runs a Monte-Carlo coverage study whose result is
-    printed rather than hidden. The remaining check against the paper is
-    recorded as an open item in docs/PREREGISTRATION.md section 9; `note` on
-    the returned dict carries the same caveat into every table that uses it.
+    **Validation status.** As of 2026-09-15 this reproduces the paper's own
+    printed worked example, Table III with e=20, f=12, g=2, h=16 (n=50):
+    method 10 gives 0.056156 to 0.329207 against the printed 0.0562 to 0.3292,
+    and `continuity=False` gives 0.061805 to 0.324162 against the printed
+    method 8 row 0.0618 to 0.3242. Both are asserted by `_selftest()` from
+    `NEWCOMBE_TABLE3_EXAMPLE`, which also documents the e/f/g/h to a/b/c/d
+    translation and pins the sign. That sits on top of the three checks the
+    function shipped with on 2026-09-14: the formula written out line by line
+    above, the structural invariants in `_selftest()` (symmetry at b == c,
+    containment of the point estimate, the continuity correction widening
+    rather than narrowing, degenerate tables), and the Monte-Carlo coverage
+    study under `--coverage`, whose result is printed rather than hidden.
+    See docs/PREREGISTRATION.md section 9, entries 2026-09-14 and 2026-09-15;
+    `note` on the returned dict carries the status into every table that uses
+    the interval.
     """
     n = a + b + c + d
     if min(a, b, c, d) < 0:
@@ -614,6 +659,37 @@ def _selftest(cross_check: bool = False) -> int:
         checks.append((f"{name} raises NotImplementedError (not a silent approximation)", ok, ""))
 
     # ---- Newcombe method 10, paired risk difference -----------------------
+    # The paper's own printed worked example leads, because it is the only
+    # check here that can catch a wrong constant rather than a wrong shape.
+    # NEWCOMBE_TABLE3_EXAMPLE documents the e/f/g/h -> a/b/c/d translation.
+    ex = NEWCOMBE_TABLE3_EXAMPLE
+    tol = ex["tolerance"]
+    want_lo, want_hi = ex["method10_ci"]
+    paper = newcombe_paired_diff_ci(ex["e"], ex["g"], ex["f"], ex["h"])
+    checks.append((f"newcombe: method 10 reproduces {ex['source']} -> ({want_lo}, {want_hi})",
+                   _close(paper["rd"], ex["theta_hat"], tol)
+                   and _close(paper["ci_low"], want_lo, tol)
+                   and _close(paper["ci_high"], want_hi, tol),
+                   f"rd={paper['rd']:.6f} ci=({paper['ci_low']:.6f},{paper['ci_high']:.6f}) phi={paper['phi']:.6f}"))
+
+    want8_lo, want8_hi = ex["method8_ci"]
+    paper8 = newcombe_paired_diff_ci(ex["e"], ex["g"], ex["f"], ex["h"], continuity=False)
+    checks.append((f"newcombe: continuity=False reproduces the same table's method 8 row -> ({want8_lo}, {want8_hi})",
+                   _close(paper8["ci_low"], want8_lo, tol) and _close(paper8["ci_high"], want8_hi, tol),
+                   f"ci=({paper8['ci_low']:.6f},{paper8['ci_high']:.6f}) phi={paper8['phi']:.6f}"))
+
+    # f and g transposed: same width, opposite sign. Were this ever to satisfy
+    # the printed endpoints, the translation above would be reading the paper
+    # backwards and every published rd would carry the wrong sign.
+    flipped = newcombe_paired_diff_ci(ex["e"], ex["f"], ex["g"], ex["h"])
+    checks.append(("newcombe: transposing f and g negates the interval and fails the printed values",
+                   _close(flipped["rd"], -ex["theta_hat"], tol)
+                   and _close(flipped["ci_low"], -want_hi, tol)
+                   and _close(flipped["ci_high"], -want_lo, tol)
+                   and not (_close(flipped["ci_low"], want_lo, tol)
+                            and _close(flipped["ci_high"], want_hi, tol)),
+                   f"rd={flipped['rd']:.6f} ci=({flipped['ci_low']:.6f},{flipped['ci_high']:.6f})"))
+
     # E0's own numbers: 64 cases right under both repeats, 6 wrong under both,
     # no discordant pair. The interval has to be centred on zero and narrow.
     zero = newcombe_paired_diff_ci(64, 0, 0, 6)

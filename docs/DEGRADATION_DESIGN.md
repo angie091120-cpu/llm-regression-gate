@@ -127,9 +127,10 @@ prompt is ported to a new framework and the example block is not carried over.
 **Removed.** Two things, both decision rules rather than examples:
 
 1. The nine lines that enumerate each category's scope (billing's
-   "currency/exchange-rate questions", technical's "exports, mobile app
-   issues", account's "SSO/2FA setup", general's "compliance/SOC2 questions,
-   thank-you notes, vague complaints"). The lead-in line keeps the label set:
+   "currency/exchange-rate questions", technical's "data sync issues,
+   exports, mobile app issues", account's "SSO/2FA setup", general's
+   "compliance/SOC2 questions, thank-you notes, vague complaints"). The
+   lead-in line keeps the label set:
    `Classify each email into exactly one category: billing, technical, account
    or general.` -- six words that are not in v1 and are there to keep the
    sentence grammatical without re-introducing any definition.
@@ -153,8 +154,9 @@ you find the cases it decides.
 - Down: cases that hinge on one enumerated phrase. The four currency cases
   (case-017, case-020, case-048, case-068) lose billing's
   "currency/exchange-rate questions"; the five export/sync cases (case-006,
-  case-014, case-030, case-045, case-069) lose technical's "exports, data sync
-  issues"; case-055 and case-012 lose general's "vague complaints".
+  case-014, case-030, case-045, case-069) lose technical's "data sync issues,
+  exports, mobile app issues"; case-055 and case-012 lose general's "vague
+  complaints".
 - **Up**: two specific cases where v1's own rules point the wrong way.
   - case-018 (zh-tw, easy, gold `technical`) is an SSO domain-verification
     failure. v1 lists "SSO/2FA setup" under `account`, and v1 answers

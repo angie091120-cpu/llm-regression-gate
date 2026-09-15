@@ -196,18 +196,30 @@ prompts in [`docs/DEGRADATION_DESIGN.md`](../docs/DEGRADATION_DESIGN.md).
 
 ## What is implemented, and what is not
 
-Implemented and self-checked against published worked examples and scipy
-(`python -m experiments.stats --cross-check`, 25/25): Wilson interval,
-Clopper-Pearson interval, exact binomial test, exact McNemar, case-level
-cluster bootstrap, Holm, Benjamini-Hochberg, Cohen's kappa, Newcombe method 10
-paired risk-difference interval, conditional power by case resampling.
+Implemented and self-checked against published worked examples
+(`python -m experiments.stats`, 28/28): Wilson interval, Clopper-Pearson
+interval, exact binomial test, exact McNemar, case-level cluster bootstrap,
+Holm, Benjamini-Hochberg, Cohen's kappa, Newcombe method 10 paired
+risk-difference interval, conditional power by case resampling.
+`--cross-check` adds three comparisons against scipy, which has no cp314 wheel
+and is therefore absent from this machine's analysis venv; the flag reports
+28/29 with the scipy row marked FAIL rather than quietly skipping it.
 
-One estimator ships with weaker validation than the rest, and says so in every
-row it produces: **Newcombe method 10**. The paper's printed worked example was
-not reachable from this machine, so it is checked by structural invariants and
-by a Monte-Carlo coverage study (`--coverage`: 0.9520 to 0.9941 against a
-nominal 0.95 across ten scenario/size cells at 20,000 replicates) instead. The
-full reasoning is the 2026-09-14 entry in `docs/PREREGISTRATION.md` section 9.
+**Newcombe method 10, validation closed 2026-09-15.** This estimator shipped on
+2026-09-14 with weaker validation than the rest, because the paper's printed
+worked example was not reachable from this machine. It now reproduces that
+example: Newcombe (1998) Table III, e=20, f=12, g=2, h=16 (n=50), printed
+95% interval 0.0562 to 0.3292, computed 0.056156 to 0.329207. The same table's
+uncorrected method 8 row, 0.0618 to 0.3242, is reproduced by
+`continuity=False` as 0.061805 to 0.324162, which pins the continuity
+correction as well as the formula. Both are asserted in
+`python -m experiments.stats` at the 4 dp the paper prints, alongside a check
+that transposing f and g fails those endpoints, so a sign error in the
+e/f/g/h to a/b/c/d translation cannot pass silently. The earlier structural
+invariants and the Monte-Carlo coverage study (`--coverage`: 0.9520 to 0.9941
+against a nominal 0.95 across ten scenario/size cells at 20,000 replicates)
+still run. Both entries, 2026-09-14 and 2026-09-15, are in
+`docs/PREREGISTRATION.md` section 9.
 
 Deliberately raising `NotImplementedError` instead of shipping an unvalidated
 approximation:
@@ -219,7 +231,10 @@ approximation:
 | Logistic model with case-clustered standard errors | E5 | 2026-09-22 |
 | Pairwise judge prompt and position-bias analysis | E2 | 2026-09-23 |
 | Second-annotator ingestion, kappa matrix, rank-flip check | E4 | 2026-09-24 |
-| Newcombe method 10 checked against the paper's printed example | E1 write-up | before any submitted document quotes the interval |
+
+Closed: "Newcombe method 10 checked against the paper's printed example", due
+before any submitted document quoted the interval, was checked on 2026-09-15
+against Newcombe (1998) Table III as described above.
 
 `paired_mcnemar.csv`, `e1_main.csv` and `e1_power.csv` are generated with zero
 data rows until a v2* run exists, and `figures/e1_forest.png` /
