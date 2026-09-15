@@ -1,22 +1,31 @@
 """Statistics for the pilot experiments -- standard library only.
 
 Every estimator in this module is implemented against the Python standard
-library (`math.comb`, `statistics.NormalDist`, `random`). scipy/statsmodels
-are installed in the analysis venv and are used only as an optional
-cross-check (`python -m experiments.stats --cross-check`), never as the
-source of a published number. Two reasons:
+library (`math.comb`, `statistics.NormalDist`, `random`). scipy and
+statsmodels live in the analysis venv `~/.venvs/lrg-exp` (Python 3.14.4:
+scipy 1.18.1, numpy 2.5.3, statsmodels 0.15.0, matplotlib 3.11.2) and are used
+only as an optional cross-check, never as the source of a published number.
+Two reasons:
 
-1. The analysis has to stay runnable on a machine where a cp314 wheel for
-   scipy does not exist.
+1. The estimators keep working on an interpreter that has no scipy build --
+   the repo's own `.venv` is one, and a cp314 wheel that exists today may not
+   exist for the next release.
 2. A reader of the write-up can follow every formula to a line of code here
    instead of to a third-party release.
 
 Self-check against published worked examples:
 
-    python -m experiments.stats            # asserts known values, prints OK
-    python -m experiments.stats --cross-check   # additionally compares scipy
+    python -m experiments.stats            # 28/28, standard library only
+    python -m experiments.stats --cross-check   # 31/31 under the analysis venv.
+                                                # On an interpreter without
+                                                # scipy the scipy row is FAIL
+                                                # and the exit code is 1 --
+                                                # never a silent skip.
     python -m experiments.stats --coverage      # Monte-Carlo coverage of the
                                                 # paired risk-difference interval
+
+The command line is strict: an unrecognised flag exits 2 rather than falling
+through to the default self-check.
 
 Not implemented yet (deliberately left as errors rather than approximations,
 so nothing unvalidated can leak into a table):
@@ -773,12 +782,37 @@ def _selftest(cross_check: bool = False) -> int:
 
 
 if __name__ == "__main__":
-    import sys
+    import argparse
 
-    if "--coverage" in sys.argv:
-        n_sim = 20000
-        for i, arg in enumerate(sys.argv):
-            if arg == "--n-sim" and i + 1 < len(sys.argv):
-                n_sim = int(sys.argv[i + 1])
-        raise SystemExit(_coverage_report(n_sim=n_sim))
-    raise SystemExit(_selftest(cross_check="--cross-check" in sys.argv))
+    # Parsed strictly, and abbreviations are off. The previous version tested
+    # `"--cross-check" in sys.argv`, so `--corss-check` and `--self-check` both
+    # ran the plain self-check and exited 0 -- a typo could not be told apart
+    # from a pass.
+    parser = argparse.ArgumentParser(
+        prog="python -m experiments.stats",
+        description="Self-check the standard-library estimators in this module.",
+        allow_abbrev=False,
+    )
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument(
+        "--cross-check",
+        action="store_true",
+        help="also compare three estimators against scipy (needs the analysis venv)",
+    )
+    mode.add_argument(
+        "--coverage",
+        action="store_true",
+        help="Monte-Carlo coverage study of the paired risk-difference interval",
+    )
+    parser.add_argument(
+        "--n-sim",
+        type=int,
+        default=20000,
+        help="replicates per cell, --coverage only (default: 20000)",
+    )
+    args = parser.parse_args()
+    if args.n_sim != parser.get_default("n_sim") and not args.coverage:
+        parser.error("--n-sim applies to --coverage only")
+    if args.coverage:
+        raise SystemExit(_coverage_report(n_sim=args.n_sim))
+    raise SystemExit(_selftest(cross_check=args.cross_check))

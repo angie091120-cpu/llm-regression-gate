@@ -168,6 +168,12 @@ disagreement, and the run was not repeated -- repeat counts are fixed in
 advance and re-rolling a bad draw is exactly what section 5 forbids.
 Reason: a model formatting error, not a rate limit or a timeout.
 
+**2026-09-15, what "repeat 3" means in the entry above.** `repeat 3` is a
+zero-based repeat index: `repeat_idx` takes the values 0, 1, 2 and 3 in
+`experiments/results/raw/e0_judge_iso/`, 70 rows each, so the failed call is
+the fourth re-score of `case-003` rather than the third. Clarification only --
+no number, no rule and no raw row changes.
+
 **2026-09-14, descriptive tables added to `analyze.py` after this document
 was written.** `rates_run_spread.csv`, `per_case_instability.csv`,
 `judge_rescore_stability.csv`, `judge_rescore_summary.csv` and

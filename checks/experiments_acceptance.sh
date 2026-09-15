@@ -7,6 +7,7 @@
 #   C4  MANIFEST raw cost agrees with experiments/results/cost_ledger.json within 1%
 #   C5  the standard-library estimators still reproduce their published worked examples
 #   C6  no .env and no API key material is tracked by git
+#   C7  experiments/stats.py rejects an unknown flag with exit 2
 #
 # Every check is machine-checkable; nothing here needs an API key or network.
 #
@@ -14,7 +15,10 @@
 #   EXP_PYTHON=/path/to/python bash checks/experiments_acceptance.sh
 #
 # Interpreter: pass EXP_PYTHON, or let the script take the first of
-# ./.venv/bin/python, ../llm-regression-gate/.venv/bin/python, python3.
+# ~/.venvs/lrg-exp/bin/python (the analysis venv -- scipy, numpy, statsmodels,
+# matplotlib), ./.venv/bin/python, ../llm-regression-gate/.venv/bin/python,
+# python3. The first line of output names the interpreter that actually ran and
+# whether scipy imports in it.
 set -u
 cd "$(dirname "$0")/.."
 fail=0
@@ -27,6 +31,8 @@ bad()  { echo "$1 FAIL: $2"; fail=1; }
 
 if [ -n "${EXP_PYTHON:-}" ]; then
   PY="$EXP_PYTHON"
+elif [ -x "${HOME:-}/.venvs/lrg-exp/bin/python" ]; then
+  PY="${HOME}/.venvs/lrg-exp/bin/python"
 elif [ -x ".venv/bin/python" ]; then
   PY="$(pwd)/.venv/bin/python"
 elif [ -x "../llm-regression-gate/.venv/bin/python" ]; then
@@ -34,8 +40,13 @@ elif [ -x "../llm-regression-gate/.venv/bin/python" ]; then
 else
   PY="$(command -v python3)"
 fi
-echo "interpreter: $PY"
-"$PY" -c 'import sys; print("python", sys.version.split()[0])' || { echo "no usable interpreter"; exit 1; }
+PYVER=$("$PY" -c 'import sys; print(sys.version.split()[0])' 2>/dev/null) \
+  || { echo "interpreter: $PY -- unusable"; exit 1; }
+if "$PY" -c 'import scipy' >/dev/null 2>&1; then HAS_SCIPY=yes; else HAS_SCIPY=no; fi
+# Printed before any check result, on purpose. The 2026-09-15 README correction
+# started as a 28/29 --cross-check read off the repo .venv and written up as a
+# property of the machine; which interpreter ran is no longer left implicit.
+echo "interpreter: $PY (python $PYVER, has_scipy=$HAS_SCIPY)"
 
 TABLES="experiments/results/tables"
 RAW="experiments/results/raw"
@@ -121,6 +132,20 @@ if [ -n "$tracked" ]; then bad "C6" ".env is tracked: $tracked"; else
   hits=$(git grep -I -l -E 'sk-ant-[A-Za-z0-9_-]{8,}' -- . ':(exclude)checks/experiments_acceptance.sh' 2>/dev/null || true)
   if [ -n "$hits" ]; then bad "C6" "API key pattern in tracked files: $hits"; else ok "C6"; fi
 fi
+
+step "C7: experiments.stats rejects an unknown flag instead of running the default"
+c7=0
+for flag in --no-such-flag --self-check --corss-check; do
+  rc=0
+  "$PY" -m experiments.stats "$flag" >/tmp/exp_c7.log 2>&1 || rc=$?
+  if [ "$rc" -eq 2 ]; then
+    echo "  $flag -> exit 2"
+  else
+    echo "  $flag -> exit $rc (expected 2)"
+    c7=1
+  fi
+done
+if [ "$c7" -eq 0 ]; then ok "C7"; else bad "C7" "an unknown flag did not exit 2"; fi
 
 printf '\n== result ==\n'
 [ $fail -eq 0 ] && echo "ALL CHECKS PASSED" || echo "SOME CHECKS FAILED"

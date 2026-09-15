@@ -80,7 +80,7 @@ Environment variables:
 | `PRICE_CLAUDE_SONNET_5_INPUT=2.00` | export before a run on any checkout that predates D-005 | this branch was cut from a `main` whose `evalkit/cost.py` still had $3/$15; the runner aborts unless the effective price is $2/$10, whichever way it gets there |
 | `PRICE_CLAUDE_SONNET_5_OUTPUT=10.00` | same | same |
 | `LLM_CLASSIFIER_MODEL` / `LLM_JUDGE_MODEL` | optional | same contract as production `llm.py` |
-| `EXP_PYTHON` | optional | interpreter used by `checks/experiments_acceptance.sh` |
+| `EXP_PYTHON` | optional | interpreter for `checks/experiments_acceptance.sh`; unset, it takes `~/.venvs/lrg-exp/bin/python` if that exists, then the repo `.venv`, then `python3` |
 
 ## Running
 
@@ -103,22 +103,31 @@ python -m experiments.runner --exp-id e1_v2a --prompt-version v2a --repeats 3
 # analysis (free, re-runnable)
 python -m experiments.analyze --seed 20260920
 
-# acceptance
+# acceptance (its first line names the interpreter and whether scipy is there)
 bash checks/experiments_acceptance.sh
+EXP_PYTHON=$HOME/.venvs/lrg-exp/bin/python bash checks/experiments_acceptance.sh
 ```
 
 Useful flags: `--cases 10` or `--cases case-001,case-064` or `--cases @ids.txt`;
 `--concurrency` (default 4); `--skip-judge`; `--classifier-temperature`;
 `--max-cost-usd` (hard stop, default $1.00); `--temperature-transport`.
 
-Two free checks that call nothing:
+Three free checks that call nothing:
 
 ```bash
 # the E1 estimators on E0 repeat 1 vs repeat 2, where the answer must be zero
 python -m experiments.analyze --self-check
 # coverage evidence for the paired risk-difference interval
 python -m experiments.stats --coverage
+# the standard-library estimators against scipy (analysis venv only)
+~/.venvs/lrg-exp/bin/python -m experiments.stats --cross-check
 ```
+
+`--self-check` belongs to `analyze.py`. `stats.py` takes `--coverage`,
+`--cross-check` and `--n-sim`, and nothing else: both entry points exit 2 on an
+unrecognised flag instead of falling through to their default run, so a typo
+such as `--corss-check` fails loudly. C7 of
+`checks/experiments_acceptance.sh` asserts that.
 
 ### The cache is off by default and refuses to run with repeats
 
@@ -197,13 +206,31 @@ prompts in [`docs/DEGRADATION_DESIGN.md`](../docs/DEGRADATION_DESIGN.md).
 ## What is implemented, and what is not
 
 Implemented and self-checked against published worked examples
-(`python -m experiments.stats`, 28/28): Wilson interval, Clopper-Pearson
-interval, exact binomial test, exact McNemar, case-level cluster bootstrap,
-Holm, Benjamini-Hochberg, Cohen's kappa, Newcombe method 10 paired
-risk-difference interval, conditional power by case resampling.
-`--cross-check` adds three comparisons against scipy, which has no cp314 wheel
-and is therefore absent from this machine's analysis venv; the flag reports
-28/29 with the scipy row marked FAIL rather than quietly skipping it.
+(`python -m experiments.stats`, 28/28, standard library only): Wilson
+interval, Clopper-Pearson interval, exact binomial test, exact McNemar,
+case-level cluster bootstrap, Holm, Benjamini-Hochberg, Cohen's kappa,
+Newcombe method 10 paired risk-difference interval, conditional power by case
+resampling.
+
+`--cross-check` adds three comparisons against scipy. The analysis venv
+`~/.venvs/lrg-exp` has it -- Python 3.14.4 with scipy 1.18.1, numpy 2.5.3,
+statsmodels 0.15.0 and matplotlib 3.11.2, all cp314 wheels -- and the flag
+reports 31/31 there, exit 0. Tail of the 2026-09-15 run:
+
+```
+[PASS] scipy binomtest agrees  -> 0.34375000
+[PASS] scipy Clopper-Pearson agrees  -> 0.443905,0.974789
+[PASS] scipy Wilson agrees  -> 0.490162,0.943318
+
+31/31 checks passed
+```
+
+The repo's own `.venv` has no scipy, so the same flag there reports 28/29 with
+the scipy row marked FAIL and exits 1. That is what a wrong interpreter looks
+like, not a property of this machine: the flag refuses to skip a comparison it
+could not make, so an absent cross-check cannot be read as a passing one.
+`checks/experiments_acceptance.sh` prints the interpreter it picked and
+`has_scipy=yes/no` on its first line for the same reason.
 
 **Newcombe method 10, validation closed 2026-09-15.** This estimator shipped on
 2026-09-14 with weaker validation than the rest, because the paper's printed
