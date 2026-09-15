@@ -20,12 +20,20 @@ experiments/
   client.py        one instrumented Anthropic call: response.model, full usage,
                    raw response, per-call temperature, structured error capture
   runner.py        evaluation loop -> one JSONL line per API call
+  runner_pairwise.py
+                   E2 only: pairs of already-produced summaries, each judged in
+                   both orders by both judge models; same raw-row contract,
+                   imported from runner.py rather than copied
   analyze.py       raw JSONL -> CSV tables + PNG figures + MANIFEST.json (no API)
   stats.py         estimators, standard library only, self-checked
   probes.py        four API-behaviour probes quoted in COST_CALIBRATION.md
   import_annotator2.py
                    validate and ingest the E4 second annotator sheet (no API,
                    reads no gold label)
+  prompts/         experiment-only prompts (judge_pairwise_v1.yaml). Kept out
+                   of the repo's prompts/, which is the classifier's version
+                   directory; analyze.py hashes these into MANIFEST.json under
+                   "experiment_prompts"
   data/            E4 handout (annotator2_sheet.csv,
                    annotator2_instructions_zh.md) and the returned labels
                    (annotator2_labels.json), ingested by import_annotator2.py
@@ -105,6 +113,12 @@ python -m experiments.runner --exp-id e0_judge_iso --repeats 4 \
 # E1 degradation arm
 python -m experiments.runner --exp-id e1_v2a --prompt-version v2a --repeats 3
 
+# E2 pairwise judge: 70 pairs x 2 layers x 2 orders x 2 judge models
+python -m experiments.runner_pairwise --exp-id e2_pairwise \
+  --baseline-from experiments/results/raw/e0_noise/<run_id>.jsonl \
+  --contrast-from experiments/results/raw/e1_v2b/<run_id>.jsonl \
+  --max-cost-usd 3.00
+
 # analysis (free, re-runnable)
 python -m experiments.analyze --seed 20260920
 
@@ -180,6 +194,8 @@ Three properties are load-bearing:
 | 2026-09-15 | `e1_v2b` | E1 H2: v2b (few-shot 4 -> 0) x 70 x 3 | 420/420 | $1.185492 | `results/raw/e1_v2b/e1_v2b_20260915T153711Z.jsonl` |
 | 2026-09-15 | `e1_v2c` | E1 H3: v2c (category definitions and tie-break rule removed) x 70 x 3 | 420/420 | $1.189659 | `results/raw/e1_v2c/e1_v2c_20260915T154039Z.jsonl` |
 | 2026-09-15 | `e1_v2d` | E1 H4: v2d (bilingual / typo / zhuyin / sarcasm paragraph removed) x 70 x 3 | 420/420 | $1.237953 | `results/raw/e1_v2d/e1_v2d_20260915T154407Z.jsonl` |
+| 2026-09-15 | `e2_smoke` | E2 calibration: 2 cases x 2 layers x 2 orders x 2 judge models, to price the pairwise prompt | 16/16 | $0.061943 | `results/raw/e2_smoke/e2_smoke_20260915T172942Z.jsonl` |
+| 2026-09-15 | `e2_pairwise` | E2 main run: 70 pairs x 2 layers x 2 orders x 2 judge models. **Stopped by the account's API spend limit after 94 calls** | 94/560 | $0.443440 | `results/raw/e2_pairwise/e2_pairwise_20260915T173047Z.jsonl` |
 
 The isolation arm's cost is $0.005338 higher than the figure the runner
 printed on the day: the one failed call was billed and recorded at $0, and
@@ -204,7 +220,7 @@ Krippendorff alpha are still `NotImplementedError` items, so the two columns
 reserved for them in the judge tables are empty and carry a note saying why --
 no approximation is written there.
 
-Still to run: E2, E4, E5.
+Still to run: E2 (the 466 calls the spend limit refused), E4.
 
 ## What E1 found
 
@@ -275,6 +291,132 @@ cases nobody expected to be carrying them.
 The design is frozen in
 [`docs/PREREGISTRATION.md` section 10](../docs/PREREGISTRATION.md) and the
 prompts in [`docs/DEGRADATION_DESIGN.md`](../docs/DEGRADATION_DESIGN.md).
+
+## What E5 found
+
+E5 re-reads the E0 and E1 raw files by stratum and calls no API. Unit: one
+outcome per case, repeats collapsed by majority vote, so n counts emails.
+Everything in it is exploratory -- the dataset was built to a quota, not
+sampled -- and the tables say so in a `family` column.
+
+The baseline arm, 64/70 overall, by stratum
+(`results/tables/e5_strata.csv`, `figures/e5_forest.png`):
+
+| Stratum | n | k | rate | 95% Wilson | width | Fisher vs rest | BH |
+|---------|---|---|------|-----------|-------|----------------|-----|
+| language zh-tw | 35 | 31 | 0.886 | 0.740-0.955 | 0.21 | 0.673 | 1.000 |
+| language en | 28 | 26 | 0.929 | 0.774-0.980 | 0.21 | 1.000 | 1.000 |
+| language mixed | 7 | 7 | 1.000 | 0.646-1.000 | 0.35 | 1.000 | 1.000 |
+| difficulty easy | 45 | 44 | 0.978 | 0.884-0.996 | 0.11 | 0.020 | 0.092 |
+| difficulty ambiguous | 17 | 16 | 0.941 | 0.730-0.990 | 0.26 | 1.000 | 1.000 |
+| difficulty edge | 8 | 4 | 0.500 | 0.215-0.785 | 0.57 | 0.001 | **0.010** |
+| category billing | 19 | 18 | 0.947 | 0.754-0.991 | 0.24 | 1.000 | 1.000 |
+| category technical | 18 | 17 | 0.944 | 0.742-0.990 | 0.25 | 1.000 | 1.000 |
+| category general | 17 | 13 | 0.765 | 0.527-0.904 | 0.38 | 0.028 | 0.092 |
+| category account | 16 | 16 | 1.000 | 0.806-1.000 | 0.19 | 0.325 | 0.812 |
+
+One stratum survives BH: `edge`, 4 of 8, against 60 of 62 everywhere else.
+`general` and `easy` move at a nominal 0.05 and not after correction.
+
+The widths are the point, and they are the reason the mixed-language row is
+not a headline. `mixed` is 7 for 7, and its interval runs from 0.646 to 1.000:
+this dataset cannot tell "the classifier never misses a code-switched email"
+from "it misses a third of them". Those seven cases are also case-064 to
+case-070, a consecutive block written in one sitting to fill the 10%
+bilingual quota rather than seven draws spread across the dataset, which is
+derived from the case ids at analysis time and printed in the table's `note`
+column. The same holds, less dramatically, everywhere below n = 20: eight of
+the ten strata have an interval wider than 19 points.
+
+`e5_logit.csv` carries `pass ~ language + difficulty + category` with
+standard errors clustered on case. **The pre-specified fit -- baseline arm
+only -- does not exist**, and the file says so: `language[mixed]` is 35/35 and
+`category[account]` is 80/80 in that arm, the maximum-likelihood coefficients
+for those levels are unbounded, and Firth's penalised likelihood, the standard
+remedy, has no validated implementation here (see the table below). The fit
+that is reported pools every arm that ran (E0 plus the four E1 arms, 1,190
+observations, 70 clusters), where no level has a constant outcome:
+
+| Term | coefficient | cluster-robust SE | p | odds ratio | 95% CI |
+|------|------------|-------------------|---|-----------|--------|
+| const (zh-tw, easy, billing) | 3.981 | 0.982 | 0.00005 | 53.6 | 7.8-366.7 |
+| language[en] | 0.079 | 0.521 | 0.880 | 1.08 | 0.39-3.01 |
+| language[mixed] | 1.322 | 0.831 | 0.112 | 3.75 | 0.74-19.13 |
+| difficulty[ambiguous] | -1.422 | 0.930 | 0.126 | 0.24 | 0.04-1.49 |
+| difficulty[edge] | -2.718 | 0.681 | 0.00007 | 0.066 | 0.017-0.251 |
+| category[technical] | 0.009 | 1.309 | 0.994 | 1.01 | 0.08-13.13 |
+| category[general] | -2.100 | 0.787 | 0.008 | 0.122 | 0.026-0.572 |
+| category[account] | -0.773 | 0.980 | 0.431 | 0.46 | 0.07-3.15 |
+
+Difficulty is doing the work, and the two coefficients that move are the two
+strata the Fisher rows flag. Language is not: `en` sits on the reference and
+`mixed` is positive with an interval from 0.74 to 19, which is the same "we
+cannot tell" as its Wilson row, in odds-ratio units.
+
+The clustering is not decoration. Fitting the same model without it gives
+standard errors 1.65x to 3.36x smaller (`const` 0.346 against 0.982,
+`category[technical]` 0.389 against 1.309): 1,190 observations of 70 emails
+carry roughly 70 emails' worth of information, and a naive fit would report
+`category[general]` as more than twice as precise as it is.
+
+That model pools five prompt versions, four of them degraded on purpose, and
+has no version term -- a real mis-specification, so the sensitivity fit that
+adds one is in the same file (`m3_pooled_plus_version_term`). It moves nothing
+in the stratum coefficients and puts v2c at -1.333 (p = 0.039) with the other
+three versions within 0.09 of zero, which is E1's answer arrived at a second
+way. Both fits and the absent one are in `e5_logit.csv` with a `fitted`
+column; the design choices E5 made after the data existed are listed in
+`docs/PREREGISTRATION.md` section 9, dated 2026-09-16.
+
+## E2: 94 calls of 560
+
+E2 asks whether this judge's verdict survives swapping the two candidates.
+The design is 70 pairs x 2 layers (baseline against the zero-shot degradation;
+baseline against itself on a second repeat) x 2 orders x 2 judge models.
+
+**The run stopped 94 calls in.** Every call after 17:32:01 UTC on 2026-09-15
+returned `400 invalid_request_error`: "You have reached your specified API
+usage limits. You will regain access on 2026-10-01 at 00:00 UTC." That is a
+billing limit on the account, not a rate limit and not a bug: the `e2_smoke`
+run three minutes earlier completed 16/16 across both judge models, and the
+466 failures carry the same message and a request id each. All 560 rows are in
+the raw file, 466 of them `ok: false`.
+
+What that leaves, and what it does not:
+
+| Cell | calls ok | pairs judged in both orders |
+|------|---------|------------------------------|
+| claude-sonnet-5, easy | 94/140 | 24 of 70 |
+| claude-sonnet-5, hard | 0/140 | 0 |
+| claude-haiku-4-5, easy | 0/140 | 0 |
+| claude-haiku-4-5, hard | 0/140 | 0 |
+
+**No E2 question is answered.** One model of two, one layer of two, and 24
+pairs of 70 in the only cell that returned anything. The model comparison, the
+easy-against-hard comparison and three of the four consistency cells have no
+data at all. `e2_consistency.csv` puts the coverage rows first for that reason,
+and `analyze.py` refuses to draw `figures/e2_consistency.png` from part of a
+design, printing the missing cells to stderr instead -- a four-cell figure with
+one cell in it reads as a finished experiment to anyone who does not check the
+axis.
+
+For completeness, the partial cell: 20 of those 24 pairs got the same verdict
+in both orders (0.833, Wilson 0.641-0.933), 71 of 94 successful calls returned
+`tie`, and the 23 decisive calls split 9 first-position to 14 second-position
+(0.391, exact binomial p = 0.405 against 0.5; case-cluster bootstrap
+0.217-0.565 over 18 cases). Those are four numbers from one seventh of one
+cell and none of them is a result.
+
+The 75% tie rate is the one thing worth carrying into the re-run: this prompt
+shows the judge the human reference summary, as production does, and with the
+reference in front of it the judge mostly declines to choose. If that holds at
+full n, the design's effective sample for a position-bias test is a quarter of
+its call count, which is a sample-size fact to state before the re-run rather
+than a surprise after it.
+
+Re-running needs account access back (2026-10-01, or sooner if the limit is
+raised -- an account decision, not a repository one). Nothing about the design
+or the prompt changed in response to the failure.
 
 ## E4 second annotator
 
@@ -352,27 +494,43 @@ Kappa matrix, bootstrap interval and the rank-flip check remain
 ## What is implemented, and what is not
 
 Implemented and self-checked against published worked examples
-(`python -m experiments.stats`, 28/28, standard library only): Wilson
+(`python -m experiments.stats`, 35/35, standard library only): Wilson
 interval, Clopper-Pearson interval, exact binomial test, exact McNemar,
-case-level cluster bootstrap, Holm, Benjamini-Hochberg, Cohen's kappa,
-Newcombe method 10 paired risk-difference interval, conditional power by case
-resampling.
+Fisher exact for an unpaired 2x2, case-level cluster bootstrap, Holm,
+Benjamini-Hochberg, Cohen's kappa, Newcombe method 10 paired risk-difference
+interval, conditional power by case resampling.
 
-`--cross-check` adds three comparisons against scipy. The analysis venv
+Fisher exact arrived with E5 on 2026-09-16, checked against Fisher's own
+lady-tasting-tea table (3, 1, 1, 3): two-sided 34/70 and one-sided 17/70, both
+recomputed in the self-check from `math.comb` along a path that never calls the
+function being checked, so a rewrite of it cannot agree with itself and pass.
+E5 needs an exact test rather than chi-square because two of its strata are
+n = 7 and n = 8.
+
+One estimator in this package is not standard library: the E5 logistic model
+with case-clustered standard errors, which statsmodels fits. When statsmodels
+is absent, `e5_logit.csv` is written without coefficients and says so in the
+row, the same way a missing matplotlib costs the figures and not the tables.
+
+`--cross-check` adds seven comparisons against scipy. The analysis venv
 `~/.venvs/lrg-exp` has it -- Python 3.14.4 with scipy 1.18.1, numpy 2.5.3,
 statsmodels 0.15.0 and matplotlib 3.11.2, all cp314 wheels -- and the flag
-reports 31/31 there, exit 0. Tail of the 2026-09-15 run:
+reports 42/42 there, exit 0. Tail of the 2026-09-16 run:
 
 ```
 [PASS] scipy binomtest agrees  -> 0.34375000
 [PASS] scipy Clopper-Pearson agrees  -> 0.443905,0.974789
+[PASS] scipy fisher_exact agrees on (3, 1, 1, 3)  -> 0.485714286
+[PASS] scipy fisher_exact agrees on (7, 0, 57, 6)  -> 1.000000000
+[PASS] scipy fisher_exact agrees on (4, 4, 60, 2)  -> 0.001036258
+[PASS] scipy fisher_exact agrees on (10, 9, 54, 0)  -> 0.000000952
 [PASS] scipy Wilson agrees  -> 0.490162,0.943318
 
-31/31 checks passed
+42/42 checks passed
 ```
 
-The repo's own `.venv` has no scipy, so the same flag there reports 28/29 with
-the scipy row marked FAIL and exits 1. That is what a wrong interpreter looks
+The repo's own `.venv` has no scipy, so the same flag there reports 35/36 with
+the scipy row marked FAIL. That is what a wrong interpreter looks
 like, not a property of this machine: the flag refuses to skip a comparison it
 could not make, so an absent cross-check cannot be read as a passing one.
 `checks/experiments_acceptance.sh` prints the interpreter it picked and
@@ -401,14 +559,27 @@ approximation:
 |------|-----------|-----|
 | Fleiss kappa | E0 | 2026-09-19 |
 | Krippendorff alpha | E0 / E4 | 2026-09-24 |
-| Logistic model with case-clustered standard errors | E5 | 2026-09-22 |
-| Pairwise judge prompt and position-bias analysis | E2 | 2026-09-23 |
+| Firth penalised likelihood | E5's separated baseline-arm model | open |
 | Second-annotator ingestion, kappa matrix, rank-flip check | E4 | 2026-09-24 |
 
-Closed: "Newcombe method 10 checked against the paper's printed example", due
-before any submitted document quoted the interval, was checked on 2026-09-15
-against Newcombe (1998) Table III as described above.
+Firth is the remedy for the separation described under *What E5 found*.
+statsmodels 0.15.0 does not have it and `firthlogist` is not installed, so the
+row in `e5_logit.csv` says not run and carries no approximate coefficients. It
+is listed with no due date because nothing in the study depends on it: the
+model that is reported is fitted on data where no level is constant.
 
+Closed since the last revision of this file: the logistic model with
+case-clustered standard errors (shipped 2026-09-16 with E5), and the pairwise
+judge prompt and position-bias analysis (shipped 2026-09-16 --
+`experiments/prompts/judge_pairwise_v1.yaml`, `runner_pairwise.py`,
+`table_e2_consistency`, `table_e2_position`; the *code* is done, the *run* is
+94 calls of 560, see above). "Newcombe method 10 checked against the paper's
+printed example" was closed on 2026-09-15 against Newcombe (1998) Table III as
+described above.
+
+`e5_strata.csv`, `e5_logit.csv`, `e2_consistency.csv` and
+`e2_position_pref.csv` carry rows since 2026-09-16; `figures/e5_forest.png` is
+drawn and `figures/e2_consistency.png` is not, for the reason given above.
 `paired_mcnemar.csv`, `e1_main.csv` and `e1_power.csv` carry rows since
 2026-09-15; before a v2* run existed they were written with headers and no
 data, and `figures/e1_forest.png` / `figures/e1_power.png` were skipped rather

@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-09-15T15:48:42.346834Z",
+  "generated_at_utc": "2026-09-15T17:35:39.071782Z",
   "analysis": {
     "seed": 20260920,
     "n_boot": 10000,
@@ -17,6 +17,9 @@
       "prompts/v2b.yaml": "44206f35f2e3c65385afacb09b4f10e8a063671706d5f157980910e38a6d295a",
       "prompts/v2c.yaml": "aab4fe1349111a9c82c5bb5430d6b05d3ebba2ebd8d624009e4390b534bfff67",
       "prompts/v2d.yaml": "8bcd3838d009473e08daf5b59cbb035a36931878371ecfc7b382d90054d328a6"
+    },
+    "experiment_prompts": {
+      "experiments/prompts/judge_pairwise_v1.yaml": "426f2d39a2a137d937712f485bcfc85bd7d0dd427bedea7031a5b4d808e2b3bd"
     }
   },
   "raw_files": [
@@ -167,6 +170,55 @@
       "last_timestamp_utc": "2026-09-15T15:47:43.459894Z"
     },
     {
+      "path": "experiments/results/raw/e2_pairwise/e2_pairwise_20260915T173047Z.jsonl",
+      "sha256": "913311e90f1b184f8cafb9f3ae788b4e75ce75aa756d4f3de018ea6f9f0da898",
+      "lines": 560,
+      "ok": 94,
+      "failed": 466,
+      "cache_hits": 0,
+      "calls_by_tier": {
+        "judge_pairwise": 560
+      },
+      "request_to_response_model": {
+        "claude-haiku-4-5": [
+          "None"
+        ],
+        "claude-sonnet-5": [
+          "None",
+          "claude-sonnet-5"
+        ]
+      },
+      "cost_usd": 0.44344,
+      "cost_usd_recorded_by_runner": 0.44344,
+      "cost_usd_unrecorded_at_run_time": 0.0,
+      "first_timestamp_utc": "2026-09-15T17:30:48.224543Z",
+      "last_timestamp_utc": "2026-09-15T17:32:45.465299Z"
+    },
+    {
+      "path": "experiments/results/raw/e2_smoke/e2_smoke_20260915T172942Z.jsonl",
+      "sha256": "a4d40db2e13fac4afb68d13a3c21a14f61a2f33b5b7c518491f280b6a6ae9b70",
+      "lines": 16,
+      "ok": 16,
+      "failed": 0,
+      "cache_hits": 0,
+      "calls_by_tier": {
+        "judge_pairwise": 16
+      },
+      "request_to_response_model": {
+        "claude-haiku-4-5": [
+          "claude-haiku-4-5-20251001"
+        ],
+        "claude-sonnet-5": [
+          "claude-sonnet-5"
+        ]
+      },
+      "cost_usd": 0.061943,
+      "cost_usd_recorded_by_runner": 0.061943,
+      "cost_usd_unrecorded_at_run_time": 0.0,
+      "first_timestamp_utc": "2026-09-15T17:29:43.874980Z",
+      "last_timestamp_utc": "2026-09-15T17:29:56.268099Z"
+    },
+    {
       "path": "experiments/results/raw/smoke/smoke_2026-09-14.jsonl",
       "sha256": "0b829365a2d3e64c7de365c4532102673a36049e9329722d21c1a2ace97fe52d",
       "lines": 20,
@@ -207,13 +259,13 @@
     }
   ],
   "totals": {
-    "raw_lines": 2680,
-    "raw_cost_usd": 8.064104,
-    "raw_cost_usd_recorded_by_runner": 8.058766,
+    "raw_lines": 3256,
+    "raw_cost_usd": 8.569487,
+    "raw_cost_usd_recorded_by_runner": 8.564149,
     "raw_cost_usd_unrecorded_at_run_time": 0.005338,
     "probes_cost_usd": 0.012594,
-    "total_cost_usd": 8.076698,
-    "cost_ledger_cumulative_usd": 8.058766,
+    "total_cost_usd": 8.582081,
+    "cost_ledger_cumulative_usd": 8.564149,
     "cost_ledger_note": "the ledger records runner runs only; probe scripts are accounted separately",
     "cost_method_note": "raw_cost_usd is recomputed from each row's usage at the pinned prices in experiments/__init__.py; raw_cost_usd_recorded_by_runner is what the runner wrote into the raw files at run time. The gap is billed-but-unrecorded spend on calls that returned tokens and then failed validation (experiments/COST_CALIBRATION.md section 3)"
   },
@@ -224,6 +276,10 @@
       "experiments/results/tables/rates_run_spread.csv",
       "experiments/results/tables/per_case_instability.csv",
       "experiments/results/tables/rates_by_stratum.csv",
+      "experiments/results/tables/e5_strata.csv",
+      "experiments/results/tables/e5_logit.csv",
+      "experiments/results/tables/e2_consistency.csv",
+      "experiments/results/tables/e2_position_pref.csv",
       "experiments/results/tables/rates_bootstrap.csv",
       "experiments/results/tables/paired_mcnemar.csv",
       "experiments/results/tables/e1_main.csv",
@@ -238,7 +294,8 @@
       "experiments/results/figures/noise_floor_vs_gate_thresholds.png",
       "experiments/results/figures/judge_score_distribution.png",
       "experiments/results/figures/e1_forest.png",
-      "experiments/results/figures/e1_power.png"
+      "experiments/results/figures/e1_power.png",
+      "experiments/results/figures/e5_forest.png"
     ]
   }
 }

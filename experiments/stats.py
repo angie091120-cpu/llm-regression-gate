@@ -15,8 +15,8 @@ Two reasons:
 
 Self-check against published worked examples:
 
-    python -m experiments.stats            # 28/28, standard library only
-    python -m experiments.stats --cross-check   # 31/31 under the analysis venv.
+    python -m experiments.stats            # 35/35, standard library only
+    python -m experiments.stats --cross-check   # 42/42 under the analysis venv.
                                                 # On an interpreter without
                                                 # scipy the scipy row is FAIL
                                                 # and the exit code is 1 --
@@ -45,6 +45,9 @@ __all__ = [
     "binom_pmf",
     "binom_cdf",
     "exact_binomial_test",
+    "fisher_exact_2x2",
+    "hypergeom_pmf",
+    "TEA_TASTING_EXAMPLE",
     "mcnemar_exact",
     "bootstrap_ci",
     "holm_adjust",
@@ -204,6 +207,95 @@ def exact_binomial_test(k: int, n: int, p0: float = 0.5) -> float:
         if pmf <= observed * (1 + 1e-7):
             total += pmf
     return min(1.0, total)
+
+
+# --------------------------------------------------------------------------
+# Unpaired 2x2: Fisher exact
+# --------------------------------------------------------------------------
+# Fisher (1935), The Design of Experiments, chapter 2 -- the lady tasting tea.
+# Eight cups, four of each preparation, the taster names four and gets three
+# right: the 2x2 is (a, b, c, d) = (3, 1, 1, 3). Every probability in that
+# table is a ratio of binomial coefficients over C(8,4) = 70, so both p-values
+# are exact rationals rather than constants rounded off a page:
+#
+#   P(a=4) = 1/70   P(a=3) = 16/70   P(a=2) = 36/70   P(a=1) = 16/70   P(a=0) = 1/70
+#
+# one-sided (a >= 3):                          17/70 = 0.2428571...
+# two-sided, every outcome no more likely
+# than the observed 16/70:      1 + 16 + 16 + 1 = 34/70 = 0.4857142...
+#
+# _selftest() recomputes both from math.comb along a path that never calls the
+# function below, so a rewrite of it cannot agree with itself and pass.
+TEA_TASTING_EXAMPLE = {
+    "source": "Fisher (1935), The Design of Experiments, ch. 2 (lady tasting tea)",
+    "table": (3, 1, 1, 3),
+    "p_two_sided": 34 / 70,
+    "p_greater": 17 / 70,
+}
+
+
+def hypergeom_pmf(k: int, n_total: int, n_success: int, n_draw: int) -> float:
+    """P(X = k) for X ~ Hypergeometric(n_total, n_success, n_draw): exact
+    integer arithmetic up to a single final division."""
+    if k < 0 or k > n_draw or k > n_success or (n_draw - k) > (n_total - n_success):
+        return 0.0
+    return (
+        math.comb(n_success, k)
+        * math.comb(n_total - n_success, n_draw - k)
+        / math.comb(n_total, n_draw)
+    )
+
+
+def fisher_exact_2x2(a: int, b: int, c: int, d: int, alternative: str = "two-sided") -> dict:
+    """Fisher exact test on
+
+            success   failure
+        g1     a         b
+        g2     c         d
+
+    Conditioning on both margins makes the count in cell `a` hypergeometric,
+    so the p-value is a finite sum of exact rationals: no approximation, and
+    no minimum expected-count condition to violate. That is why E5 compares
+    strata with this rather than chi-square -- two of its strata are n = 7 and
+    n = 8 (mixed language, edge difficulty), sizes at which the chi-square
+    approximation does not apply at all.
+
+    Two-sided sums the probabilities of every table no more likely than the
+    observed one, the convention R fisher.test and scipy.stats.fisher_exact
+    use, so the number is comparable to anything a reader reproduces
+    elsewhere. The 1e-7 relative slack in that comparison is there because two
+    tables can be equiprobable up to floating-point noise; without it, a table
+    exactly as likely as the observed one is kept or dropped on the last bit.
+    """
+    if min(a, b, c, d) < 0:
+        raise ValueError("cell counts must be non-negative")
+    if alternative not in ("two-sided", "greater", "less"):
+        raise ValueError(f"unknown alternative={alternative!r}")
+    n = a + b + c + d
+    if n == 0:
+        raise ValueError("Fisher exact on an empty table")
+    row1, col1 = a + b, a + c
+    lo = max(0, col1 - (c + d))
+    hi = min(row1, col1)
+    support = {x: hypergeom_pmf(x, n, row1, col1) for x in range(lo, hi + 1)}
+    observed = support[a]
+    if alternative == "greater":
+        p = sum(pr for x, pr in support.items() if x >= a)
+    elif alternative == "less":
+        p = sum(pr for x, pr in support.items() if x <= a)
+    else:
+        p = sum(pr for pr in support.values() if pr <= observed * (1 + 1e-7))
+    rate1 = a / row1 if row1 else None
+    rate2 = c / (c + d) if (c + d) else None
+    return {
+        "a": a, "b": b, "c": c, "d": d, "n": n,
+        "rate_group1": rate1,
+        "rate_group2": rate2,
+        "difference": (rate1 - rate2) if (rate1 is not None and rate2 is not None) else None,
+        "p_value": min(1.0, p),
+        "alternative": alternative,
+        "method": "fisher_exact_conditional",
+    }
 
 
 # --------------------------------------------------------------------------
@@ -667,6 +759,50 @@ def _selftest(cross_check: bool = False) -> int:
             ok = True
         checks.append((f"{name} raises NotImplementedError (not a silent approximation)", ok, ""))
 
+    # ---- Fisher exact 2x2 -------------------------------------------------
+    tea = TEA_TASTING_EXAMPLE
+    a0, b0, c0, d0 = tea["table"]
+    n0, row0, col0 = a0 + b0 + c0 + d0, a0 + b0, a0 + c0
+    pmf = [math.comb(row0, x) * math.comb(c0 + d0, col0 - x) / math.comb(n0, col0)
+           for x in range(0, min(row0, col0) + 1)]
+    want_two = sum(pr for pr in pmf if pr <= pmf[a0] * (1 + 1e-7))
+    want_gt = sum(pmf[x] for x in range(a0, len(pmf)))
+    tea_got = fisher_exact_2x2(a0, b0, c0, d0)
+    checks.append((
+        "fisher: " + tea["source"] + " two-sided == 34/70",
+        _close(tea_got["p_value"], tea["p_two_sided"], 1e-12) and _close(want_two, tea["p_two_sided"], 1e-12),
+        f"{tea_got['p_value']:.9f}",
+    ))
+    tea_gt = fisher_exact_2x2(a0, b0, c0, d0, alternative="greater")
+    checks.append((
+        "fisher: the same table one-sided (greater) == 17/70",
+        _close(tea_gt["p_value"], tea["p_greater"], 1e-12) and _close(want_gt, tea["p_greater"], 1e-12),
+        f"{tea_gt['p_value']:.9f}",
+    ))
+
+    # Structural invariants. The first is the one E5 leans on: 7 out of 7
+    # against 57/63 must not come back significant because the stratum is
+    # small -- a small stratum is an interval problem, not a finding.
+    small = fisher_exact_2x2(7, 0, 57, 6)
+    checks.append(("fisher: 7/7 vs 57/63 is not significant (small-stratum sanity)",
+                   small["p_value"] > 0.5, f"p={small['p_value']:.4f}"))
+    swapped = fisher_exact_2x2(57, 6, 7, 0)
+    checks.append(("fisher: transposing the two groups leaves the two-sided p unchanged",
+                   _close(small["p_value"], swapped["p_value"], 1e-12), f"{swapped['p_value']:.6f}"))
+    edgy = fisher_exact_2x2(4, 4, 60, 2)
+    checks.append(("fisher: 4/8 vs 60/62 is significant and its difference is negative",
+                   edgy["p_value"] < 0.01 and edgy["difference"] < 0,
+                   f"p={edgy['p_value']:.6f} diff={edgy['difference']:.4f}"))
+    balanced = fisher_exact_2x2(5, 5, 5, 5)
+    checks.append(("fisher: an exactly balanced table gives p == 1",
+                   _close(balanced["p_value"], 1.0, 1e-12), f"{balanced['p_value']:.6f}"))
+    try:
+        fisher_exact_2x2(1, 1, 1, 1, alternative="two_sided")
+        alt_ok = False
+    except ValueError:
+        alt_ok = True
+    checks.append(("fisher: an unknown alternative raises instead of defaulting", alt_ok, ""))
+
     # ---- Newcombe method 10, paired risk difference -----------------------
     # The paper's own printed worked example leads, because it is the only
     # check here that can catch a wrong constant rather than a wrong shape.
@@ -767,6 +903,11 @@ def _selftest(cross_check: bool = False) -> int:
             sp_ci = sp.binomtest(8, 10, 0.5).proportion_ci(method="exact")
             mine = clopper_pearson_ci(8, 10)
             checks.append(("scipy Clopper-Pearson agrees", _close(sp_ci.low, mine[0], 1e-6) and _close(sp_ci.high, mine[1], 1e-6), f"{sp_ci.low:.6f},{sp_ci.high:.6f}"))
+            for table in ((3, 1, 1, 3), (7, 0, 57, 6), (4, 4, 60, 2), (10, 9, 54, 0)):
+                sp_f = sp.fisher_exact([[table[0], table[1]], [table[2], table[3]]])[1]
+                mine_f = fisher_exact_2x2(*table)["p_value"]
+                checks.append((f"scipy fisher_exact agrees on {table}",
+                               _close(sp_f, mine_f, 1e-12), f"{sp_f:.9f}"))
             sp_wil = sp.binomtest(8, 10, 0.5).proportion_ci(method="wilson")
             mine_w = wilson_ci(8, 10)
             checks.append(("scipy Wilson agrees", _close(sp_wil.low, mine_w[0], 1e-6) and _close(sp_wil.high, mine_w[1], 1e-6), f"{sp_wil.low:.6f},{sp_wil.high:.6f}"))

@@ -305,6 +305,69 @@ confirmatory family, so `e1_forest.png` and `e1_power.png` show the four lines
 they would have shown without this change. This is the first entry written
 after the freeze stamp at the head of the document.
 
+**2026-09-16, E5's implementation choices, none of which this document
+fixed.** Section 5 gives E5 one line ("stratified re-analysis of E0/E1 data")
+and section 6 gives it the Wilson interval; everything else was decided while
+writing `table_e5_strata` and `table_e5_logit`, after the E0 and E1 data
+existed, and is therefore recorded here rather than read as pre-registered.
+Five choices. **Unit:** one outcome per case, repeats collapsed by majority
+vote -- section 10.4's rule, reused, so a stratum's n is a count of emails
+(mixed = 7) and not of calls (mixed = 35). **Arms:** the arms are named in
+`analyze.py` (`e0_noise` v1, `e1_v2a..d`) rather than globbed, because the raw
+directory also holds a 10-case smoke run tagged v1 and a judge-isolation arm
+with no classifier call. **Cross-stratum test:** each stratum against the rest
+of its own arm, Fisher exact, one p-value per row -- not all pairwise, which
+would put three p-values on a three-level kind and none on the row. **BH
+families:** two, the baseline arm's ten strata and the four degraded arms'
+forty, named in the `family` column; pooling them would dilute the baseline
+rows, and every row is labelled exploratory either way. **Stratum membership
+notes** are derived from the case ids at analysis time, so the observation
+that the seven `mixed` cases are the consecutive block case-064..case-070 --
+one quota fill, not a draw spread across the dataset -- travels in the table
+instead of in a document that can go stale.
+
+**2026-09-16, the E5 logistic model is not fitted on the arm it was specified
+for.** `pass ~ language + difficulty + category` with case-clustered standard
+errors cannot be estimated on the baseline arm: `language[mixed]` is 35/35 and
+`category[account]` is 80/80 there, so those coefficients are unbounded and
+the fit would return a large number with a large standard error and no
+meaning. Firth's penalised likelihood is the standard remedy; no validated
+implementation is available here (statsmodels 0.15.0 has none, `firthlogist`
+is not installed), and this package does not ship an unvalidated one, so the
+row stays in `e5_logit.csv` marked `fitted = no` with the separated levels
+named, and the Firth sensitivity is a second row marked not run. What is
+reported instead is the same formula fitted on every arm that ran, E0 plus the
+four E1 arms (1,190 observations, 70 clusters), where no level has a constant
+outcome -- plus a sensitivity fit that adds a prompt-version term, because
+pooling five prompts into a model with no version term is a real
+mis-specification and not one to hide in a footnote. The pooled fit is a
+different quantity from the one section 5 implied, and nothing written from it
+may be described as the baseline system's stratum effects.
+
+**2026-09-16, E2 ran 94 of 560 calls and stopped: the API account hit its
+spend limit.** The run began 17:30:48 UTC and every call after 17:32:01 UTC
+came back `400 invalid_request_error`, body: "You have reached your specified
+API usage limits. You will regain access on 2026-10-01 at 00:00 UTC." All 560
+rows are in `experiments/results/raw/e2_pairwise/`, 466 of them with
+`ok: false`, the error text and the request id -- section 7 as written: a
+failed call is a row, never a wrong answer, and the file stays in the
+repository. It was a billing limit on the account, not a rate limit, a schema
+violation or a bug in the runner; the 16-call `e2_smoke` calibration run three
+minutes earlier succeeded 16/16 on both judge models, and the four cells that
+returned nothing are the ones that had not been reached yet.
+
+What survives is one cell of four, partially: 24 of 70 easy-layer pairs judged
+in both orders by `claude-sonnet-5`, and zero pairs for `claude-haiku-4-5` in
+either layer. The tables report it with the coverage rows first
+(`e2_consistency.csv`, `row_type = coverage`: 0/140, 0/140, 94/140, 0/140) and
+`analyze.py` refuses to draw `figures/e2_consistency.png` from part of the
+design, printing the missing cells instead. **E2's pre-registered questions are
+unanswered.** 24 pairs is not the 70 the design calls for, one judge model is
+not two, the easy layer alone cannot compare easy against hard, and no number
+in those two CSVs is a result of this study. Re-running the 560 calls needs
+account access, which returns 2026-10-01 unless the limit is raised; the design
+is unchanged and no part of it was altered in response to the failure.
+
 ## 10. E1 in full
 
 Written 2026-09-14, before the first degraded-prompt call. Section 4 fixes

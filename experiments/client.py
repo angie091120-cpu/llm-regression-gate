@@ -49,9 +49,7 @@ def redact(text: str) -> str:
     return _KEY_PATTERN.sub("sk-ant-<redacted>", text)
 
 
-def model_for_tier(tier: str) -> str:
-    """Resolve tier -> model through the production table (llm.py), so
-    LLM_CLASSIFIER_MODEL / LLM_JUDGE_MODEL behave identically here."""
+def _assert_anthropic() -> None:
     provider = os.environ.get("LLM_PROVIDER", "anthropic").lower()
     if provider != "anthropic":
         raise RuntimeError(
@@ -59,6 +57,12 @@ def model_for_tier(tier: str) -> str:
             "The provider-agnostic path is production code (llm.py); the study "
             "measures one provider on purpose."
         )
+
+
+def model_for_tier(tier: str) -> str:
+    """Resolve tier -> model through the production table (llm.py), so
+    LLM_CLASSIFIER_MODEL / LLM_JUDGE_MODEL behave identically here."""
+    _assert_anthropic()
     return production_llm._model_for(tier)
 
 
@@ -157,6 +161,7 @@ def call_structured(
     max_tokens: int = DEFAULT_MAX_TOKENS,
     cache_dir: Path | None = None,
     temperature_transport: str = "param",
+    model: str | None = None,
 ) -> CallRecord:
     """Run one structured (tool-use) completion and return a CallRecord.
 
@@ -169,8 +174,18 @@ def call_structured(
     "extra_body" puts it in the request body regardless of SDK version. The
     two answer different questions -- whether the SDK accepts the parameter,
     and whether the model does.
+
+    `model` overrides the tier table for the one case where a tier is not a
+    fixed model: E2 sends the same pairwise prompt to two judge models, and the
+    model is then part of the design rather than a configuration default. The
+    provider guard still applies, and `response_model` is still read off the
+    response, so an override cannot silently become "whatever the alias points
+    at today" in the raw data.
     """
-    model = model_for_tier(tier)
+    if model is None:
+        model = model_for_tier(tier)
+    else:
+        _assert_anthropic()
     temperature_transport = resolve_temperature_transport(temperature_transport)
     rhash = request_hash(model, system, messages, schema, temperature, max_tokens)
     record = CallRecord(

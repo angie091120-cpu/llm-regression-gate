@@ -1,0 +1,72 @@
+{
+  "run_id": "e2_smoke_20260915T172942Z",
+  "exp_id": "e2_smoke",
+  "judge_prompt_version": "judge_pairwise_v1",
+  "judge_prompt_path": "experiments/prompts/judge_pairwise_v1.yaml",
+  "judge_models_requested": [
+    "claude-sonnet-5",
+    "claude-haiku-4-5"
+  ],
+  "cases": 2,
+  "layers": [
+    "easy",
+    "hard"
+  ],
+  "orders": [
+    "left_first",
+    "right_first"
+  ],
+  "pairs": 4,
+  "pairs_by_layer": {
+    "easy": 2,
+    "hard": 2
+  },
+  "pairs_with_identical_summaries": [],
+  "pairs_skipped_missing_summary": [],
+  "planned_calls": 16,
+  "baseline_from": "experiments/results/raw/e0_noise/e0_noise_20260914T115913Z.jsonl",
+  "baseline_repeats": [
+    0,
+    1
+  ],
+  "contrast_from": "experiments/results/raw/e1_v2b/e1_v2b_20260915T153711Z.jsonl",
+  "contrast_repeat": 0,
+  "judge_temperature": null,
+  "temperature_transport": "auto",
+  "concurrency": 4,
+  "cache_enabled": false,
+  "max_cost_usd": 0.2,
+  "prices_per_mtok": {
+    "claude-haiku-4-5": {
+      "input": 1.0,
+      "output": 5.0
+    },
+    "claude-sonnet-5": {
+      "input": 2.0,
+      "output": 10.0
+    }
+  },
+  "git_commit": "12ffbff74e736c831b51ff63af98621bda6b0737",
+  "dataset": "golden_dataset.json",
+  "started_utc": "2026-09-15T17:29:42.044227Z",
+  "finished_utc": "2026-09-15T17:29:59.938851Z",
+  "executed_calls": 16,
+  "ok_calls": 16,
+  "failed_calls": 0,
+  "failure_types": [],
+  "cache_hits": 0,
+  "run_cost_usd": 0.061943,
+  "ledger_cumulative_usd": 8.120709,
+  "aborted_on_cost_cap": false,
+  "response_models_seen": [
+    "claude-haiku-4-5-20251001",
+    "claude-sonnet-5"
+  ],
+  "choice_counts": {
+    "A": 1,
+    "B": 2,
+    "tie": 13
+  },
+  "sdk_max_retries": 2,
+  "raw_path": "experiments/results/raw/e2_smoke/e2_smoke_20260915T172942Z.jsonl"
+}

@@ -1,0 +1,10 @@
+row_type,family,judge_model,layer,comparison,n,k,estimate,wilson_lo,wilson_hi,ci_width,b,c,p_value,p_bh,test,n_excluded,note
+coverage,descriptive,claude-haiku-4-5,easy,calls in the raw file,140,0,0.000000,,,,,,,,,140,0 of 70 pairs have both orders; failure types: BadRequestError
+coverage,descriptive,claude-haiku-4-5,hard,calls in the raw file,140,0,0.000000,,,,,,,,,140,0 of 70 pairs have both orders; failure types: BadRequestError
+coverage,descriptive,claude-sonnet-5,easy,calls in the raw file,140,94,0.671429,,,,,,,,,46,24 of 70 pairs have both orders; failure types: BadRequestError
+coverage,descriptive,claude-sonnet-5,hard,calls in the raw file,140,0,0.000000,,,,,,,,,140,0 of 70 pairs have both orders; failure types: BadRequestError
+rate,exploratory_bh_e2_consistency,claude-sonnet-5,easy,order swapped,24,20,0.833333,0.641469,0.933213,0.291744,,,,,,46,unit = one pair judged in both orders; consistent means the same summary source won both times (tie counts as a verdict)
+rate,descriptive,claude-sonnet-5,(both),order swapped,24,20,0.833333,0.641469,0.933213,0.291744,,,,,,116,unit = one pair judged in both orders; consistent means the same summary source won both times (tie counts as a verdict)
+rate,descriptive,(both),easy,order swapped,24,20,0.833333,0.641469,0.933213,0.291744,,,,,,116,unit = one pair judged in both orders; consistent means the same summary source won both times (tie counts as a verdict)
+rate,descriptive,(both),(both),order swapped,24,20,0.833333,0.641469,0.933213,0.291744,,,,,,256,unit = one pair judged in both orders; consistent means the same summary source won both times (tie counts as a verdict)
+winner_share,descriptive,claude-sonnet-5,easy,v1_repeat0 vs v2b_repeat0,4,2,0.500000,0.150039,0.849961,0.699922,,,,,,,share of decisive consistent pairs won by v1_repeat0; 66 of 70 pairs were a tie or order-dependent

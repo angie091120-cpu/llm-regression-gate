@@ -44,11 +44,24 @@ Wall clock: 20 calls at concurrency 4 finished in 13.5 s.
 | E5 stratified re-analysis | 0 calls | - | $0.00 |
 | **Total (3,360 calls)** | | | **$10.38** |
 
-E2 is the one line with an assumption rather than a measurement: the pairwise
-judge prompt does not exist yet, so it is priced at the measured judge input
-(1,101 tokens) plus ~150 tokens for the second summary and the tie
-instruction, at each model's rate. Sonnet $0.00416/call, Haiku $0.00208/call.
-Re-measure after the prompt is written.
+**E2 re-measured, 2026-09-15.** That row was the one assumption in the table:
+the pairwise prompt did not exist, so it was priced at the measured judge input
+plus ~150 tokens, Sonnet $0.00416 and Haiku $0.00208 per call. The prompt now
+exists and a 16-call calibration run (`e2_smoke`) prices it:
+
+| Judge model | n | input tokens / call | output tokens / call | measured $/call | projected $ for its 280 calls |
+|-------------|---|--------------------|----------------------|-----------------|-------------------------------|
+| `claude-sonnet-5` | 8 | 1276.5 | 225.2 | $0.004805 | $1.35 |
+| `claude-haiku-4-5` | 8 | 1226.8 | 342.1 | $0.002937 | $0.82 |
+
+**$2.17 for the 560 calls, against $1.75 projected: 24% over.** Input was
+close; output was not. The assumption implicitly priced a short verdict, and
+the free-text `reasoning` field runs 225 tokens on Sonnet and 342 on Haiku --
+Haiku writes half again as much prose as Sonnet for the same question, which
+is why the cheaper model is only 39% cheaper here instead of 50%. The prompt
+was not shortened to recover the difference: it is the instrument, and
+trimming the judge's reasoning to hit a cost estimate would change what E2
+measures.
 
 Against the $20 workspace spend limit:
 
@@ -56,6 +69,13 @@ Against the $20 workspace spend limit:
 - Spent so far (this session): **$0.0723**
 - Remaining headroom after the full design: **~$9.5**
 - With a 30% contingency for re-runs and failed batches: $13.5, 68% of the cap
+
+**That arithmetic was wrong about which cap binds, and section 3 records how
+it was found out**: the account stopped serving this key on 2026-09-15 with
+$8.58 spent inside this package. The $20 figure is a number from the study
+plan, not a number this package can read; the API console is the only source
+of truth for it, and whatever it says, it is not the constraint the E2 run
+met.
 
 Lever if the budget tightens: E1's primary metric is `category_match`, which
 needs no judge call. Running E1 with `--skip-judge` costs $1.78 instead of
@@ -65,7 +85,8 @@ $5.02 and loses only the secondary metric.
 $2.080951 (-0.4%). Judge-isolation arm projected $1.08, actual $1.078802
 (-0.1%). The per-call figures in section 1 hold at 35x the sample they were
 measured on, so the remaining projections are treated as good to about a
-percent -- except E2, which is still priced off a prompt that does not exist.
+percent -- except E2, whose 24% overrun came from output tokens and is
+measured above rather than projected.
 
 ## 3. Spend to date
 
@@ -81,7 +102,9 @@ percent -- except E2, which is still priced off a prompt that does not exist.
 | E1 H2 (`e1_v2b_20260915T153711Z.jsonl`) | 420 | $1.185492 |
 | E1 H3 (`e1_v2c_20260915T154039Z.jsonl`) | 420 | $1.189659 |
 | E1 H4 (`e1_v2d_20260915T154407Z.jsonl`) | 420 | $1.237953 |
-| **Total** | 2,696 | **$8.081390** |
+| E2 calibration (`e2_smoke_20260915T172942Z.jsonl`) | 16 | $0.061943 |
+| E2 main run, stopped by the spend limit (`e2_pairwise_20260915T173047Z.jsonl`) | 560 (94 successful) | $0.443440 |
+| **Total** | 3,272 | **$8.586773** |
 
 E1 cost $4.839267 for 1,680 calls, all four arms successful, which is
 $0.002880 per call against E0 main arm's $0.002973. The four runs were
@@ -121,21 +144,46 @@ Where each number now lives:
 
 | Number | Value | Meaning |
 |--------|-------|---------|
-| `MANIFEST.totals.raw_cost_usd` | $8.064104 | recomputed from `usage` at pinned prices -- the published figure |
-| `MANIFEST.totals.raw_cost_usd_recorded_by_runner` | $8.058766 | what the runner wrote into the raw files at run time |
-| `MANIFEST.totals.raw_cost_usd_unrecorded_at_run_time` | $0.005338 | the difference, i.e. this one call |
-| `cost_ledger.json` `cumulative_usd` | $8.058766 | append-only, runner runs only, never edited afterwards |
-| `MANIFEST.totals.total_cost_usd` | $8.076698 | raw (recomputed) + the two surviving probe files |
+| `MANIFEST.totals.raw_cost_usd` | $8.569487 | recomputed from `usage` at pinned prices -- the published figure |
+| `MANIFEST.totals.raw_cost_usd_recorded_by_runner` | $8.564149 | what the runner wrote into the raw files at run time |
+| `MANIFEST.totals.raw_cost_usd_unrecorded_at_run_time` | $0.005338 | the difference, i.e. this one call, unchanged by the E2 runs |
+| `cost_ledger.json` `cumulative_usd` | $8.564149 | append-only, runner runs only, never edited afterwards |
+| `MANIFEST.totals.total_cost_usd` | $8.582081 | raw (recomputed) + the two surviving probe files |
 
 `checks/experiments_acceptance.sh` C4 reconciles the first against the fourth
-and needs them within 1%; the gap is 0.07%, and it is now a number with a
+and needs them within 1%; the gap is 0.06%, and it is now a number with a
 named cause rather than a silent agreement.
+
+**2026-09-15: the API account refused the rest of E2.** The main pairwise run
+executed 94 of 560 calls and then took `400 invalid_request_error` on every
+remaining one: "You have reached your specified API usage limits. You will
+regain access on 2026-10-01 at 00:00 UTC." Three things follow for the
+accounting, and one does not.
+
+- The 466 refused calls cost nothing. A 400 carries no `usage`, so
+  `cost_for()` charges $0 and the recomputed and recorded totals agree on this
+  file at $0.443440 -- the same rule that charges a call which burns tokens and
+  then fails validation leaves this one alone.
+- The run is in the ledger and in the runs table like any other. It was not
+  deleted and not re-run: E2 cannot be re-run until access returns.
+- `e2_smoke`, three minutes earlier, went 16/16 across both judge models, so
+  the cutoff is datable to within a few minutes and is not a property of the
+  prompt, the models or the runner.
+
+What does not follow is a number for how much of the limit this package used.
+The message names no figure, `$8.586773` here plus $0.415487 for the
+production baseline run on `main` is **$9.002260 of whatever the limit is**,
+and any spend made with the same key outside this repository is invisible from
+inside it. The plan's $20 is a planning figure; the console is the only place
+the real one can be read.
 
 Not in the table above and not in this package's ledger: the production
 baseline bootstrap run on `main` (70 cases, 140 calls,
 `eval_reports/baseline.json`, commit fe1cea8) cost $0.415487 through
-`evalkit.cost`. It is listed here only so the workspace-level total is
-findable in one place: **$8.496877 against the $20 spend limit (42%).**
+`evalkit.cost`. It is listed here only so the total this repository can
+account for is findable in one place: **$9.002260**. Whether that is 45% of a
+$20 limit or all of a smaller one is not answerable from inside the
+repository, and on 2026-09-15 the account answered it by refusing calls.
 
 ## 4. Measured API behaviour
 

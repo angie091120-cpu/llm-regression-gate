@@ -26,9 +26,16 @@ on 2026-09-15 against the printed worked example in Newcombe (1998) Table III.
 Both dates are entries in docs/PREREGISTRATION.md section 9, and every
 Newcombe row carries experiments.stats.NEWCOMBE_VALIDATION in its note column.
 
+The logistic model with case-clustered standard errors arrived on 2026-09-16
+with E5 (`table_e5_logit`). It is the one estimator here that is not standard
+library: statsmodels fits it, and when statsmodels is absent the table is
+written without coefficients rather than with approximated ones. Its
+pre-specified baseline-arm form is not estimable at all -- two levels have no
+failures -- and is reported as not fitted, with the levels named.
+
 What is still not implemented, and is therefore absent from the output rather
-than approximated: Fleiss kappa, Krippendorff alpha, and the logistic model
-with case-clustered standard errors. See the table in experiments/README.md.
+than approximated: Fleiss kappa, Krippendorff alpha, and Firth's penalised
+likelihood for the separated model. See the table in experiments/README.md.
 """
 from __future__ import annotations
 
@@ -36,6 +43,7 @@ import argparse
 import csv
 import hashlib
 import json
+import math
 import re
 import sys
 from collections import defaultdict
@@ -56,6 +64,8 @@ from experiments.stats import (  # noqa: E402
     bh_adjust,
     bootstrap_ci,
     clopper_pearson_ci,
+    exact_binomial_test,
+    fisher_exact_2x2,
     holm_adjust,
     mcnemar_exact,
     newcombe_paired_diff_ci,
@@ -96,6 +106,57 @@ E1_POWER_N_SIM = 2000
 # first-rejected test in a family of four, i.e. the worst case for this design.
 E1_POWER_ALPHAS = ((0.05, "nominal"), (0.0125, "holm_worst_case"))
 E1_EMPTY_NOTE = "no E1 raw data under experiments/results/raw/ yet; header written, no rows"
+
+# ---- E5, stratified re-analysis of the E0/E1 raw data (no new calls) ------
+# Everything in E5 is exploratory (PREREGISTRATION section 4): the dataset was
+# built to a stratum quota, not sampled, so a stratum rate describes these 70
+# emails and nothing else. The arms are named rather than globbed, because the
+# raw directory also holds a 10-case smoke run tagged v1 and a judge-isolation
+# arm with no classifier call -- neither belongs in a coverage table.
+E5_BASELINE_ARM = ("e0_noise", "v1")
+E5_DEGRADED_ARMS = (("e1_v2a", "v2a"), ("e1_v2b", "v2b"), ("e1_v2c", "v2c"), ("e1_v2d", "v2d"))
+E5_METRIC = E1_PRIMARY_METRIC
+# (column in an observation) for each stratum kind
+E5_STRATUM_KINDS = (("language", "language"), ("difficulty", "difficulty"), ("category", "expected_category"))
+E5_FAMILY_BASELINE = "exploratory_bh_strata_baseline"
+E5_FAMILY_DEGRADED = "exploratory_bh_strata_degraded"
+E5_FAMILY_DESCRIPTIVE = "descriptive"
+E5_UNIT_NOTE = (
+    "one outcome per case, repeats collapsed by majority vote "
+    "(docs/PREREGISTRATION.md section 10.4), so n is a count of emails, not of calls"
+)
+E5_FISHER_NOTE = (
+    "Fisher exact, this stratum against every other case in the same arm; "
+    "two strata are n = 7 and n = 8, where chi-square does not apply"
+)
+# pass ~ language + difficulty + category, one row per (case, repeat), standard
+# errors clustered on case. Reference levels are the largest stratum of each
+# kind, so every coefficient reads against the majority case.
+E5_LOGIT_FORMULA = "category_match ~ language + difficulty + category"
+E5_LOGIT_SE_TYPE = "cluster_robust_by_case (statsmodels cov_type=cluster, HC1-style within-cluster sum)"
+# ---- E2, pairwise judge and position bias --------------------------------
+# Named rather than globbed for the same reason as E5: the raw directory also
+# holds `e2_smoke`, a 2-case 16-call calibration run made before the real one,
+# which is committed evidence but is not part of any E2 number.
+E2_EXP_ID = "e2_pairwise"
+E2_TIER = "judge_pairwise"
+E2_LAYERS = ("easy", "hard")
+E2_ORDERS = ("left_first", "right_first")
+E2_FAMILY_CONSISTENCY = "exploratory_bh_e2_consistency"
+E2_FAMILY_POSITION = "exploratory_bh_e2_position"
+E2_FAMILY_PAIRED_LAYER = "sensitivity_paired_layers"
+E2_TIE_NOTE = (
+    "a tie is neither a first-position win nor a second-position win, so it is out of the binomial denominator and reported as its own rate"
+)
+E2_DEPENDENCE_NOTE = (
+    "the exact binomial treats calls as independent; each case contributes several calls, so the case-cluster bootstrap interval in the same row is the honest width"
+)
+
+E5_FIRTH_NOTE = (
+    "Firth penalised likelihood not run: no validated implementation is available here "
+    "(statsmodels 0.15.0 has none and firthlogist is not installed), and this package does "
+    "not ship an unvalidated one. Recorded as not done rather than approximated."
+)
 
 
 def gate_thresholds() -> tuple[float, float]:
@@ -202,10 +263,19 @@ def build_observations(rows: list[dict], dataset_path: Path) -> list[dict]:
     A case whose classifier call failed produces no observation and is
     counted as a failure instead -- it is never silently scored as a miss,
     because an API error and a wrong answer are different things.
+
+    Only the `classifier` and `judge` tiers are joined here. E2's
+    `judge_pairwise` rows carry no category and no 1-5 score, so folding them
+    into this table would invent one observation per pairwise call with every
+    metric None -- invisible in the rate tables, but a new `prompt_version` in
+    `paired_mcnemar.csv`. They are read straight from the raw rows by the E2
+    tables instead.
     """
     cases = {c.id: c for c in load_all_cases(dataset_path)}
     grouped: dict[tuple, dict] = defaultdict(dict)
     for row in rows:
+        if row["tier"] not in ("classifier", "judge"):
+            continue
         key = (row["exp_id"], row["run_id"], row["repeat_idx"], row["case_id"])
         grouped[key][row["tier"]] = row
 
@@ -755,6 +825,778 @@ def figure_e1_power(power_rows: list[list], main_rows: list[list], out_path: Pat
     return rel_to_repo(out_path)
 
 
+# --------------------------------------------------------------------------
+# E5: stratified coverage (exploratory, no new API calls)
+# --------------------------------------------------------------------------
+E5_STRATA_HEADER = [
+    "family", "exp_id", "prompt_version", "metric", "unit", "stratum_kind", "stratum",
+    "n", "k", "estimate", "wilson_lo", "wilson_hi", "ci_width",
+    "n_rest", "k_rest", "estimate_rest", "difference", "fisher_p", "p_bh", "n_in_bh_family",
+    "n_excluded_tie", "ci_method", "test", "note",
+]
+
+E5_LOGIT_HEADER = [
+    "model_id", "family", "data", "formula", "n_obs", "n_clusters", "fitted",
+    "term", "reference_level", "coefficient", "std_error", "se_type", "z", "p_value",
+    "odds_ratio", "or_ci_low", "or_ci_high", "converged", "method", "note",
+]
+
+
+def _case_number(case_id: str) -> int | None:
+    """case-064 -> 64. None for an id that does not follow that shape."""
+    tail = case_id.rsplit("-", 1)[-1]
+    return int(tail) if tail.isdigit() else None
+
+
+def _membership_note(case_ids: Sequence[str]) -> str:
+    """Whether a stratum is a consecutive block of case ids.
+
+    `mixed` is: case-064 to case-070 were written last, in one sitting, to fill
+    the 10% code-switched quota. That is a property of how the dataset was
+    built and it belongs next to the stratum's interval, so it is derived from
+    the ids at analysis time instead of being typed into a document that can go
+    stale if the dataset is ever rebuilt.
+    """
+    ids = sorted(case_ids)
+    numbers = [n for n in (_case_number(cid) for cid in ids) if n is not None]
+    if len(numbers) == len(ids) and len(numbers) > 1 and numbers == list(range(numbers[0], numbers[0] + len(numbers))):
+        return (
+            f"members are the consecutive block {ids[0]}..{ids[-1]}, written as one "
+            "quota fill rather than drawn across the dataset"
+        )
+    return f"members: {', '.join(ids)}" if len(ids) <= 8 else f"{len(ids)} cases, not a consecutive block"
+
+
+def e5_level_order(observations: list[dict], column: str) -> list[str]:
+    """Stratum levels, largest first, ties broken by name -- fixed here so two
+    analysis runs cannot order a table differently."""
+    counts: dict[str, set] = defaultdict(set)
+    for obs in observations:
+        counts[obs[column]].add(obs["case_id"])
+    return sorted(counts, key=lambda level: (-len(counts[level]), level))
+
+
+def e5_arms(observations: list[dict]) -> list[tuple[str, str]]:
+    """The (exp_id, prompt_version) arms that actually have raw data."""
+    present = {(obs["exp_id"], obs["prompt_version"]) for obs in observations}
+    return [arm for arm in (E5_BASELINE_ARM, *E5_DEGRADED_ARMS) if arm in present]
+
+
+def table_e5_strata(observations: list[dict]) -> tuple[list[str], list[list]]:
+    """Per-stratum rate with a Wilson interval, plus Fisher exact against the
+    rest of the same arm.
+
+    The interval is the result here, not the p-value. A stratum of 7 cases
+    cannot separate 65% from 100%, and the point of the table is to show how
+    wide those intervals are next to the headline 64/70 -- so `ci_width` is a
+    column rather than something a reader has to subtract.
+    """
+    rows: list[list] = []
+    arms = e5_arms(observations)
+    if not arms:
+        return E5_STRATA_HEADER, rows
+    by_case = {obs["case_id"]: obs for obs in observations}
+    level_order = {kind: e5_level_order(observations, column) for kind, column in E5_STRATUM_KINDS}
+
+    pending: dict[str, list[int]] = defaultdict(list)  # family -> row indices
+    for exp_id, version in arms:
+        outcomes, n_tie = _case_outcomes(observations, E5_METRIC, version, exp_id=exp_id)
+        if not outcomes:
+            continue
+        family = E5_FAMILY_BASELINE if (exp_id, version) == E5_BASELINE_ARM else E5_FAMILY_DEGRADED
+        n_all, k_all = len(outcomes), sum(outcomes.values())
+        lo, hi = wilson_ci(k_all, n_all)
+        rows.append([
+            E5_FAMILY_DESCRIPTIVE, exp_id, version, E5_METRIC, "case", "overall", "all",
+            n_all, k_all, k_all / n_all, lo, hi, hi - lo,
+            None, None, None, None, None, None, None,
+            n_tie, "wilson", "", E5_UNIT_NOTE,
+        ])
+        for kind, column in E5_STRATUM_KINDS:
+            for level in level_order[kind]:
+                members = sorted(cid for cid in outcomes if by_case[cid][column] == level)
+                if not members:
+                    continue
+                member_set = set(members)
+                values = [outcomes[cid] for cid in members]
+                n, k = len(values), sum(values)
+                lo, hi = wilson_ci(k, n)
+                rest = [v for cid, v in outcomes.items() if cid not in member_set]
+                n_rest, k_rest = len(rest), sum(rest)
+                fisher = fisher_exact_2x2(k, n - k, k_rest, n_rest - k_rest)
+                pending[family].append(len(rows))
+                rows.append([
+                    family, exp_id, version, E5_METRIC, "case", kind, level,
+                    n, k, k / n, lo, hi, hi - lo,
+                    n_rest, k_rest, k_rest / n_rest if n_rest else None,
+                    fisher["difference"], fisher["p_value"], None, None,
+                    n_tie, "wilson", fisher["method"], _membership_note(members),
+                ])
+
+    col = {name: i for i, name in enumerate(E5_STRATA_HEADER)}
+    for family, idxs in pending.items():
+        adjusted = bh_adjust([rows[i][col["fisher_p"]] for i in idxs])
+        for i, value in zip(idxs, adjusted):
+            rows[i][col["p_bh"]] = value
+            rows[i][col["n_in_bh_family"]] = len(idxs)
+    return E5_STRATA_HEADER, rows
+
+
+def _e5_design(observations: list[dict], arms: Sequence[tuple[str, str]], with_version: bool):
+    """Design matrix for the E5 logit, built by hand.
+
+    No pandas and no patsy: the dummy coding is four lines and doing it here
+    keeps the one place a reference level could silently change visible in this
+    file. Returns (y, X, column names, reference levels, groups, rows used).
+    """
+    keep = set(arms)
+    data = [
+        obs for obs in observations
+        if (obs["exp_id"], obs["prompt_version"]) in keep and obs[E5_METRIC] is not None
+    ]
+    data.sort(key=lambda o: (o["exp_id"], o["run_id"], o["repeat_idx"], o["case_id"]))
+    if not data:
+        return None
+    levels = {kind: e5_level_order(data, column) for kind, column in E5_STRATUM_KINDS}
+    columns: list[tuple[str, str, str]] = []  # (term, column, level)
+    for kind, column in E5_STRATUM_KINDS:
+        for level in levels[kind][1:]:  # first (largest) level is the reference
+            columns.append((f"{kind}[{level}]", column, level))
+    if with_version:
+        versions = sorted({obs["prompt_version"] for obs in data})
+        for version in versions[1:]:
+            columns.append((f"prompt_version[{version}]", "prompt_version", version))
+    y = [obs[E5_METRIC] for obs in data]
+    X = [[1.0] + [1.0 if obs[column] == level else 0.0 for _, column, level in columns] for obs in data]
+    names = ["const"] + [term for term, _, _ in columns]
+    references = {kind: levels[kind][0] for kind, _ in E5_STRATUM_KINDS}
+    if with_version:
+        references["prompt_version"] = sorted({obs["prompt_version"] for obs in data})[0]
+    groups = [obs["case_id"] for obs in data]
+    return y, X, names, references, groups, data
+
+
+def _e5_constant_levels(data: list[dict]) -> list[str]:
+    """Predictor levels whose outcome never varies.
+
+    Quasi-complete separation: the maximum-likelihood coefficient for such a
+    level is unbounded, so the fit returns a large number with a large standard
+    error and means nothing. Firth's penalised likelihood is the standard
+    remedy and is not implemented here, so the model is reported as not fitted
+    and these levels are named.
+    """
+    constant: list[str] = []
+    for kind, column in E5_STRATUM_KINDS:
+        cells: dict[str, list[int]] = defaultdict(list)
+        for obs in data:
+            cells[obs[column]].append(obs[E5_METRIC])
+        for level in sorted(cells):
+            values = cells[level]
+            if values and (sum(values) == 0 or sum(values) == len(values)):
+                constant.append(f"{kind}[{level}]={sum(values)}/{len(values)}")
+    return constant
+
+
+def table_e5_logit(observations: list[dict]) -> tuple[list[str], list[list]]:
+    """Logistic regression of the primary metric on the three stratum kinds,
+    standard errors clustered on case.
+
+    Three rows of model, one row of absence:
+
+      m1  the pre-specified formula on every arm that ran (E0 + E1), which is
+          the only version of it that is estimable -- see m2;
+      m2  the same formula on the baseline arm alone, which is not fitted
+          whenever a level in that arm has no failures at all; the levels and
+          their counts go in the row's note;
+      m3  m1 plus a prompt-version term, because m1 pools five prompts and the
+          four degraded ones are degraded on purpose. Sensitivity, not the
+          pre-specified formula.
+      m4  Firth, not run.
+    """
+    rows: list[list] = []
+    arms = e5_arms(observations)
+    if not arms:
+        return E5_LOGIT_HEADER, rows
+    baseline = [arm for arm in arms if arm == E5_BASELINE_ARM]
+    specs = [
+        ("m1_pooled_arms", "primary", arms, False),
+        ("m2_baseline_arm_only", "sensitivity", baseline, False),
+        ("m3_pooled_plus_version_term", "sensitivity", arms, True),
+    ]
+    try:
+        import numpy as np
+        import statsmodels.api as sm
+    except ImportError as exc:  # pragma: no cover -- documented fallback
+        print(f"!! statsmodels/numpy unavailable ({exc}); e5_logit.csv written without coefficients", file=sys.stderr)
+        for model_id, family, subset, with_version in specs:
+            rows.append([
+                model_id, family, "+".join(f"{e}:{v}" for e, v in subset), E5_LOGIT_FORMULA,
+                None, None, "no", "(model not fitted)", "", None, None, E5_LOGIT_SE_TYPE,
+                None, None, None, None, None, "", "logit_cluster_robust",
+                "not fitted: numpy/statsmodels do not import in the interpreter that produced this "
+                "file (see experiments/README.md, Environment). No coefficients are approximated.",
+            ])
+        rows.append(_e5_firth_row())
+        return E5_LOGIT_HEADER, rows
+
+    for model_id, family, subset, with_version in specs:
+        built = _e5_design(observations, subset, with_version) if subset else None
+        if built is None:
+            continue
+        y, X, names, references, groups, data = built
+        label = "+".join(f"{e}:{v}" for e, v in subset)
+        formula = E5_LOGIT_FORMULA + (" + prompt_version" if with_version else "")
+        constant = _e5_constant_levels(data)
+        n_obs, n_clusters = len(y), len(set(groups))
+        if constant:
+            rows.append([
+                model_id, family, label, formula, n_obs, n_clusters, "no",
+                "(model not fitted)", "", None, None, E5_LOGIT_SE_TYPE, None, None, None, None, None,
+                "", "logit_cluster_robust",
+                "not fitted: separation. These levels have a constant outcome, so their maximum-"
+                f"likelihood coefficients are unbounded: {'; '.join(constant)}. " + E5_FIRTH_NOTE,
+            ])
+            continue
+        arr_y = np.asarray(y, dtype=float)
+        arr_X = np.asarray(X, dtype=float)
+        codes = {cid: i for i, cid in enumerate(sorted(set(groups)))}
+        arr_g = np.asarray([codes[g] for g in groups])
+        try:
+            fit = sm.Logit(arr_y, arr_X).fit(disp=0, cov_type="cluster", cov_kwds={"groups": arr_g})
+        except Exception as exc:  # noqa: BLE001 -- a failed fit is a row, not a crash
+            rows.append([
+                model_id, family, label, formula, n_obs, n_clusters, "no",
+                "(model not fitted)", "", None, None, E5_LOGIT_SE_TYPE, None, None, None, None, None,
+                "", "logit_cluster_robust",
+                f"not fitted: {type(exc).__name__}: {str(exc)[:200]}",
+            ])
+            continue
+        conf = fit.conf_int()
+        for i, term in enumerate(names):
+            kind = term.split("[", 1)[0]
+            rows.append([
+                model_id, family, label, formula, n_obs, n_clusters, "yes",
+                term, references.get(kind, ""), float(fit.params[i]), float(fit.bse[i]), E5_LOGIT_SE_TYPE,
+                float(fit.tvalues[i]), float(fit.pvalues[i]),
+                float(math.exp(fit.params[i])), float(math.exp(conf[i][0])), float(math.exp(conf[i][1])),
+                "yes" if bool(fit.mle_retvals.get("converged", False)) else "no", "logit_cluster_robust",
+                "exploratory; p-values here are not BH-adjusted and are not part of any family",
+            ])
+    rows.append(_e5_firth_row())
+    return E5_LOGIT_HEADER, rows
+
+
+def _e5_firth_row() -> list:
+    return [
+        "m4_firth_sparse_cell_sensitivity", "sensitivity", "", "firth-penalised " + E5_LOGIT_FORMULA,
+        None, None, "no", "(not run)", "", None, None, "", None, None, None, None, None,
+        "", "firth_penalised_likelihood", E5_FIRTH_NOTE,
+    ]
+
+
+def figure_e5_forest(strata_rows: list[list], out_path: Path, seed: int) -> str | None:
+    """The baseline arm's stratum rates with their Wilson intervals.
+
+    Only the baseline arm is drawn. The width of each bar is the argument: at
+    n = 7 the interval spans a third of the scale, so "mixed-language cases
+    pass 100%" and "mixed-language cases pass two thirds of the time" are the
+    same measurement here.
+    """
+    try:
+        import matplotlib
+
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+    except ImportError as exc:  # pragma: no cover -- documented fallback
+        print(f"!! matplotlib unavailable ({exc}); CSV tables were still written", file=sys.stderr)
+        return None
+    col = {name: i for i, name in enumerate(E5_STRATA_HEADER)}
+    exp_id, version = E5_BASELINE_ARM
+    rows = [r for r in strata_rows if r[col["exp_id"]] == exp_id and r[col["prompt_version"]] == version]
+    if not rows:
+        return None
+    overall = next((r for r in rows if r[col["stratum_kind"]] == "overall"), None)
+    ordered: list[list] = []
+    for kind, _ in E5_STRATUM_KINDS:
+        ordered.extend([r for r in rows if r[col["stratum_kind"]] == kind])
+    if not ordered:
+        return None
+    labels = [f"{r[col['stratum_kind']]}: {r[col['stratum']]}" for r in ordered]
+    ypos = list(range(len(ordered)))[::-1]
+    widest = max(ordered, key=lambda r: r[col["ci_width"]])
+    footnote = _wrap(
+        f"Baseline arm {version} ({exp_id}), primary metric {E5_METRIC}; {E5_UNIT_NOTE}. "
+        f"95% Wilson intervals; {E5_FISHER_NOTE}, BH-adjusted within the "
+        f"{len(ordered)} rows shown (family {E5_FAMILY_BASELINE}); all exploratory. "
+        f"Widest interval: {widest[col['stratum_kind']]} = {widest[col['stratum']]}, "
+        f"n = {widest[col['n']]}, width {widest[col['ci_width']]:.3f}. Analysis seed = {seed}.",
+        width=104,
+    )
+    footnote_lines = footnote.count("\n") + 1
+
+    fig, ax = plt.subplots(figsize=(7.6, 0.44 * len(ordered) + 2.2 + 0.16 * footnote_lines))
+    if overall is not None:
+        ax.axvline(overall[col["estimate"]], color="#1f4e79", lw=1.0, ls="--",
+                   label=f"whole arm {overall[col['k']]}/{overall[col['n']]} = {overall[col['estimate']]:.3f}")
+    kinds = [r[col["stratum_kind"]] for r in ordered]
+    palette = {"language": "#1f4e79", "difficulty": "#7c4a2d", "category": "#4a6b3a"}
+    for y, r in zip(ypos, ordered):
+        colour = palette.get(r[col["stratum_kind"]], "#333333")
+        est = r[col["estimate"]]
+        ax.errorbar([est], [y], xerr=[[est - r[col["wilson_lo"]]], [r[col["wilson_hi"]] - est]],
+                    fmt="o", color=colour, capsize=4)
+        p_bh = r[col["p_bh"]]
+        tail = f"  p_BH={p_bh:.3f}" if isinstance(p_bh, float) else ""
+        ax.annotate(f"{r[col['k']]}/{r[col['n']]}   width {r[col['ci_width']]:.2f}{tail}",
+                    (1.02, y), xycoords=("axes fraction", "data"), fontsize=7.5,
+                    color="#333333", va="center")
+    ax.set_yticks(ypos)
+    ax.set_yticklabels(labels, fontsize=8)
+    ax.set_xlim(0.0, 1.0)
+    ax.set_ylim(-0.6, len(ordered) - 0.4)
+    ax.set_xlabel(f"{E5_METRIC} rate (95% Wilson interval)")
+    ax.set_title("E5: how much of the dataset each stratum interval actually pins down")
+    ax.grid(axis="x", alpha=0.3)
+    ax.legend(fontsize=7, loc="lower left", framealpha=0.95)
+    fig.text(0.01, 0.01, footnote, fontsize=7, va="bottom")
+    fig.subplots_adjust(bottom=(0.55 + 0.14 * footnote_lines) / fig.get_figheight(),
+                        left=0.19, right=0.70, top=0.92)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(out_path, dpi=160, metadata={"Software": "experiments/analyze.py"})
+    plt.close(fig)
+    return rel_to_repo(out_path)
+
+
+# --------------------------------------------------------------------------
+# E2: pairwise judge, order swapped (exploratory)
+# --------------------------------------------------------------------------
+E2_CONSISTENCY_HEADER = [
+    "row_type", "family", "judge_model", "layer", "comparison",
+    "n", "k", "estimate", "wilson_lo", "wilson_hi", "ci_width",
+    "b", "c", "p_value", "p_bh", "test", "n_excluded", "note",
+]
+
+E2_POSITION_HEADER = [
+    "row_type", "family", "judge_model", "layer", "subset",
+    "n_calls", "n_ok", "n_tie", "tie_rate", "n_decisive", "k_first_position",
+    "estimate", "wilson_lo", "wilson_hi", "p_binomial", "p_bh",
+    "cluster_ci_low", "cluster_ci_high", "n_clusters", "n_boot", "seed", "test", "note",
+]
+
+E2_ALL = "(both)"
+
+
+def e2_calls(rows: list[dict]) -> list[dict]:
+    """One entry per successful pairwise call, with the verdict translated out
+    of position space.
+
+    `choice` is "A" or "B" -- a position. `winner` is the summary *source* that
+    position held on this call, which is the same quantity in both orders and
+    the only one worth comparing across them.
+    """
+    out: list[dict] = []
+    for row in rows:
+        if row.get("exp_id") != E2_EXP_ID or row.get("tier") != E2_TIER:
+            continue
+        choice = (row.get("parsed") or {}).get("choice") if row.get("ok") else None
+        if choice == "A":
+            winner, first_win = row["position_a_source"], 1
+        elif choice == "B":
+            winner, first_win = row["position_b_source"], 0
+        elif choice == "tie":
+            winner, first_win = "tie", None
+        else:
+            winner, first_win = None, None
+        out.append({
+            "judge_model": row["request_model"],
+            "response_model": row.get("response_model"),
+            "layer": row["layer"],
+            "order": row["order"],
+            "pair_id": row["pair_id"],
+            "case_id": row["case_id"],
+            "ok": bool(row.get("ok")),
+            "error_type": row.get("error_type"),
+            "status_code": row.get("status_code"),
+            "choice": choice,
+            "winner": winner,
+            "first_position_win": first_win,
+            "left_source": row["left_source"],
+            "right_source": row["right_source"],
+            "summaries_identical": bool(row.get("summaries_identical")),
+        })
+    return out
+
+
+def e2_pairs(calls: list[dict]) -> list[dict]:
+    """One entry per (judge model, pair) judged in both orders.
+
+    A pair is dropped when either of its two calls failed, because "the verdict
+    survived the swap" is not answerable with one verdict. Dropped pairs are
+    counted into `n_excluded` rather than being scored as inconsistent.
+    """
+    grouped: dict[tuple, dict[str, dict]] = defaultdict(dict)
+    for call in calls:
+        grouped[(call["judge_model"], call["layer"], call["pair_id"])][call["order"]] = call
+    out: list[dict] = []
+    for key in sorted(grouped):
+        model, layer, pair_id = key
+        both = grouped[key]
+        first, second = both.get(E2_ORDERS[0]), both.get(E2_ORDERS[1])
+        complete = bool(first and second and first["ok"] and second["ok"])
+        out.append({
+            "judge_model": model,
+            "layer": layer,
+            "pair_id": pair_id,
+            "case_id": (first or second)["case_id"],
+            "complete": complete,
+            "consistent": int(first["winner"] == second["winner"]) if complete else None,
+            "winner": first["winner"] if complete and first["winner"] == second["winner"] else None,
+            "left_source": (first or second)["left_source"],
+            "right_source": (first or second)["right_source"],
+            "summaries_identical": (first or second)["summaries_identical"],
+        })
+    return out
+
+
+def _e2_rate_row(row_type, family, model, layer, comparison, values, note, n_excluded=None):
+    n, k = len(values), sum(values)
+    if n == 0:
+        return None
+    lo, hi = wilson_ci(k, n)
+    return [row_type, family, model, layer, comparison, n, k, k / n, lo, hi, hi - lo,
+            None, None, None, None, "", n_excluded, note]
+
+
+def table_e2_consistency(rows: list[dict]) -> tuple[list[str], list[list]]:
+    """Order consistency: for each pair, did swapping A and B change which
+    summary won?
+
+    The four cells (two judge models x two layers) are the headline. The tests
+    underneath are labelled in `row_type` because they are a different shape of
+    row: the model comparison is paired (the same 70 pairs go to both models),
+    and the layer comparison is reported both ways -- Fisher exact as
+    pre-registered, and a paired McNemar as a sensitivity row, because the easy
+    and hard layers are built from the same 70 emails and are therefore not
+    independent samples.
+    """
+    calls = e2_calls(rows)
+    if not calls:
+        return E2_CONSISTENCY_HEADER, []
+    pairs = e2_pairs(calls)
+    models = sorted({p["judge_model"] for p in pairs})
+    out: list[list] = []
+
+    def subset(model=None, layer=None):
+        return [p for p in pairs
+                if (model is None or p["judge_model"] == model)
+                and (layer is None or p["layer"] == layer)]
+
+    # Coverage first, on purpose. The 2026-09-15 run stopped 94 calls in when
+    # the account hit its API spend limit, so most of these cells are empty and
+    # the ones that are not are partial. A reader who sees a rate before seeing
+    # how much of the design produced it can quote the rate by accident.
+    for model in sorted({c["judge_model"] for c in calls}):
+        for layer in E2_LAYERS:
+            group = [c for c in calls if c["judge_model"] == model and c["layer"] == layer]
+            if not group:
+                continue
+            ok = [c for c in group if c["ok"]]
+            complete = [p for p in subset(model, layer) if p["complete"]]
+            errors = sorted({str(c["error_type"]) for c in group if not c["ok"]})
+            out.append([
+                "coverage", E5_FAMILY_DESCRIPTIVE, model, layer, "calls in the raw file",
+                len(group), len(ok), len(ok) / len(group), None, None, None,
+                None, None, None, None, "", len(group) - len(ok),
+                f"{len(complete)} of {len(group) // len(E2_ORDERS)} pairs have both orders; "
+                f"failure types: {', '.join(errors) if errors else 'none'}",
+            ])
+
+    unit_note = "unit = one pair judged in both orders; consistent means the same summary source won both times (tie counts as a verdict)"
+    for model in [*models, None]:
+        for layer in [*E2_LAYERS, None]:
+            group = subset(model, layer)
+            complete = [p for p in group if p["complete"]]
+            row = _e2_rate_row(
+                "rate", E2_FAMILY_CONSISTENCY if (model and layer) else E5_FAMILY_DESCRIPTIVE,
+                model or E2_ALL, layer or E2_ALL, "order swapped",
+                [p["consistent"] for p in complete], unit_note,
+                n_excluded=len(group) - len(complete),
+            )
+            if row:
+                out.append(row)
+
+    # Which source won, among the pairs where the verdict survived the swap and
+    # was not a tie. Descriptive: the easy layer's two sources are a baseline
+    # and a degradation, but neither is a gold answer, so this is "what the
+    # judge preferred", not "which summary was better".
+    for model in models:
+        for layer in E2_LAYERS:
+            decided = [p for p in subset(model, layer) if p["complete"] and p["winner"] not in (None, "tie")]
+            if not decided:
+                continue
+            left, right = decided[0]["left_source"], decided[0]["right_source"]
+            row = _e2_rate_row(
+                "winner_share", E5_FAMILY_DESCRIPTIVE, model, layer, f"{left} vs {right}",
+                [int(p["winner"] == left) for p in decided],
+                f"share of decisive consistent pairs won by {left}; "
+                f"{len(subset(model, layer)) - len(decided)} of {len(subset(model, layer))} pairs were a tie or order-dependent",
+            )
+            if row:
+                out.append(row)
+
+    # Model comparison: paired, same pair ids on both models.
+    bh_idx: list[int] = []
+    if len(models) == 2:
+        m1, m2 = models
+        for layer in [*E2_LAYERS, None]:
+            by_pair = {}
+            for pair in pairs:
+                if layer is not None and pair["layer"] != layer:
+                    continue
+                if not pair["complete"]:
+                    continue
+                by_pair.setdefault(pair["pair_id"], {})[pair["judge_model"]] = pair["consistent"]
+            shared = sorted(k for k, v in by_pair.items() if m1 in v and m2 in v)
+            if not shared:
+                continue
+            b = sum(1 for k in shared if by_pair[k][m1] == 1 and by_pair[k][m2] == 0)
+            c = sum(1 for k in shared if by_pair[k][m1] == 0 and by_pair[k][m2] == 1)
+            res = mcnemar_exact(b, c)
+            bh_idx.append(len(out))
+            out.append([
+                "test", E2_FAMILY_CONSISTENCY, E2_ALL, layer or E2_ALL, f"{m1} vs {m2}",
+                len(shared), None, None, None, None, None,
+                b, c, res["p_value"], None, res["method"], None,
+                f"paired on pair_id; b = consistent under {m1} only, c = consistent under {m2} only",
+            ])
+
+    # Layer comparison: the pre-registered unpaired test, then the paired one.
+    for model in [*models, None]:
+        easy = [p for p in subset(model, "easy") if p["complete"]]
+        hard = [p for p in subset(model, "hard") if p["complete"]]
+        if not easy or not hard:
+            continue
+        ke, kh = sum(p["consistent"] for p in easy), sum(p["consistent"] for p in hard)
+        fisher = fisher_exact_2x2(ke, len(easy) - ke, kh, len(hard) - kh)
+        bh_idx.append(len(out))
+        out.append([
+            "test", E2_FAMILY_CONSISTENCY, model or E2_ALL, "easy vs hard", "layer",
+            len(easy) + len(hard), None, fisher["difference"], None, None, None,
+            None, None, fisher["p_value"], None, fisher["method"], None,
+            f"easy {ke}/{len(easy)} vs hard {kh}/{len(hard)}; estimate is the difference in rates. "
+            "Fisher exact assumes two independent samples and these two layers are built from the "
+            "same 70 emails, so the paired row below is the honest version",
+        ])
+        paired_keys = {p["pair_id"].split(":", 1)[1]: p["consistent"] for p in easy}
+        hard_by_case = {p["pair_id"].split(":", 1)[1]: p["consistent"] for p in hard}
+        shared = sorted(set(paired_keys) & set(hard_by_case))
+        b = sum(1 for k in shared if paired_keys[k] == 1 and hard_by_case[k] == 0)
+        c = sum(1 for k in shared if paired_keys[k] == 0 and hard_by_case[k] == 1)
+        res = mcnemar_exact(b, c)
+        out.append([
+            "test", E2_FAMILY_PAIRED_LAYER, model or E2_ALL, "easy vs hard", "layer (paired by case)",
+            len(shared), None, None, None, None, None,
+            b, c, res["p_value"], None, res["method"], None,
+            "sensitivity: the same email appears in both layers, so the layers are paired; "
+            "no multiplicity adjustment, this row is not in any family",
+        ])
+
+    col = {name: i for i, name in enumerate(E2_CONSISTENCY_HEADER)}
+    if bh_idx:
+        adjusted = bh_adjust([out[i][col["p_value"]] for i in bh_idx])
+        for i, value in zip(bh_idx, adjusted):
+            out[i][col["p_bh"]] = value
+    return E2_CONSISTENCY_HEADER, out
+
+
+def _e2_position_row(row_type, family, model, layer, subset_label, calls, seed, n_boot, note):
+    ok_calls = [c for c in calls if c["ok"]]
+    decisive = [c for c in ok_calls if c["first_position_win"] is not None]
+    n_tie = sum(1 for c in ok_calls if c["choice"] == "tie")
+    if not ok_calls:
+        return None
+    k = sum(c["first_position_win"] for c in decisive)
+    n = len(decisive)
+    if n:
+        lo, hi = wilson_ci(k, n)
+        p_binom = exact_binomial_test(k, n, 0.5)
+        clusters: dict[str, list[int]] = defaultdict(list)
+        for c in decisive:
+            clusters[c["case_id"]].append(c["first_position_win"])
+        units = [clusters[cid] for cid in sorted(clusters)]
+        boot = bootstrap_ci(
+            units,
+            lambda u: sum(sum(x) for x in u) / sum(len(x) for x in u),
+            seed=seed, n_boot=n_boot,
+        )
+    else:
+        lo = hi = p_binom = None
+        boot = {"ci_low": None, "ci_high": None, "n_units": 0}
+    return [
+        row_type, family, model, layer, subset_label,
+        len(calls), len(ok_calls), n_tie, n_tie / len(ok_calls), n, k if n else None,
+        (k / n) if n else None, lo, hi, p_binom, None,
+        boot["ci_low"], boot["ci_high"], boot["n_units"], n_boot if n else None, seed if n else None,
+        "exact_binomial_vs_0.5" if n else "", note,
+    ]
+
+
+def table_e2_position(rows: list[dict], seed: int, n_boot: int) -> tuple[list[str], list[list]]:
+    """How often the judge picked whichever summary was shown first.
+
+    Under no position preference this is 0.5. The pre-registered test is the
+    exact binomial (PREREGISTRATION section 6); it treats the calls as
+    independent, which they are not -- each email contributes up to eight of
+    them -- so every row also carries a case-cluster bootstrap interval, and
+    the two are printed side by side rather than one replacing the other.
+
+    The last rows are the pairs whose two summaries are byte-identical. There
+    the correct answer is "tie" by construction, so any A or B is position
+    preference with nothing else mixed in. n is tiny; it is reported as a
+    count, not as a rate with an interval to be quoted.
+    """
+    calls = e2_calls(rows)
+    if not calls:
+        return E2_POSITION_HEADER, []
+    models = sorted({c["judge_model"] for c in calls})
+    out: list[list] = []
+    bh_idx: list[int] = []
+
+    def subset(model=None, layer=None, identical=None):
+        return [c for c in calls
+                if (model is None or c["judge_model"] == model)
+                and (layer is None or c["layer"] == layer)
+                and (identical is None or c["summaries_identical"] == identical)]
+
+    for model in [*models, None]:
+        for layer in [*E2_LAYERS, None]:
+            group = subset(model, layer)
+            is_cell = bool(model and layer)
+            row = _e2_position_row(
+                "position", E2_FAMILY_POSITION if is_cell else E5_FAMILY_DESCRIPTIVE,
+                model or E2_ALL, layer or E2_ALL, "all pairs", group, seed, n_boot,
+                E2_TIE_NOTE + "; " + E2_DEPENDENCE_NOTE,
+            )
+            if row is None:
+                continue
+            if is_cell:
+                bh_idx.append(len(out))
+            out.append(row)
+
+    for model in [*models, None]:
+        group = subset(model, None, True)
+        if not group:
+            continue
+        row = _e2_position_row(
+            "position", E5_FAMILY_DESCRIPTIVE, model or E2_ALL, "hard", "identical summaries",
+            group, seed, n_boot,
+            "both candidates are the same string, so a tie is the only verdict that is not a "
+            "position preference; no interval from this many calls is worth quoting",
+        )
+        if row:
+            out.append(row)
+
+    col = {name: i for i, name in enumerate(E2_POSITION_HEADER)}
+    if bh_idx:
+        adjusted = bh_adjust([out[i][col["p_binomial"]] for i in bh_idx])
+        for i, value in zip(bh_idx, adjusted):
+            out[i][col["p_bh"]] = value
+    return E2_POSITION_HEADER, out
+
+
+def figure_e2_consistency(consistency_rows: list[list], position_rows: list[list], out_path: Path, seed: int) -> str | None:
+    """Two panels of the same four cells: how often the verdict survived the
+    swap, and how often the first position won. The second panel is the reason
+    the first one matters."""
+    try:
+        import matplotlib
+
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+    except ImportError as exc:  # pragma: no cover -- documented fallback
+        print(f"!! matplotlib unavailable ({exc}); CSV tables were still written", file=sys.stderr)
+        return None
+    ccol = {name: i for i, name in enumerate(E2_CONSISTENCY_HEADER)}
+    pcol = {name: i for i, name in enumerate(E2_POSITION_HEADER)}
+    cells = [r for r in consistency_rows
+             if r[ccol["row_type"]] == "rate" and r[ccol["judge_model"]] != E2_ALL and r[ccol["layer"]] != E2_ALL]
+    pos = [r for r in position_rows
+           if r[pcol["row_type"]] == "position" and r[pcol["subset"]] == "all pairs"
+           and r[pcol["judge_model"]] != E2_ALL and r[pcol["layer"]] != E2_ALL]
+    if not cells or not pos:
+        return None
+    # The design is two judge models x two layers. A figure drawn from fewer
+    # cells looks exactly like the designed one to anybody who does not read
+    # the axis labels, so an incomplete run gets no figure and a reason on
+    # stderr instead.
+    designed = len(E2_LAYERS) * len({r[ccol["judge_model"]] for r in consistency_rows
+                                     if r[ccol["row_type"]] == "coverage"})
+    if designed and len(cells) < designed:
+        print(f"!! e2: {len(cells)} of {designed} (model x layer) cells have complete pairs; "
+              "figure skipped rather than drawn from part of the design", file=sys.stderr)
+        return None
+    labels = [f"{r[ccol['judge_model']]}\n{r[ccol['layer']]}" for r in cells]
+    ypos = list(range(len(cells)))[::-1]
+    pos_by_key = {(r[pcol["judge_model"]], r[pcol["layer"]]): r for r in pos}
+    tie_overall = next((r for r in position_rows
+                        if r[pcol["judge_model"]] == E2_ALL and r[pcol["layer"]] == E2_ALL
+                        and r[pcol["subset"]] == "all pairs"), None)
+    footnote = _wrap(
+        f"Left: one pair judged in both orders, {cells[0][ccol['n']]} pairs per cell; consistent = the same "
+        f"summary source won both times. Right: share of decisive calls that picked the summary in position A "
+        f"(ties excluded, {E2_TIE_NOTE.split(';')[0]}); dashed line at 0.5 is no preference. "
+        + (f"Tie rate overall {tie_overall[pcol['tie_rate']]:.3f} of {tie_overall[pcol['n_ok']]} calls. "
+           if tie_overall else "")
+        + f"95% Wilson intervals; exact binomial against 0.5; BH within the four cells; all exploratory. "
+          f"Analysis seed = {seed}.",
+        width=112,
+    )
+    footnote_lines = footnote.count("\n") + 1
+
+    fig, axes = plt.subplots(1, 2, figsize=(10.4, 0.62 * len(cells) + 2.4 + 0.16 * footnote_lines))
+    palette = {"easy": "#1f4e79", "hard": "#7c4a2d"}
+    ax = axes[0]
+    for y, r in zip(ypos, cells):
+        est = r[ccol["estimate"]]
+        ax.errorbar([est], [y], xerr=[[est - r[ccol["wilson_lo"]]], [r[ccol["wilson_hi"]] - est]],
+                    fmt="o", color=palette.get(r[ccol["layer"]], "#333333"), capsize=4)
+        ax.annotate(f"{r[ccol['k']]}/{r[ccol['n']]}", (est, y + 0.22), fontsize=7.5, ha="center", color="#333333")
+    ax.axvline(1.0, color="#555555", lw=1.0, ls=":")
+    ax.set_xlim(0.0, 1.05)
+    ax.set_xlabel("order consistency (95% Wilson)")
+    ax.set_title("Same verdict after swapping A and B")
+
+    ax2 = axes[1]
+    for y, r in zip(ypos, cells):
+        pr = pos_by_key.get((r[ccol["judge_model"]], r[ccol["layer"]]))
+        if pr is None or pr[pcol["estimate"]] is None:
+            continue
+        est = pr[pcol["estimate"]]
+        ax2.errorbar([est], [y], xerr=[[est - pr[pcol["wilson_lo"]]], [pr[pcol["wilson_hi"]] - est]],
+                     fmt="s", color=palette.get(r[ccol["layer"]], "#333333"), capsize=4, markerfacecolor="none")
+        ax2.annotate(f"{pr[pcol['k_first_position']]}/{pr[pcol['n_decisive']]}  p={pr[pcol['p_binomial']]:.3f}",
+                     (est, y + 0.22), fontsize=7.5, ha="center", color="#333333")
+    ax2.axvline(0.5, color="#555555", lw=1.0, ls="--")
+    ax2.set_xlim(0.0, 1.0)
+    ax2.set_xlabel("first-position win rate, ties excluded (95% Wilson)")
+    ax2.set_title("Did position A win more than half the time?")
+
+    for ax_ in axes:
+        ax_.set_ylim(-0.6, len(cells) - 0.4)
+        ax_.set_yticks(ypos)
+        ax_.grid(axis="x", alpha=0.3)
+    axes[0].set_yticklabels(labels, fontsize=8)
+    axes[1].set_yticklabels([])
+    fig.suptitle("E2: an LLM judge asked the same question twice, in two orders")
+    fig.text(0.01, 0.01, footnote, fontsize=7, va="bottom")
+    fig.subplots_adjust(bottom=(0.55 + 0.14 * footnote_lines) / fig.get_figheight(),
+                        left=0.14, right=0.985, top=0.84, wspace=0.08)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(out_path, dpi=160, metadata={"Software": "experiments/analyze.py"})
+    plt.close(fig)
+    return rel_to_repo(out_path)
+
+
 def table_tokens(rows: list[dict]) -> tuple[list[str], list[list]]:
     header = [
         "exp_id", "run_id", "tier", "request_model", "response_model", "n_calls", "n_ok", "n_failed",
@@ -1245,6 +2087,10 @@ def build_manifest(files: list[Path], rows: list[dict], out_dir: Path, seed: int
                 rel_to_repo(p): sha256_file(p)
                 for p in sorted((REPO_ROOT / "prompts").glob("*.yaml"))
             },
+            "experiment_prompts": {
+                rel_to_repo(p): sha256_file(p)
+                for p in sorted((REPO_ROOT / "experiments" / "prompts").glob("*.yaml"))
+            },
         },
         "raw_files": entries,
         "probe_files": probes,
@@ -1312,6 +2158,9 @@ def main(argv: list[str] | None = None) -> int:
     if not pair_sets:
         print(f"e1: {E1_EMPTY_NOTE}")
     e1_main_spec = table_e1_main(pair_sets)
+    e5_strata_spec = table_e5_strata(observations)
+    e2_consistency_spec = table_e2_consistency(rows)
+    e2_position_spec = table_e2_position(rows, args.seed, args.n_boot)
     e1_power_spec = table_e1_power(pair_sets, args.seed, n_sim=args.power_n_sim)
 
     rescore_header, rescore_rows = table_judge_rescore(rows)
@@ -1321,6 +2170,10 @@ def main(argv: list[str] | None = None) -> int:
         ("rates_run_spread.csv", table_run_spread(observations)),
         ("per_case_instability.csv", table_case_instability(observations)),
         ("rates_by_stratum.csv", table_strata(observations)),
+        ("e5_strata.csv", e5_strata_spec),
+        ("e5_logit.csv", table_e5_logit(observations)),
+        ("e2_consistency.csv", e2_consistency_spec),
+        ("e2_position_pref.csv", e2_position_spec),
         ("rates_bootstrap.csv", table_bootstrap(observations, args.seed, args.n_boot)),
         ("paired_mcnemar.csv", table_mcnemar(observations)),
         ("e1_main.csv", e1_main_spec),
@@ -1347,6 +2200,9 @@ def main(argv: list[str] | None = None) -> int:
             figure_judge_scores(score_rows, figures_dir / "judge_score_distribution.png", args.seed),
             figure_e1_forest(e1_main_spec[1], figures_dir / "e1_forest.png", args.seed),
             figure_e1_power(e1_power_spec[1], e1_main_spec[1], figures_dir / "e1_power.png", args.seed),
+            figure_e5_forest(e5_strata_spec[1], figures_dir / "e5_forest.png", args.seed),
+            figure_e2_consistency(e2_consistency_spec[1], e2_position_spec[1],
+                                  figures_dir / "e2_consistency.png", args.seed),
         ):
             if fig:
                 figures.append(fig)
