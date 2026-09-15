@@ -7,16 +7,28 @@ checks/experiments_acceptance.sh asserts.
 
     python -m experiments.analyze --seed 20260920
 
-What is implemented (validated against scipy in `python -m experiments.stats
---cross-check`): Wilson interval, Clopper-Pearson exact interval, exact
-McNemar, case-level cluster bootstrap, Holm and BH adjustment. Run-to-run
-spread, per-case instability and judge re-score stability are descriptive
-counts plus a sample standard deviation -- no interval is attached to them.
+What is implemented, self-checked against published worked examples in
+`python -m experiments.stats` and compared with scipy wherever scipy has an
+equivalent (`--cross-check`): Wilson interval, Clopper-Pearson exact interval,
+exact McNemar, case-level cluster bootstrap, Holm and BH adjustment, Newcombe
+method 10 CI for a paired risk difference, and conditional power by case
+resampling. Run-to-run spread, per-case instability and judge re-score
+stability are descriptive counts plus a sample standard deviation -- no
+interval is attached to them.
 
-What is not implemented yet, and is therefore absent from the output rather
-than approximated: Newcombe method 10 CI for a paired risk difference,
-Fleiss kappa, Krippendorff alpha, the logistic model with clustered standard
-errors, and the power curve. See the TODO list in experiments/README.md.
+The last two were listed here as unimplemented until 2026-09-15. The power
+simulation shipped on 2026-09-14 with its own self-checks (a zero-difference
+pairing has power 0 at every n, power rises with n on a 12-vs-1 discordant
+pairing, and the same seed reproduces a draw while a different seed does
+not). The Newcombe interval shipped on 2026-09-14 validated by structural
+invariants and a Monte-Carlo coverage study, and its remaining gap was closed
+on 2026-09-15 against the printed worked example in Newcombe (1998) Table III.
+Both dates are entries in docs/PREREGISTRATION.md section 9, and every
+Newcombe row carries experiments.stats.NEWCOMBE_VALIDATION in its note column.
+
+What is still not implemented, and is therefore absent from the output rather
+than approximated: Fleiss kappa, Krippendorff alpha, and the logistic model
+with case-clustered standard errors. See the table in experiments/README.md.
 """
 from __future__ import annotations
 
