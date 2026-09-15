@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-09-14T12:50:02.335752Z",
+  "generated_at_utc": "2026-09-15T15:48:42.346834Z",
   "analysis": {
     "seed": 20260920,
     "n_boot": 10000,
@@ -67,6 +67,106 @@
       "last_timestamp_utc": "2026-09-14T12:05:28.312057Z"
     },
     {
+      "path": "experiments/results/raw/e1_v2a/e1_v2a_20260915T153333Z.jsonl",
+      "sha256": "6d54338f2ce6751265389a1a0b89fa6ff1beac98718de75227c056cc6fb184e4",
+      "lines": 420,
+      "ok": 420,
+      "failed": 0,
+      "cache_hits": 0,
+      "calls_by_tier": {
+        "classifier": 210,
+        "judge": 210
+      },
+      "request_to_response_model": {
+        "claude-haiku-4-5": [
+          "claude-haiku-4-5-20251001"
+        ],
+        "claude-sonnet-5": [
+          "claude-sonnet-5"
+        ]
+      },
+      "cost_usd": 1.226163,
+      "cost_usd_recorded_by_runner": 1.226163,
+      "cost_usd_unrecorded_at_run_time": 0.0,
+      "first_timestamp_utc": "2026-09-15T15:33:34.551982Z",
+      "last_timestamp_utc": "2026-09-15T15:37:07.675189Z"
+    },
+    {
+      "path": "experiments/results/raw/e1_v2b/e1_v2b_20260915T153711Z.jsonl",
+      "sha256": "e33d64ea11b4a542d749b0daf269652c334fc86c0ff0854896ae93b824576319",
+      "lines": 420,
+      "ok": 420,
+      "failed": 0,
+      "cache_hits": 0,
+      "calls_by_tier": {
+        "classifier": 210,
+        "judge": 210
+      },
+      "request_to_response_model": {
+        "claude-haiku-4-5": [
+          "claude-haiku-4-5-20251001"
+        ],
+        "claude-sonnet-5": [
+          "claude-sonnet-5"
+        ]
+      },
+      "cost_usd": 1.185492,
+      "cost_usd_recorded_by_runner": 1.185492,
+      "cost_usd_unrecorded_at_run_time": 0.0,
+      "first_timestamp_utc": "2026-09-15T15:37:12.596904Z",
+      "last_timestamp_utc": "2026-09-15T15:40:36.284539Z"
+    },
+    {
+      "path": "experiments/results/raw/e1_v2c/e1_v2c_20260915T154039Z.jsonl",
+      "sha256": "2bcb1bc771aaf8fa9b02d8406481aaaf1eecaf47d6c48b1d1af0e8fd6cd0f427",
+      "lines": 420,
+      "ok": 420,
+      "failed": 0,
+      "cache_hits": 0,
+      "calls_by_tier": {
+        "classifier": 210,
+        "judge": 210
+      },
+      "request_to_response_model": {
+        "claude-haiku-4-5": [
+          "claude-haiku-4-5-20251001"
+        ],
+        "claude-sonnet-5": [
+          "claude-sonnet-5"
+        ]
+      },
+      "cost_usd": 1.189659,
+      "cost_usd_recorded_by_runner": 1.189659,
+      "cost_usd_unrecorded_at_run_time": 0.0,
+      "first_timestamp_utc": "2026-09-15T15:40:41.808369Z",
+      "last_timestamp_utc": "2026-09-15T15:44:03.475546Z"
+    },
+    {
+      "path": "experiments/results/raw/e1_v2d/e1_v2d_20260915T154407Z.jsonl",
+      "sha256": "dfa381f44375f298357302f12f6415ce93fbf9fb406c622bdd86c006e1afb6f4",
+      "lines": 420,
+      "ok": 420,
+      "failed": 0,
+      "cache_hits": 0,
+      "calls_by_tier": {
+        "classifier": 210,
+        "judge": 210
+      },
+      "request_to_response_model": {
+        "claude-haiku-4-5": [
+          "claude-haiku-4-5-20251001"
+        ],
+        "claude-sonnet-5": [
+          "claude-sonnet-5"
+        ]
+      },
+      "cost_usd": 1.237953,
+      "cost_usd_recorded_by_runner": 1.237953,
+      "cost_usd_unrecorded_at_run_time": 0.0,
+      "first_timestamp_utc": "2026-09-15T15:44:10.477836Z",
+      "last_timestamp_utc": "2026-09-15T15:47:43.459894Z"
+    },
+    {
       "path": "experiments/results/raw/smoke/smoke_2026-09-14.jsonl",
       "sha256": "0b829365a2d3e64c7de365c4532102673a36049e9329722d21c1a2ace97fe52d",
       "lines": 20,
@@ -107,13 +207,13 @@
     }
   ],
   "totals": {
-    "raw_lines": 1000,
-    "raw_cost_usd": 3.224837,
-    "raw_cost_usd_recorded_by_runner": 3.219499,
+    "raw_lines": 2680,
+    "raw_cost_usd": 8.064104,
+    "raw_cost_usd_recorded_by_runner": 8.058766,
     "raw_cost_usd_unrecorded_at_run_time": 0.005338,
     "probes_cost_usd": 0.012594,
-    "total_cost_usd": 3.237431,
-    "cost_ledger_cumulative_usd": 3.219499,
+    "total_cost_usd": 8.076698,
+    "cost_ledger_cumulative_usd": 8.058766,
     "cost_ledger_note": "the ledger records runner runs only; probe scripts are accounted separately",
     "cost_method_note": "raw_cost_usd is recomputed from each row's usage at the pinned prices in experiments/__init__.py; raw_cost_usd_recorded_by_runner is what the runner wrote into the raw files at run time. The gap is billed-but-unrecorded spend on calls that returned tokens and then failed validation (experiments/COST_CALIBRATION.md section 3)"
   },
@@ -136,7 +236,9 @@
     "figures": [
       "experiments/results/figures/primary_metric_by_run.png",
       "experiments/results/figures/noise_floor_vs_gate_thresholds.png",
-      "experiments/results/figures/judge_score_distribution.png"
+      "experiments/results/figures/judge_score_distribution.png",
+      "experiments/results/figures/e1_forest.png",
+      "experiments/results/figures/e1_power.png"
     ]
   }
 }

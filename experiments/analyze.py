@@ -82,6 +82,14 @@ E1_BASELINE_EXP_ID = "e0_noise"
 E1_BASELINE_REPEATS = (0, 1, 2)
 E1_VERSIONS = ("v2a", "v2b", "v2c", "v2d")
 E1_PRIMARY_METRIC = "category_match"
+E1_FAMILY_CONFIRMATORY = "confirmatory_holm"
+E1_FAMILY_SECONDARY = "exploratory_bh"
+E1_FAMILY_LEAK_SENSITIVITY = "sensitivity_drop_leaked_case"
+# PREREGISTRATION section 10.10.1: few-shot example 4 of prompts/v1.yaml is this
+# case verbatim, label included, so v2a and v2b remove a leaked evaluation label
+# at the same time as they remove examples. H1 and H2 are recomputed without it.
+E1_LEAKED_CASE_ID = "case-043"
+E1_LEAK_SENSITIVITY_VERSIONS = ("v2a", "v2b")
 E1_POWER_SIZES = (30, 50, 70)
 E1_POWER_N_SIM = 2000
 # alpha = 0.05 is the nominal per-test level; 0.0125 is what Holm charges the
@@ -514,7 +522,7 @@ def table_e1_main(pair_sets: dict[tuple[str, str], dict]) -> tuple[list[str], li
             metric, info["baseline_label"], version, n, info["n_tie"], info["n_missing"],
             a + b, a + c, a, b, c, d,
             mc["p_value"], None, None, ci["rd"], ci["ci_low"], ci["ci_high"], odds,
-            "confirmatory_holm" if primary else "exploratory_bh",
+            E1_FAMILY_CONFIRMATORY if primary else E1_FAMILY_SECONDARY,
             mc["method"], ci["method"],
             (NEWCOMBE_VALIDATION if primary else NEWCOMBE_VALIDATION + "; secondary metric, exploratory")
             + ("" if b > 0 else "; odds ratio undefined (b = 0)"),
@@ -526,7 +534,51 @@ def table_e1_main(pair_sets: dict[tuple[str, str], dict]) -> tuple[list[str], li
         target = E1_MAIN_HEADER.index("p_holm" if metric == E1_PRIMARY_METRIC else "p_bh")
         for i, value in zip(idxs, adjusted):
             rows[i][target] = value
+    rows.extend(table_e1_leak_sensitivity(pair_sets))
     return E1_MAIN_HEADER, rows
+
+
+def table_e1_leak_sensitivity(pair_sets: dict[tuple[str, str], dict]) -> list[list]:
+    """Section 10.10.1: H1 and H2 recomputed with the leaked case dropped.
+
+    These rows sit in `e1_main.csv` next to the primary rows, as the
+    pre-registration requires, and are told apart by the `family` column. They
+    carry no adjusted p-value: Holm is fixed across the four confirmatory
+    tests and nothing else, so adding a fifth and sixth number to that family
+    would change the confirmatory result, which is the one thing a sensitivity
+    analysis must not do. `p_raw` is the value to read in these rows.
+    """
+    out: list[list] = []
+    for version in E1_LEAK_SENSITIVITY_VERSIONS:
+        info = pair_sets.get((E1_PRIMARY_METRIC, version))
+        if not info or not info["pairs"]:
+            continue
+        kept = [pair for pair in info["pairs"] if pair[0] != E1_LEAKED_CASE_ID]
+        dropped = len(info["pairs"]) - len(kept)
+        if not kept:
+            continue
+        cells = paired_cells(kept)
+        a, b, c, d, n = cells["a"], cells["b"], cells["c"], cells["d"], cells["n"]
+        mc = mcnemar_exact(b, c)
+        ci = newcombe_paired_diff_ci(a, b, c, d)
+        note = (
+            NEWCOMBE_VALIDATION
+            + "; PREREGISTRATION section 10.10.1 sensitivity analysis, "
+            + E1_LEAKED_CASE_ID
+            + (" dropped from the pairing" if dropped
+               else " was already absent from the pairing, so this row repeats the confirmatory one")
+            + "; no multiplicity adjustment, read p_raw"
+        )
+        if b == 0:
+            note += "; odds ratio undefined (b = 0)"
+        out.append([
+            E1_PRIMARY_METRIC, info["baseline_label"], version, n, info["n_tie"], info["n_missing"],
+            a + b, a + c, a, b, c, d,
+            mc["p_value"], None, None, ci["rd"], ci["ci_low"], ci["ci_high"],
+            (c / b) if b > 0 else None,
+            E1_FAMILY_LEAK_SENSITIVITY, mc["method"], ci["method"], note,
+        ])
+    return out
 
 
 E1_POWER_HEADER = [
@@ -581,8 +633,9 @@ def figure_e1_forest(main_rows: list[list], out_path: Path, seed: int) -> str | 
     if not main_rows:
         return None
     col = {name: i for i, name in enumerate(E1_MAIN_HEADER)}
-    primary = [r for r in main_rows if r[col["metric"]] == E1_PRIMARY_METRIC]
-    secondary = [r for r in main_rows if r[col["metric"]] != E1_PRIMARY_METRIC]
+    primary = [r for r in main_rows
+               if r[col["metric"]] == E1_PRIMARY_METRIC and r[col["family"]] == E1_FAMILY_CONFIRMATORY]
+    secondary = [r for r in main_rows if r[col["family"]] == E1_FAMILY_SECONDARY]
     if not primary:
         return None
     versions = [r[col["candidate_version"]] for r in primary]
@@ -667,7 +720,9 @@ def figure_e1_power(power_rows: list[list], main_rows: list[list], out_path: Pat
         ax.plot([r[pcol["n"]] for r in pts], [r[pcol["power"]] for r in pts],
                 marker="o", mfc="none", ls="--", color=colour, label=f"{version} simulated")
         realized = [r for r in main_rows
-                    if r[mcol["candidate_version"]] == version and r[mcol["metric"]] == E1_PRIMARY_METRIC]
+                    if r[mcol["candidate_version"]] == version
+                    and r[mcol["metric"]] == E1_PRIMARY_METRIC
+                    and r[mcol["family"]] == E1_FAMILY_CONFIRMATORY]
         if realized and isinstance(realized[0][mcol["p_holm"]], float):
             rejected = 1.0 if realized[0][mcol["p_holm"]] < 0.05 else 0.0
             # nudge the measured markers apart: versions that agree would
@@ -1094,6 +1149,8 @@ def run_self_check(observations: list[dict], seed: int, out_dir: Path | None, n_
 
     failures = []
     for row in rows:
+        if row[header.index("family")] == E1_FAMILY_LEAK_SENSITIVITY:
+            continue
         if row[header.index("b")] != 0 or row[header.index("c")] != 0:
             failures.append(f"{row[0]}: expected no discordant pairs, got b={row[header.index('b')]} "
                             f"c={row[header.index('c')]}")

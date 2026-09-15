@@ -171,6 +171,10 @@ Three properties are load-bearing:
 | 2026-09-14 | `smoke` | 10 cases x 1, cost calibration only | 20/20 | $0.059746 | `results/raw/smoke/smoke_2026-09-14.jsonl` |
 | 2026-09-14 | `e0_noise` | E0 main arm: v1 x 70 cases x 5 repeats, classifier + judge | 700/700 | $2.080951 | `results/raw/e0_noise/e0_noise_20260914T115913Z.jsonl` |
 | 2026-09-14 | `e0_judge_iso` | E0 judge-isolation arm: repeat 0 classifier output frozen, judge re-scores 4x | 279/280 | $1.084140 | `results/raw/e0_judge_iso/e0_judge_iso_20260914T120557Z.jsonl` |
+| 2026-09-15 | `e1_v2a` | E1 H1: v2a (few-shot 4 -> 2) x 70 cases x 3 repeats | 420/420 | $1.226163 | `results/raw/e1_v2a/e1_v2a_20260915T153333Z.jsonl` |
+| 2026-09-15 | `e1_v2b` | E1 H2: v2b (few-shot 4 -> 0) x 70 x 3 | 420/420 | $1.185492 | `results/raw/e1_v2b/e1_v2b_20260915T153711Z.jsonl` |
+| 2026-09-15 | `e1_v2c` | E1 H3: v2c (category definitions and tie-break rule removed) x 70 x 3 | 420/420 | $1.189659 | `results/raw/e1_v2c/e1_v2c_20260915T154039Z.jsonl` |
+| 2026-09-15 | `e1_v2d` | E1 H4: v2d (bilingual / typo / zhuyin / sarcasm paragraph removed) x 70 x 3 | 420/420 | $1.237953 | `results/raw/e1_v2d/e1_v2d_20260915T154407Z.jsonl` |
 
 The isolation arm's cost is $0.005338 higher than the figure the runner
 printed on the day: the one failed call was billed and recorded at $0, and
@@ -195,11 +199,75 @@ Krippendorff alpha are still `NotImplementedError` items, so the two columns
 reserved for them in the judge tables are empty and carry a note saying why --
 no approximation is written there.
 
-Still to run: E1, E2, E4, E5.
+Still to run: E2, E4, E5.
 
-E1's four degraded prompts exist (`prompts/v2a.yaml` .. `prompts/v2d.yaml`,
-built 2026-09-14) and its analysis path is written and self-checked, but no
-E1 call has been made. The design is frozen in
+## What E1 found
+
+The four arms ran on 2026-09-15 between 15:33 and 15:48 UTC: 1,680 calls,
+1,680 successful, no failures, no `--cache`, `cache_hits` 0 in all four meta
+files. `response_model` was `claude-haiku-4-5-20251001` on all 840 classifier
+calls and the bare alias `claude-sonnet-5` on all 840 judge calls, so none of
+PREREGISTRATION section 10.3's reversal conditions fired and the paired
+baseline is the frozen E0 one (repeats 0-2, 64/70 on both metrics).
+
+| Version | What it removes | base -> degraded | b | c | RD | 95% CI | p | p Holm |
+|---------|-----------------|------------------|---|---|----|--------|---|--------|
+| v2a | 2 of the 4 few-shot examples | 64/70 -> 64/70 | 1 | 1 | 0.000 | -0.064 to +0.064 | 1.000 | 1.000 |
+| v2b | all 4 few-shot examples | 64/70 -> 64/70 | 1 | 1 | 0.000 | -0.064 to +0.064 | 1.000 | 1.000 |
+| v2c | the category definitions and the tie-break rule | 64/70 -> 56/70 | 10 | 2 | -0.114 | -0.219 to -0.015 | 0.039 | 0.154 |
+| v2d | the bilingual / typo / zhuyin / sarcasm paragraph | 64/70 -> 65/70 | 0 | 1 | +0.014 | -0.041 to +0.075 | 1.000 | 1.000 |
+
+**Nothing is significant under the pre-registered correction.** One version
+moves at all. v2c drops the gate from 64/70 to 56/70, and its exact McNemar
+p of 0.0386 would clear a nominal 0.05 if it were the only test in the study;
+Holm across the four pre-registered tests puts it at 0.154. The other three
+sit on top of the baseline: v2b, the version DEGRADATION_DESIGN predicted
+would fall the furthest, ends on the same 64/70 with one case flipping each
+way, and v2d ends one case above the baseline. Those predictions were written
+down before the runs and stay where they are, wrong.
+
+The secondary metric `passed` returns exactly the same four tables as
+`category_match`: on these 280 case-version outcomes, no case matched the gold
+category and then failed the judge's score-3 threshold, so the judge added no
+discrimination beyond the category comparison. That is a fact about this
+dataset and this threshold, not a general property of the judge.
+
+Both pre-specified sensitivity analyses (section 10.10) agree with the primary
+result:
+
+- dropping case-043, the case that sits verbatim in v1's own prompt, leaves
+  H1 and H2 at b = 1, c = 1, RD = 0 on n = 69 (rows with
+  `family = sensitivity_drop_leaked_case` in `e1_main.csv`);
+- pairing every (case, repeat) instead of collapsing repeats, n = 210, gives
+  the same picture: v2c -0.110, the other three within one flip of zero
+  (`paired_mcnemar.csv`, `family = sensitivity_per_repeat_pairing`).
+
+`e1_power.csv` answers what the 70-case gate can catch. Conditional on v2c's
+observed effect, a study of this size rejects 55% of the time at alpha 0.05
+and 32% at the 0.0125 Holm charges the first of four tests; at n = 50, 38% and
+17%; at n = 30, 12% and 2%. For the other three versions the observed effect
+is zero, so simulated power is zero at every n -- the resampling cannot invent
+an effect that is not in the pairs.
+
+The blunt version of the same arithmetic: with no cases flipping the other
+way, an exact McNemar test at n = 70 needs 6 discordant pairs to clear a
+nominal 0.05 (8.6 points of gate rate) and 8 to clear Holm's worst case (11.4
+points). v2c had 10 flips down but also 2 up, and 10-versus-2 is not enough;
+it would have needed 13 down against those 2. A 70-case gate of this shape
+does not see a 5-point regression, and the interval widths in the table above
+say so directly rather than by a non-significant p-value.
+
+Exploratory, not part of any test: the two cases DEGRADATION_DESIGN named in
+advance as the ones v2c should *improve* -- case-018, where v1's "SSO/2FA
+setup" line pulls an SSO failure into `account`, and case-009, where v1's
+tie-break example anchors a failed card charge to account access -- are
+exactly the two that moved up. The 10 that moved down are mostly not the
+at-risk cases the same document named: 8 of them are `easy` cases in the
+`account` and `general` categories, while the ambiguous, currency and
+export/sync cases it flagged largely held. Removing the definitions hurt the
+cases nobody expected to be carrying them.
+
+The design is frozen in
 [`docs/PREREGISTRATION.md` section 10](../docs/PREREGISTRATION.md) and the
 prompts in [`docs/DEGRADATION_DESIGN.md`](../docs/DEGRADATION_DESIGN.md).
 
@@ -263,12 +331,14 @@ Closed: "Newcombe method 10 checked against the paper's printed example", due
 before any submitted document quoted the interval, was checked on 2026-09-15
 against Newcombe (1998) Table III as described above.
 
-`paired_mcnemar.csv`, `e1_main.csv` and `e1_power.csv` are generated with zero
-data rows until a v2* run exists, and `figures/e1_forest.png` /
-`figures/e1_power.png` are skipped rather than drawn empty.
-`paired_mcnemar.csv` is the per-(case, repeat) sensitivity view; the
-confirmatory test, which collapses repeats to one outcome per case, is
-`e1_main.csv`.
+`paired_mcnemar.csv`, `e1_main.csv` and `e1_power.csv` carry rows since
+2026-09-15; before a v2* run existed they were written with headers and no
+data, and `figures/e1_forest.png` / `figures/e1_power.png` were skipped rather
+than drawn empty. `paired_mcnemar.csv` is the per-(case, repeat) sensitivity
+view; the confirmatory test, which collapses repeats to one outcome per case,
+is `e1_main.csv`, where the four `confirmatory_holm` rows are the
+pre-registered family and the two `sensitivity_drop_leaked_case` rows are
+section 10.10.1 and carry no adjusted p-value.
 
 ## Honesty rules for anything built on this data
 

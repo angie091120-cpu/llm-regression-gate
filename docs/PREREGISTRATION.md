@@ -281,6 +281,30 @@ updated to state the new status. Section 6 and section 10.7 point at this
 section for validation status and so need no edit; the caveat they refer to
 is now the paragraph above rather than the 2026-09-14 one.
 
+**2026-09-15, section 10.10.1 had no implementation when this document was
+frozen.** `analyze.py` shipped the pairing-unit view of section 10.10.2 --
+`paired_mcnemar.csv`, family `sensitivity_per_repeat_pairing` -- but nothing
+in the code dropped case-043 and recomputed H1 and H2. The gap was found while
+the E1 calls were still being made and closed before `analyze.py` had been run
+over any E1 raw file: at that point the only E1 data read were row counts, the
+success and failure counts, `response_model` and latency, none of which is an
+outcome. The rule implemented is this document's sentence unchanged -- H1 and
+H2 recomputed with case-043 dropped, n = 69, reported next to the primary rows
+-- and it calls the same `mcnemar_exact` and `newcombe_paired_diff_ci` the
+confirmatory rows call. No new arithmetic was added. The new path was checked
+first on a synthetic pairing in which dropping the marked case is known to
+move b from 2 to 1.
+
+Three choices this document did not fix, recorded here so that they are not
+read as pre-registered: the sensitivity rows sit in `e1_main.csv` and are told
+apart by the `family` column (`sensitivity_drop_leaked_case`); they carry no
+adjusted p-value, because Holm is fixed across the four confirmatory tests and
+enlarging that family would change the confirmatory result a sensitivity
+analysis is supposed to leave alone; and both E1 figures filter on the
+confirmatory family, so `e1_forest.png` and `e1_power.png` show the four lines
+they would have shown without this change. This is the first entry written
+after the freeze stamp at the head of the document.
+
 ## 10. E1 in full
 
 Written 2026-09-14, before the first degraded-prompt call. Section 4 fixes

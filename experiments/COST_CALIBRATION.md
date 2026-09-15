@@ -77,7 +77,18 @@ percent -- except E2, which is still priced off a prompt that does not exist.
 | first probe script iteration, artifact deleted | 4 (2 successful) | $0.004692 |
 | E0 main arm (`e0_noise_20260914T115913Z.jsonl`) | 700 | $2.080951 |
 | E0 judge-isolation arm (`e0_judge_iso_20260914T120557Z.jsonl`) | 280 (279 successful) | $1.084140 |
-| **Total** | 1,016 | **$3.242123** |
+| E1 H1 (`e1_v2a_20260915T153333Z.jsonl`) | 420 | $1.226163 |
+| E1 H2 (`e1_v2b_20260915T153711Z.jsonl`) | 420 | $1.185492 |
+| E1 H3 (`e1_v2c_20260915T154039Z.jsonl`) | 420 | $1.189659 |
+| E1 H4 (`e1_v2d_20260915T154407Z.jsonl`) | 420 | $1.237953 |
+| **Total** | 2,696 | **$8.081390** |
+
+E1 cost $4.839267 for 1,680 calls, all four arms successful, which is
+$0.002880 per call against E0 main arm's $0.002973. The four runs were
+launched with `--max-cost-usd 6.00` each and the dearest used 20.6% of that
+cap; `aborted_on_cost_cap` is false in all four meta files. Nothing in the E1 rows
+separates recomputed cost from recorded cost, because no E1 call failed: the
+$0.005338 gap below is still the single E0 call and nothing else.
 
 The fourth row has no artifact in the repository: it was the first version of
 `experiments/probes.py`, whose output file was deleted when the script was
@@ -104,27 +115,27 @@ What changed on 2026-09-14, before E1:
   wrote it, `cost_usd: 0.0` and all -- a raw file is evidence of what happened,
   not a working copy.
 - `cost_ledger.json` is **not** back-filled either. It is append-only and each
-  entry records what that run knew at the time, so it still reads $3.219499.
+  entry records what that run knew at the time, so it still reads $8.058766, the sum of its six runner entries.
 
 Where each number now lives:
 
 | Number | Value | Meaning |
 |--------|-------|---------|
-| `MANIFEST.totals.raw_cost_usd` | $3.224837 | recomputed from `usage` at pinned prices -- the published figure |
-| `MANIFEST.totals.raw_cost_usd_recorded_by_runner` | $3.219499 | what the runner wrote into the raw files at run time |
+| `MANIFEST.totals.raw_cost_usd` | $8.064104 | recomputed from `usage` at pinned prices -- the published figure |
+| `MANIFEST.totals.raw_cost_usd_recorded_by_runner` | $8.058766 | what the runner wrote into the raw files at run time |
 | `MANIFEST.totals.raw_cost_usd_unrecorded_at_run_time` | $0.005338 | the difference, i.e. this one call |
-| `cost_ledger.json` `cumulative_usd` | $3.219499 | append-only, runner runs only, never edited afterwards |
-| `MANIFEST.totals.total_cost_usd` | $3.237431 | raw (recomputed) + the two surviving probe files |
+| `cost_ledger.json` `cumulative_usd` | $8.058766 | append-only, runner runs only, never edited afterwards |
+| `MANIFEST.totals.total_cost_usd` | $8.076698 | raw (recomputed) + the two surviving probe files |
 
 `checks/experiments_acceptance.sh` C4 reconciles the first against the fourth
-and needs them within 1%; the gap is 0.17%, and it is now a number with a
+and needs them within 1%; the gap is 0.07%, and it is now a number with a
 named cause rather than a silent agreement.
 
 Not in the table above and not in this package's ledger: the production
 baseline bootstrap run on `main` (70 cases, 140 calls,
 `eval_reports/baseline.json`, commit fe1cea8) cost $0.415487 through
 `evalkit.cost`. It is listed here only so the workspace-level total is
-findable in one place: **$3.657610 against the $20 spend limit (18%).**
+findable in one place: **$8.496877 against the $20 spend limit (42%).**
 
 ## 4. Measured API behaviour
 
