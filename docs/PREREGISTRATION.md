@@ -1,5 +1,7 @@
 # Pre-registration: LLM-as-judge reliability and regression-gate sensitivity
 
+Status: FROZEN 2026-09-15 23:24 (+0800) by the author's decision, recorded in the office decision log. Any later change is an entry in section 9, dated; the body above section 9 is not edited after this stamp.
+
 **Written 2026-09-14, before any E1 data existed.** The git history of this
 branch is the evidence for that ordering: this file and `experiments/analyze.py`
 are committed before the first degraded-prompt run, so the analysis could not
