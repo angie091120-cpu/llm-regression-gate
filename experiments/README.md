@@ -343,7 +343,7 @@ from "it misses a third of them". Those seven cases are also case-064 to
 case-070, a consecutive block written in one sitting to fill the 10%
 bilingual quota rather than seven draws spread across the dataset, which is
 derived from the case ids at analysis time and printed in the table's `note`
-column. The same holds, less dramatically, everywhere below n = 20: eight of
+column. The same holds, less dramatically, everywhere below n = 20: nine of
 the ten strata have an interval wider than 19 points.
 
 `e5_logit.csv` carries `pass ~ language + difficulty + category` with
