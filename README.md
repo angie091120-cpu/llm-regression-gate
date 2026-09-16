@@ -20,7 +20,7 @@ Most teams ship prompt changes blind: edit a string, deploy, hope. This project 
   - ~~a committed `eval_reports/baseline.json` exists~~ — done 2026-09-14 (SPEC.md §5, [docs/DECISIONS.md D-009](docs/DECISIONS.md)); runs now diff against it instead of re-bootstrapping;
   - the repository's branch protection lists this check as required — a repository-owner setting, not configured yet.
 
-  Today it only turns the check red; the scorecard comment is posted once the secret and baseline are in place.
+  The secret and the baseline are both in place, and the scorecard comment is no longer hypothetical: [PR #4](https://github.com/angie091120-cpu/llm-regression-gate/pull/4) carries one, posted by `eval-gate.yml` on 2026-09-16 (UTC) after a real-API run of `prompts/v1` — candidate pass rate 0.9143, baseline 0.9143, delta 0, severity `ok`. Branch protection is the one prerequisite left, so a critical regression here turns the check red without blocking the merge.
 
 ## Setup
 
