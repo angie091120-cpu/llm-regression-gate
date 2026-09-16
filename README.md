@@ -16,7 +16,7 @@ Most teams ship prompt changes blind: edit a string, deploy, hope. This project 
 
   **Today this check does not block a merge.** Making it one that does requires all of the following:
 
-  - an `ANTHROPIC_API_KEY` repository secret is provisioned — until then, `eval-gate.yml` fails loud on every run with an explicit "ANTHROPIC_API_KEY secret not configured" error rather than passing silently;
+  - ~~an `ANTHROPIC_API_KEY` repository secret is provisioned~~ — done 2026-09-14; before that, `eval-gate.yml` failed loud on every run with an explicit "ANTHROPIC_API_KEY secret not configured" error rather than passing silently;
   - ~~a committed `eval_reports/baseline.json` exists~~ — done 2026-09-14 (SPEC.md §5, [docs/DECISIONS.md D-009](docs/DECISIONS.md)); runs now diff against it instead of re-bootstrapping;
   - the repository's branch protection lists this check as required — a repository-owner setting, not configured yet.
 
