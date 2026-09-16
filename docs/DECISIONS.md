@@ -258,3 +258,55 @@ no-code way to change a price
   requiring `PRICE_*` env vars before any run (needless friction, and D-005
   already rejected it); adding a pricing-fetch call at runtime (a network
   dependency and a moving target inside a module that is otherwise pure math).
+
+## D-011: the CI baseline is rebuilt on dataset v1.1; the v1 one is kept beside
+it
+
+- **Chose:** `eval_reports/baseline.json` is now the 2026-09-17 real-API run of
+  `prompts/v1` over dataset **v1.1** -- 63/70, pass rate 0.9, 70 cases,
+  $0.419296, `git_commit` 99f6a8b. The run it replaces is kept, unchanged and
+  unread by any workflow, as
+  `eval_reports/baseline-2026-09-14-dataset-v1.json` (64/70, pass rate 0.9143,
+  dataset v1). `.github/workflows/eval-gate.yml` names
+  `eval_reports/baseline.json` and no other path, so the renamed file is
+  inert.
+- **Why:** a baseline is a reference for a diff, and a diff across two dataset
+  versions measures the dataset as much as the prompt. `golden_dataset.json`
+  moved to v1.1 on 2026-09-17 (`docs/PREREGISTRATION.md` section 9), and the
+  first gate run after it reported a -0.0143 delta against a v1-bootstrapped
+  reference, which is a number nobody can read. Rebuilding on v1.1 puts the
+  gate back to comparing prompts. The new baseline was measured against
+  dataset sha256
+  `1590949032efbf123ca11394b3c12576aa3b2315a9edb03d30f01d0d6cdf2d5e`.
+- **The one case the two baselines differ on is `case-056`, and it is not the
+  case the privacy fix edited.** Old: predicted `billing`, judge 5, passed.
+  New: predicted `general`, `category_match` false, judge 5, not passed -- the
+  category moved and the judge score did not. `case-007`, whose email address
+  the v1.1 edit changed, answers `account`, judge 5, passed in both. Against
+  the old baseline the diff is `severity: ok`, one regression, no
+  improvements, and `per_category_delta` billing -0.0526.
+- **What a single run as a baseline cannot do.** The classifier is not
+  deterministic across sessions, and `case-056` is a billing/general boundary
+  case, so a future run may answer `billing` again and show up as an
+  improvement against this baseline. This baseline records one draw, as the
+  one before it did. E0's five repeats returned 64/70 with no case changing
+  its verdict, which is evidence about five repeats inside one session and not
+  a bound on what a run weeks later does.
+- **The baseline file records no dataset identifier.** `eval_report.json`'s
+  schema is `prompt_version`, `model`, `generated_at`, `git_commit`,
+  `pass_threshold`, `pass_rate`, `per_category_accuracy`,
+  `cumulative_cost_usd`, `cases` -- there is no dataset name, version or hash
+  in it, so which dataset a baseline was measured on is recoverable only from
+  `git_commit` and from entries like this one. Adding a field would change the
+  report schema that SPEC.md 7 AC2 pins, so it is not done here and is noted
+  instead.
+- **Rejected:** keeping the v1 baseline and explaining the delta in prose
+  (every future gate run would carry a dataset artefact in its number);
+  deleting the v1 baseline (it is the only record of the gate's v1 behaviour);
+  re-running until the two agree (that is fitting the reference to the answer,
+  and the same discipline that forbids re-rolling a bad draw in
+  `docs/PREREGISTRATION.md` section 5 forbids it here).
+- **Cost:** $0.419296 for the run, on the same $2/$10 Sonnet and $1/$5 Haiku
+  prices D-010 fixed. It is an `evalkit` run, not an `experiments/` runner
+  run, so it does not appear in `experiments/results/cost_ledger.json` and
+  check C4 of `checks/experiments_acceptance.sh` is unaffected.

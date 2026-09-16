@@ -128,6 +128,17 @@ cap; `aborted_on_cost_cap` is false in all four meta files. Nothing in the E1 ro
 separates recomputed cost from recorded cost, because no E1 call failed: the
 $0.005338 gap below is still the single E0 call and nothing else.
 
+One run deliberately absent from the table above: the 2026-09-17 rebuild of
+`eval_reports/baseline.json`, $0.419296 for 70 cases
+(`docs/DECISIONS.md` D-011). It is an `evalkit` run rather than an
+`experiments/` runner run, so it appends to whatever `cost_ledger.json` the
+shell it started in points at -- never
+`experiments/results/cost_ledger.json`, which only the runners write. The
+ledger C4 reconciles `MANIFEST.json` against is therefore unchanged by it, as
+are every figure in this file. The same applies to each `eval-gate.yml` run on
+a pull request: they spend real money on GitHub's runners and none of it is
+recorded here.
+
 The fourth row has no artifact in the repository: it was the first version of
 `experiments/probes.py`, whose output file was deleted when the script was
 rewritten to record the SDK version. The money was spent, so it is listed.

@@ -491,7 +491,12 @@ has no subject field, so the sheet has no `email_subject` column and
 
 Row order is shuffled, so that position in the sheet says nothing about
 difficulty or category. The shuffle is seeded and the sheet regenerates byte
-for byte:
+for byte **from dataset v1**, the version it was built from; run against v1.1
+the same snippet returns
+`200aa335ca1a5eb9e1e76c9951511ea194b5a4d53659b60db7df62c754660f44` instead,
+because `case-007`'s email text changed (`docs/PREREGISTRATION.md` section 9).
+The handout is not regenerated -- reproducing it means running this against
+the v1 file:
 
 ```python
 import csv, json, random
@@ -521,12 +526,22 @@ python -m experiments.import_annotator2 --sheet ~/Downloads/annotator2_sheet.csv
 
 `import_annotator2.py` validates the whole file before it writes anything: 70
 rows, every case id present exactly once, `your_label` one of the four values,
-and `email_body` unchanged from `golden_dataset.json`. Surrounding whitespace
-and capitalisation in the label are normalised and the normalisation is printed;
-nothing else is repaired silently. An edited `email_body` is an error rather
-than a warning, because such a row carries a label for text the case does not
-contain, and `--allow-body-drift` is the documented way past it. Every problem
-is listed in one pass; exit 1 writes no file.
+and `email_body` matching either `golden_dataset.json` or the text the sheet
+was handed out with. Surrounding whitespace and capitalisation in the label are
+normalised and the normalisation is printed; nothing else is repaired silently.
+An edited `email_body` is an error rather than a warning, because such a row
+carries a label for text the case does not contain. Every problem is listed in
+one pass; exit 1 writes no file.
+
+One row will come back not matching the dataset: `case-007`, whose email text
+changed when the dataset moved to v1.1 after the handout
+(`docs/PREREGISTRATION.md` section 9). `HANDOUT_BODY_SHA256` in the importer
+holds the sha256 of that case's v1 text, so a row returning it is recognised as
+the sheet as sent, reported as a warning and accepted; a `case-007` row
+carrying anything else is still an error. The rejection message names both
+faults it cannot tell apart -- an edited spreadsheet, or a dataset that moved
+without the importer being told -- and `--allow-body-drift` remains the escape
+hatch for the second. No flag is needed for the 2026-09-23 import.
 
 The importer reads `id` and `input_text` from the dataset and nothing else. No
 gold label is printed or compared at ingestion time, so the decision to accept
@@ -535,8 +550,11 @@ Agreement is computed later, by the analysis step.
 
 `experiments/data/annotator2_labels.json` holds `annotator: "human-2
 (non-member)"` (no name is recorded), `annotated_on`, `sheet_seed`,
-`sheet_sha256`, `dataset_version` and 70 `{case_id, label, notes}` records
-sorted by case id.
+`sheet_sha256`, `sheet_dataset_version`, `dataset_version_on_disk` and 70
+`{case_id, label, notes}` records sorted by case id. The two version fields are
+separate on purpose: the labels describe the text the annotator read, which is
+dataset v1, and that is what `sheet_dataset_version` records, read off the rows
+rather than off whatever the dataset says on the day of the import.
 
 Status on 2026-09-16: sheet and instructions produced, annotation not started,
 due back 2026-09-23. The kappa estimator and its bootstrap interval are

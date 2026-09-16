@@ -39,11 +39,10 @@ v2a is the only file that adds nothing at all. Three fields differ by
 necessity (`version`, `created_at`, and a three-line `#` comment at the top of
 each file naming the degradation); YAML comments never reach the API. `model`
 stays `claude-haiku-4-5`. The five lines were re-derived from the files on
-2026-09-17 by comparing the two line sets under the normalisation the snippet
-below uses;
-`docs/PREREGISTRATION.md` section 9 carries the same list, as a correction to
-the sentence in section 10.1 that reads on its own as though no such line
-exists.
+2026-09-17 by a line-by-line diff under the normalisation the snippet below
+uses; `docs/PREREGISTRATION.md` section 9 carries the same list, as a
+correction to the sentence in section 10.1 that reads on its own as though no
+such line exists.
 
 | File | Edit | Prompt-content diff vs v1 | system_prompt chars | few-shot examples |
 |------|------|---------------------------|---------------------|-------------------|

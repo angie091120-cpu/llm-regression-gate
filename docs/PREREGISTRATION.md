@@ -468,7 +468,7 @@ implemented and is still listed as such in `experiments/README.md`.
 does not cover.** Section 10.1 says "Every line each file keeps is
 byte-identical to `prompts/v1.yaml`". That holds for every kept line, and it
 is not the whole account of what the files contain: three of the four also
-carry lines that appear nowhere in v1. A line-set comparison against v1, run
+carry lines that appear nowhere in v1. A line-by-line diff against v1, run
 on 2026-09-17 under the normalisation `docs/DEGRADATION_DESIGN.md` prints
 (drop `#` comments, the `version:` line and the `created_at:` line), gives
 -8 / +0 for v2a, -17 / +1 for v2b, -15 / +3 for v2c and -5 / +1 for v2d. The
@@ -510,8 +510,10 @@ What the SDK version rests on instead: `requirements.txt` pins
 pin at every commit the meta files record -- 434fc31 (E0 main arm and
 judge-isolation arm), 786f32a (all four E1 arms), 12ffbff (E2 calibration and
 batch 1), 957d936 (E2 batch 2 and E4). The repository interpreter `.venv`
-carries 0.117.0 today, and `experiments/README.md` fixes the convention that
-study runs use it rather than the analysis venv, which carries 1.5.0. A pin
+carries 0.117.0 today -- a property of this machine, checkable by whoever has
+it and by nobody else, since a virtualenv is not in the repository -- and
+`experiments/README.md` fixes the convention that study runs use it rather
+than the analysis venv, which carries 1.5.0. A pin
 plus a convention is not a record of what executed. The probe files are the
 nearest artifact and they are separate processes:
 `probes_sdk0.117.0_20260914T113405Z.json` and
@@ -542,10 +544,12 @@ is evidence.
 
 **2026-09-17, one email address in `golden_dataset.json` belonged to a real
 company; the dataset moves to v1.1.** `case-007`'s `input_text` carried
-`lin.admin@skycloud.com.tw`. The dataset is fictional by design (section 2:
-NebulaDesk and everyone in it are invented), and that domain is not: on
-2026-09-17 it resolves to a live host serving a site that identifies itself
-as a Taiwanese CDN and DDoS-mitigation provider. Publishing a support-email
+an invented account name at a domain that is not invented. The dataset is
+fictional by design (section 2: NebulaDesk and everyone in it are invented),
+and that domain belongs to a live Taiwanese CDN and DDoS-mitigation provider
+-- checked on 2026-09-17, it resolves and serves that company's site. The
+address itself is not reprinted here; it is still readable in the raw files
+described below, which is where it has to stay. Publishing a support-email
 corpus that places an invented account holder at a real company's domain is a
 privacy and impersonation risk with no analytical benefit on the other side
 of it, so the address is now `lin.admin@example.com`, in the domain RFC 2606
@@ -569,10 +573,51 @@ raw files, inside model summaries that quoted the email they were handed, and
 not one of them is rewritten. Each run's `.meta.json` names the dataset it
 read and belongs to the day it ran, so none is back-filled.
 `MANIFEST.json` is regenerated from the file on disk and now carries the
-v1.1 sha256, which is the only published artifact that moves. A future run of
+v1.1 sha256, which is the only published artifact that moves.
+`experiments/data/annotator2_sheet.csv` deliberately does not move with it:
+it is the sheet a person outside the project was handed, built from the
+dataset as it stood at v1, and its sha256
+`c7abaf6fe77dc204549f31853ef348c1b370240737a0b1a55e4b758ea2a462ba` is
+recorded in `experiments/README.md` as the handout. Regenerating it would
+make the record describe a file that annotator never saw, so the sheet stays
+at v1 and `experiments/import_annotator2.py` knows that `case-007`'s body
+will come back in its v1 form. A future run of
 any arm will send the v1.1 text; its raw file was never going to be
 byte-comparable with these ones in any case, because the calls cannot be
 seeded.
+
+**2026-09-17, what the gate did after v1.1, and what E0's five repeats do not
+cover.** Two end-to-end `evalkit` runs have now been made over dataset v1.1
+with `prompts/v1`: the `eval-gate.yml` run on PR #4 at 18:37 UTC on
+2026-09-16, and a local run on 2026-09-17 ($0.419296, 70 cases). Both returned
+63/70 where every v1-era run returned 64/70 -- E0's five repeats, the
+2026-09-14 baseline bootstrap, and three gate runs on PR #4.
+
+The local run names the case the gate run did not: **`case-056`**, a request
+for a signed W-9 form. Baseline: predicted `billing`, judge 5, passed.
+2026-09-17: predicted `general`, `category_match` false, judge 5, not passed.
+The category moved; the judge score did not, and the summary still describes a
+W-9 request. `case-007`, the case whose email address v1.1 edited, answers
+`account` with judge 5 and passes in both runs, so the string edit did not
+move it. The 2026-09-16 gate run produced no artifact, so whether it lost the
+same case is not recoverable.
+
+`case-056` is a billing/general boundary case, and this study's own raw data
+says where its instability sits. The classifier answered `billing` on all 17
+of its calls -- E0's five repeats and three each under v2a, v2b, v2c and v2d
+-- and both E4 model annotators also said `billing`. The wobble in the raw
+data is on the judge instead: of the 21 judge scores that case carries, twenty
+are 5 and one is a 2, on `e1_v2b` repeat 0.
+
+What this does not license is calling the 63/70 runs a noise floor. Section
+6's run-to-run figures are five repeats inside one session on 2026-09-14, and
+`rates_run_spread.csv` reports their sample SD as 0. A classifier that never
+changed a verdict across those five repeats has still changed one two days
+later, on a different session, which means the five repeats measure
+within-session stability and are not a bound on anything wider. No number in
+this document is revised on the strength of two runs; the observation is
+recorded because the opposite -- a stability claim resting on five repeats --
+would be.
 
 ## 10. E1 in full
 

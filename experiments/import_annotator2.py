@@ -20,8 +20,16 @@ error message. On any problem nothing is written and the exit code is 1.
 (`Billing ` -> `billing`); every other deviation is an error. The email text is
 compared against `golden_dataset.json` and a mismatch is fatal, because a row
 whose text was edited in the spreadsheet is a row whose label describes
-something other than the case it is filed under. `--allow-body-drift` downgrades
-that one check to a warning.
+something other than the case it is filed under.
+
+One mismatch is expected and is not an error: the sheet was handed out while
+the dataset was at v1, and `case-007`'s email text changed in v1.1
+(`docs/PREREGISTRATION.md` section 9). `HANDOUT_BODY_SHA256` holds the hash of
+the text that case had at handout time, so a row returning it is recognised as
+the sheet as sent rather than as an edited row. Any other mismatch is still an
+error, and the message says which of the two faults it cannot rule out.
+`--allow-body-drift` remains the escape hatch for a mismatch this file has not
+been told about.
 """
 from __future__ import annotations
 
@@ -41,6 +49,17 @@ DEFAULT_OUT = REPO_ROOT / "experiments" / "data" / "annotator2_labels.json"
 ANNOTATOR = "human-2 (non-member)"
 SHEET_SEED = 20260916
 EXPECTED_ROWS = 70
+
+# The dataset version `experiments/data/annotator2_sheet.csv` was built from,
+# and the sha256 of every email text that has moved since. Hashes rather than
+# the strings themselves: the v1 text of case-007 is the third-party address
+# this repository took out (PREREGISTRATION section 9) and it is not
+# reintroduced here. A returned row matching one of these is the handout, not
+# an edit.
+SHEET_DATASET_VERSION = "v1"
+HANDOUT_BODY_SHA256 = {
+    "case-007": "8b20b51d6f57bb239a4d0a2ade6e148028a7a5dddc95da9f5fa936e43b20a79d",
+}
 VALID_LABELS = ("billing", "technical", "account", "general")
 REQUIRED_COLUMNS = ("case_id", "email_body", "your_label", "notes")
 BLANKS = " \t　​"
@@ -61,6 +80,19 @@ def load_case_texts() -> dict[str, str]:
 def dataset_version() -> str:
     with DATASET.open(encoding="utf-8") as handle:
         return str(json.load(handle).get("dataset_version", "unknown"))
+
+
+def is_handout_text(case_id: str, body: str) -> bool:
+    """True when this row carries the text the sheet was handed out with.
+
+    Distinguishes "the dataset moved after the handout", which is a documented
+    fact about this study, from "somebody edited the spreadsheet", which
+    invalidates the row.
+    """
+    expected = HANDOUT_BODY_SHA256.get(case_id)
+    if expected is None:
+        return False
+    return hashlib.sha256(body.encode("utf-8")).hexdigest() == expected
 
 
 def read_sheet(path: Path) -> tuple[list[str], list[dict[str, str]]]:
@@ -87,11 +119,16 @@ def validate(
     rows: list[dict[str, str]],
     case_texts: dict[str, str],
     allow_body_drift: bool,
-) -> tuple[list[str], list[str], list[dict[str, str]]]:
-    """Returns (errors, warnings, normalised records). Records are only
-    meaningful when errors is empty."""
+) -> tuple[list[str], list[str], list[dict[str, str]], str]:
+    """Returns (errors, warnings, normalised records, sheet dataset version).
+
+    Records are only meaningful when errors is empty. The version is the one
+    the returned sheet is keyed to, read off the rows themselves rather than
+    off whatever `golden_dataset.json` says today.
+    """
     errors: list[str] = []
     warnings: list[str] = []
+    handout_era_rows: list[str] = []
 
     missing_columns = [name for name in REQUIRED_COLUMNS if name not in fieldnames]
     if missing_columns:
@@ -99,7 +136,7 @@ def validate(
             f"missing column(s): {', '.join(missing_columns)} "
             f"(found: {', '.join(fieldnames) or 'nothing'})"
         )
-        return errors, warnings, []
+        return errors, warnings, [], dataset_version()
 
     extra = [name for name in fieldnames if name not in REQUIRED_COLUMNS]
     if extra:
@@ -141,11 +178,28 @@ def validate(
             normalised.append(f"line {index} ({case_id}): {raw_label!r} -> {label!r}")
 
         if body != case_texts[case_id]:
-            message = f"line {index} ({case_id}): email_body differs from golden_dataset.json"
-            if allow_body_drift:
-                warnings.append(message + " (allowed by --allow-body-drift)")
+            if is_handout_text(case_id, body):
+                handout_era_rows.append(case_id)
+                warnings.append(
+                    f"line {index} ({case_id}): email_body is this case's text in dataset "
+                    f"{SHEET_DATASET_VERSION}, which is what the sheet was handed out with; "
+                    f"golden_dataset.json has moved on since (PREREGISTRATION section 9). "
+                    f"The row was not edited, so it is accepted."
+                )
+            elif allow_body_drift:
+                warnings.append(
+                    f"line {index} ({case_id}): email_body matches neither golden_dataset.json "
+                    f"nor the handout (allowed by --allow-body-drift)"
+                )
             else:
-                errors.append(message + " -- the row was edited; rerun with --allow-body-drift only if that edit was expected")
+                errors.append(
+                    f"line {index} ({case_id}): email_body matches neither golden_dataset.json "
+                    f"nor the text this case was handed out with. Two different faults and this "
+                    f"check cannot tell them apart: the row was edited in the spreadsheet, or "
+                    f"the dataset changed after the handout and HANDOUT_BODY_SHA256 was not "
+                    f"updated. Compare the row against the sheet that was sent before reaching "
+                    f"for --allow-body-drift"
+                )
 
         records.append({"case_id": case_id, "label": label, "notes": notes})
 
@@ -156,7 +210,8 @@ def validate(
     if normalised:
         warnings.append("normalised label spelling on " + str(len(normalised)) + " row(s): " + "; ".join(normalised))
 
-    return errors, warnings, records
+    sheet_version = SHEET_DATASET_VERSION if handout_era_rows else dataset_version()
+    return errors, warnings, records, sheet_version
 
 
 def build_payload(
@@ -164,6 +219,7 @@ def build_payload(
     sheet: Path,
     sheet_sha256: str,
     annotated_on: str,
+    sheet_dataset_version: str,
 ) -> dict[str, object]:
     return {
         "annotator": ANNOTATOR,
@@ -171,7 +227,8 @@ def build_payload(
         "sheet_seed": SHEET_SEED,
         "sheet_file": sheet.name,
         "sheet_sha256": sheet_sha256,
-        "dataset_version": dataset_version(),
+        "sheet_dataset_version": sheet_dataset_version,
+        "dataset_version_on_disk": dataset_version(),
         "n": len(records),
         "imported_at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "labels": sorted(records, key=lambda record: record["case_id"]),
@@ -204,7 +261,9 @@ def main(argv: list[str] | None = None) -> int:
 
     case_texts = load_case_texts()
     fieldnames, rows = read_sheet(args.sheet)
-    errors, warnings, records = validate(fieldnames, rows, case_texts, args.allow_body_drift)
+    errors, warnings, records, sheet_dataset_version = validate(
+        fieldnames, rows, case_texts, args.allow_body_drift
+    )
 
     for warning in warnings:
         print(f"WARNING: {warning}", file=sys.stderr)
@@ -216,7 +275,9 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     sheet_sha256 = hashlib.sha256(args.sheet.read_bytes()).hexdigest()
-    payload = build_payload(records, args.sheet, sheet_sha256, args.annotated_on)
+    payload = build_payload(
+        records, args.sheet, sheet_sha256, args.annotated_on, sheet_dataset_version
+    )
     args.out.parent.mkdir(parents=True, exist_ok=True)
     with args.out.open("w", encoding="utf-8") as handle:
         json.dump(payload, handle, ensure_ascii=False, indent=2)
@@ -228,6 +289,8 @@ def main(argv: list[str] | None = None) -> int:
     print("  annotator's own distribution: " + ", ".join(f"{label}={counts[label]}" for label in VALID_LABELS))
     print(f"  rows carrying a note: {with_notes}")
     print(f"  sheet sha256: {sheet_sha256}")
+    print(f"  sheet is keyed to dataset {sheet_dataset_version} "
+          f"(on disk: {dataset_version()})")
     return 0
 
 
