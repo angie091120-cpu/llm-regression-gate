@@ -1,0 +1,366 @@
+{
+  "generated_at_utc": "2026-09-16T18:27:59.262099Z",
+  "analysis": {
+    "seed": 20260920,
+    "n_boot": 10000,
+    "pass_threshold": 3,
+    "python": "3.14.4"
+  },
+  "inputs": {
+    "dataset": {
+      "path": "golden_dataset.json",
+      "sha256": "1590949032efbf123ca11394b3c12576aa3b2315a9edb03d30f01d0d6cdf2d5e"
+    },
+    "prompts": {
+      "prompts/v1.yaml": "26302a1dea259ac4e881c2ad3f166e6bf95fbf3da93e997462f1fa48a64b9e55",
+      "prompts/v2a.yaml": "c13cfe94df44558aa161a829a7920814af9d19358f26b8f9156359cd811b374b",
+      "prompts/v2b.yaml": "44206f35f2e3c65385afacb09b4f10e8a063671706d5f157980910e38a6d295a",
+      "prompts/v2c.yaml": "aab4fe1349111a9c82c5bb5430d6b05d3ebba2ebd8d624009e4390b534bfff67",
+      "prompts/v2d.yaml": "8bcd3838d009473e08daf5b59cbb035a36931878371ecfc7b382d90054d328a6"
+    },
+    "experiment_prompts": {
+      "experiments/prompts/annotator_model_v1.yaml": "168471a50afde4182d552d57d65eede822395aecc67feaca0f5fbc142323ead8",
+      "experiments/prompts/judge_pairwise_v1.yaml": "426f2d39a2a137d937712f485bcfc85bd7d0dd427bedea7031a5b4d808e2b3bd"
+    }
+  },
+  "raw_files": [
+    {
+      "path": "experiments/results/raw/e0_judge_iso/e0_judge_iso_20260914T120557Z.jsonl",
+      "sha256": "c2d6b95598e8b16fff9eb9d6e15e94f329864545524d35c146c7bf462e5cd417",
+      "lines": 280,
+      "ok": 279,
+      "failed": 1,
+      "cache_hits": 0,
+      "calls_by_tier": {
+        "judge": 280
+      },
+      "request_to_response_model": {
+        "claude-sonnet-5": [
+          "claude-sonnet-5"
+        ]
+      },
+      "cost_usd": 1.08414,
+      "cost_usd_recorded_by_runner": 1.078802,
+      "cost_usd_unrecorded_at_run_time": 0.005338,
+      "first_timestamp_utc": "2026-09-14T12:05:59.135596Z",
+      "last_timestamp_utc": "2026-09-14T12:09:09.267754Z"
+    },
+    {
+      "path": "experiments/results/raw/e0_noise/e0_noise_20260914T115913Z.jsonl",
+      "sha256": "8bb421cbd51c5684ccc58966c42b0f7730cad8178febaafc2758b4c019af7643",
+      "lines": 700,
+      "ok": 700,
+      "failed": 0,
+      "cache_hits": 0,
+      "calls_by_tier": {
+        "classifier": 350,
+        "judge": 350
+      },
+      "request_to_response_model": {
+        "claude-haiku-4-5": [
+          "claude-haiku-4-5-20251001"
+        ],
+        "claude-sonnet-5": [
+          "claude-sonnet-5"
+        ]
+      },
+      "cost_usd": 2.080951,
+      "cost_usd_recorded_by_runner": 2.080951,
+      "cost_usd_unrecorded_at_run_time": 0.0,
+      "first_timestamp_utc": "2026-09-14T11:59:14.778116Z",
+      "last_timestamp_utc": "2026-09-14T12:05:28.312057Z"
+    },
+    {
+      "path": "experiments/results/raw/e1_v2a/e1_v2a_20260915T153333Z.jsonl",
+      "sha256": "6d54338f2ce6751265389a1a0b89fa6ff1beac98718de75227c056cc6fb184e4",
+      "lines": 420,
+      "ok": 420,
+      "failed": 0,
+      "cache_hits": 0,
+      "calls_by_tier": {
+        "classifier": 210,
+        "judge": 210
+      },
+      "request_to_response_model": {
+        "claude-haiku-4-5": [
+          "claude-haiku-4-5-20251001"
+        ],
+        "claude-sonnet-5": [
+          "claude-sonnet-5"
+        ]
+      },
+      "cost_usd": 1.226163,
+      "cost_usd_recorded_by_runner": 1.226163,
+      "cost_usd_unrecorded_at_run_time": 0.0,
+      "first_timestamp_utc": "2026-09-15T15:33:34.551982Z",
+      "last_timestamp_utc": "2026-09-15T15:37:07.675189Z"
+    },
+    {
+      "path": "experiments/results/raw/e1_v2b/e1_v2b_20260915T153711Z.jsonl",
+      "sha256": "e33d64ea11b4a542d749b0daf269652c334fc86c0ff0854896ae93b824576319",
+      "lines": 420,
+      "ok": 420,
+      "failed": 0,
+      "cache_hits": 0,
+      "calls_by_tier": {
+        "classifier": 210,
+        "judge": 210
+      },
+      "request_to_response_model": {
+        "claude-haiku-4-5": [
+          "claude-haiku-4-5-20251001"
+        ],
+        "claude-sonnet-5": [
+          "claude-sonnet-5"
+        ]
+      },
+      "cost_usd": 1.185492,
+      "cost_usd_recorded_by_runner": 1.185492,
+      "cost_usd_unrecorded_at_run_time": 0.0,
+      "first_timestamp_utc": "2026-09-15T15:37:12.596904Z",
+      "last_timestamp_utc": "2026-09-15T15:40:36.284539Z"
+    },
+    {
+      "path": "experiments/results/raw/e1_v2c/e1_v2c_20260915T154039Z.jsonl",
+      "sha256": "2bcb1bc771aaf8fa9b02d8406481aaaf1eecaf47d6c48b1d1af0e8fd6cd0f427",
+      "lines": 420,
+      "ok": 420,
+      "failed": 0,
+      "cache_hits": 0,
+      "calls_by_tier": {
+        "classifier": 210,
+        "judge": 210
+      },
+      "request_to_response_model": {
+        "claude-haiku-4-5": [
+          "claude-haiku-4-5-20251001"
+        ],
+        "claude-sonnet-5": [
+          "claude-sonnet-5"
+        ]
+      },
+      "cost_usd": 1.189659,
+      "cost_usd_recorded_by_runner": 1.189659,
+      "cost_usd_unrecorded_at_run_time": 0.0,
+      "first_timestamp_utc": "2026-09-15T15:40:41.808369Z",
+      "last_timestamp_utc": "2026-09-15T15:44:03.475546Z"
+    },
+    {
+      "path": "experiments/results/raw/e1_v2d/e1_v2d_20260915T154407Z.jsonl",
+      "sha256": "dfa381f44375f298357302f12f6415ce93fbf9fb406c622bdd86c006e1afb6f4",
+      "lines": 420,
+      "ok": 420,
+      "failed": 0,
+      "cache_hits": 0,
+      "calls_by_tier": {
+        "classifier": 210,
+        "judge": 210
+      },
+      "request_to_response_model": {
+        "claude-haiku-4-5": [
+          "claude-haiku-4-5-20251001"
+        ],
+        "claude-sonnet-5": [
+          "claude-sonnet-5"
+        ]
+      },
+      "cost_usd": 1.237953,
+      "cost_usd_recorded_by_runner": 1.237953,
+      "cost_usd_unrecorded_at_run_time": 0.0,
+      "first_timestamp_utc": "2026-09-15T15:44:10.477836Z",
+      "last_timestamp_utc": "2026-09-15T15:47:43.459894Z"
+    },
+    {
+      "path": "experiments/results/raw/e2_pairwise/e2_pairwise_20260915T173047Z.jsonl",
+      "sha256": "913311e90f1b184f8cafb9f3ae788b4e75ce75aa756d4f3de018ea6f9f0da898",
+      "lines": 560,
+      "ok": 94,
+      "failed": 466,
+      "cache_hits": 0,
+      "calls_by_tier": {
+        "judge_pairwise": 560
+      },
+      "request_to_response_model": {
+        "claude-haiku-4-5": [
+          "None"
+        ],
+        "claude-sonnet-5": [
+          "None",
+          "claude-sonnet-5"
+        ]
+      },
+      "cost_usd": 0.44344,
+      "cost_usd_recorded_by_runner": 0.44344,
+      "cost_usd_unrecorded_at_run_time": 0.0,
+      "first_timestamp_utc": "2026-09-15T17:30:48.224543Z",
+      "last_timestamp_utc": "2026-09-15T17:32:45.465299Z"
+    },
+    {
+      "path": "experiments/results/raw/e2_pairwise/e2_pairwise_20260916T145210Z.jsonl",
+      "sha256": "d61f5b751992adc8ede420fc56df50beeaecaf01e48a543d5cc9cf6061eae80f",
+      "lines": 466,
+      "ok": 466,
+      "failed": 0,
+      "cache_hits": 0,
+      "calls_by_tier": {
+        "judge_pairwise": 466
+      },
+      "request_to_response_model": {
+        "claude-haiku-4-5": [
+          "claude-haiku-4-5-20251001"
+        ],
+        "claude-sonnet-5": [
+          "claude-sonnet-5"
+        ]
+      },
+      "cost_usd": 1.553728,
+      "cost_usd_recorded_by_runner": 1.553728,
+      "cost_usd_unrecorded_at_run_time": 0.0,
+      "first_timestamp_utc": "2026-09-16T14:52:11.687529Z",
+      "last_timestamp_utc": "2026-09-16T14:58:52.523717Z"
+    },
+    {
+      "path": "experiments/results/raw/e2_smoke/e2_smoke_20260915T172942Z.jsonl",
+      "sha256": "a4d40db2e13fac4afb68d13a3c21a14f61a2f33b5b7c518491f280b6a6ae9b70",
+      "lines": 16,
+      "ok": 16,
+      "failed": 0,
+      "cache_hits": 0,
+      "calls_by_tier": {
+        "judge_pairwise": 16
+      },
+      "request_to_response_model": {
+        "claude-haiku-4-5": [
+          "claude-haiku-4-5-20251001"
+        ],
+        "claude-sonnet-5": [
+          "claude-sonnet-5"
+        ]
+      },
+      "cost_usd": 0.061943,
+      "cost_usd_recorded_by_runner": 0.061943,
+      "cost_usd_unrecorded_at_run_time": 0.0,
+      "first_timestamp_utc": "2026-09-15T17:29:43.874980Z",
+      "last_timestamp_utc": "2026-09-15T17:29:56.268099Z"
+    },
+    {
+      "path": "experiments/results/raw/e4_annot/e4_annot_20260916T145907Z.jsonl",
+      "sha256": "a80469069261d2861f7d2e37f5a66a643b824f708f3ebccd60fcf47945ba3700",
+      "lines": 140,
+      "ok": 140,
+      "failed": 0,
+      "cache_hits": 0,
+      "calls_by_tier": {
+        "annotator": 140
+      },
+      "request_to_response_model": {
+        "claude-haiku-4-5": [
+          "claude-haiku-4-5-20251001"
+        ],
+        "claude-sonnet-5": [
+          "claude-sonnet-5"
+        ]
+      },
+      "cost_usd": 0.312869,
+      "cost_usd_recorded_by_runner": 0.312869,
+      "cost_usd_unrecorded_at_run_time": 0.0,
+      "first_timestamp_utc": "2026-09-16T14:59:08.310445Z",
+      "last_timestamp_utc": "2026-09-16T15:00:00.371721Z"
+    },
+    {
+      "path": "experiments/results/raw/smoke/smoke_2026-09-14.jsonl",
+      "sha256": "0b829365a2d3e64c7de365c4532102673a36049e9329722d21c1a2ace97fe52d",
+      "lines": 20,
+      "ok": 20,
+      "failed": 0,
+      "cache_hits": 0,
+      "calls_by_tier": {
+        "classifier": 10,
+        "judge": 10
+      },
+      "request_to_response_model": {
+        "claude-haiku-4-5": [
+          "claude-haiku-4-5-20251001"
+        ],
+        "claude-sonnet-5": [
+          "claude-sonnet-5"
+        ]
+      },
+      "cost_usd": 0.059746,
+      "cost_usd_recorded_by_runner": 0.059746,
+      "cost_usd_unrecorded_at_run_time": 0.0,
+      "first_timestamp_utc": "2026-09-14T11:35:42.115507Z",
+      "last_timestamp_utc": "2026-09-14T11:35:51.277465Z"
+    }
+  ],
+  "probe_files": [
+    {
+      "path": "experiments/results/probes/probes_sdk0.117.0_20260914T113405Z.json",
+      "sha256": "ec063d6e0f9f03f3ef2bd229c9a21259857e0f547c97ae56a3d427a1a82d35d1",
+      "anthropic_version": "0.117.0",
+      "cost_usd": 0.006922
+    },
+    {
+      "path": "experiments/results/probes/probes_sdk0.117.0_20260916T143354Z.json",
+      "sha256": "77a929ac2b58ec7fcb446103bb94fef0edbf9fa4addfe3c7fe72e380aef92379",
+      "anthropic_version": "0.117.0",
+      "cost_usd": 0.0
+    },
+    {
+      "path": "experiments/results/probes/probes_sdk0.117.0_20260916T143923Z.json",
+      "sha256": "87e1f0d2ffd25fd6771ade401cb36e4e0f02b4685f4ec174de49b1bb1cb23c21",
+      "anthropic_version": "0.117.0",
+      "cost_usd": 0.006932
+    },
+    {
+      "path": "experiments/results/probes/probes_sdk1.5.0_20260914T113518Z.json",
+      "sha256": "6877a6e1b5979711c71fe57a2933d12db4757c70acdede5a37a522925b211e3a",
+      "anthropic_version": "1.5.0",
+      "cost_usd": 0.005672
+    }
+  ],
+  "totals": {
+    "raw_lines": 3862,
+    "raw_cost_usd": 10.436084,
+    "raw_cost_usd_recorded_by_runner": 10.430746,
+    "raw_cost_usd_unrecorded_at_run_time": 0.005338,
+    "probes_cost_usd": 0.019526,
+    "total_cost_usd": 10.45561,
+    "cost_ledger_cumulative_usd": 10.430746,
+    "cost_ledger_note": "the ledger records runner runs only; probe scripts are accounted separately",
+    "cost_method_note": "raw_cost_usd is recomputed from each row's usage at the pinned prices in experiments/__init__.py; raw_cost_usd_recorded_by_runner is what the runner wrote into the raw files at run time. The gap is billed-but-unrecorded spend on calls that returned tokens and then failed validation (experiments/COST_CALIBRATION.md section 3)"
+  },
+  "outputs": {
+    "tables": [
+      "experiments/results/tables/per_case_outcomes.csv",
+      "experiments/results/tables/rates_by_run.csv",
+      "experiments/results/tables/rates_run_spread.csv",
+      "experiments/results/tables/per_case_instability.csv",
+      "experiments/results/tables/rates_by_stratum.csv",
+      "experiments/results/tables/e5_strata.csv",
+      "experiments/results/tables/e5_logit.csv",
+      "experiments/results/tables/e2_consistency.csv",
+      "experiments/results/tables/e2_position_pref.csv",
+      "experiments/results/tables/e4_kappa.csv",
+      "experiments/results/tables/e4_confusion_claude-haiku-4-5.csv",
+      "experiments/results/tables/e4_confusion_claude-sonnet-5.csv",
+      "experiments/results/tables/rates_bootstrap.csv",
+      "experiments/results/tables/paired_mcnemar.csv",
+      "experiments/results/tables/e1_main.csv",
+      "experiments/results/tables/e1_power.csv",
+      "experiments/results/tables/tokens_latency_by_tier.csv",
+      "experiments/results/tables/judge_score_distribution.csv",
+      "experiments/results/tables/judge_rescore_stability.csv",
+      "experiments/results/tables/judge_rescore_summary.csv"
+    ],
+    "figures": [
+      "experiments/results/figures/primary_metric_by_run.png",
+      "experiments/results/figures/noise_floor_vs_gate_thresholds.png",
+      "experiments/results/figures/judge_score_distribution.png",
+      "experiments/results/figures/e1_forest.png",
+      "experiments/results/figures/e1_power.png",
+      "experiments/results/figures/e5_forest.png",
+      "experiments/results/figures/e2_consistency.png"
+    ]
+  }
+}

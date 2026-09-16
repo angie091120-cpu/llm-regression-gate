@@ -1,0 +1,72 @@
+# E4 model-annotation prompt. Experiment-only, like judge_pairwise_v1.yaml:
+# prompts/ is the classifier's version directory and this is not a classifier
+# version, so it lives here and analyze.py hashes it into MANIFEST.json under
+# "experiment_prompts".
+#
+# The instrument is the wording, so what is in here and what is deliberately
+# left out both matter:
+#   - The four category definitions and the two-categories-fit rule are quoted
+#     verbatim from prompts/v1.yaml, at the line ranges recorded under
+#     quoted_from. experiments/runner_annotator.py re-reads those lines and
+#     refuses to run if this file has drifted from them, so the quote cannot go
+#     stale after a prompt edit.
+#   - No few-shot examples. The classifier prompt has four; this one has none,
+#     because E4 measures agreement between a human who labelled from the
+#     definitions alone and a model given the same thing. Handing the model
+#     examples the human never saw would measure something else.
+#   - The 24-29 quote begins mid-sentence, which is what quoting a line range
+#     verbatim does. The human handout (experiments/data/annotator2_instructions_zh.md)
+#     starts its quote of the same rule one clause later, at "If an email could
+#     plausibly"; the extra clause here is "be only a single short sentence.
+#     Classify based on the underlying intent, not the language or politeness
+#     of the wording." The difference is recorded in docs/PREREGISTRATION.md
+#     section 9 rather than smoothed over.
+#   - Nothing in the text says a gold label exists, names the dataset, or
+#     mentions the classifier under study.
+version: annotator_model_v1
+role: annotator
+created_at: "2026-09-16"
+tool_name: AnnotationLabel
+quoted_from:
+  path: prompts/v1.yaml
+  category_definitions_lines: [10, 19]
+  tie_break_lines: [24, 29]
+system_prompt: |
+  You are labelling customer-support emails for a labelling study. Each email
+  was sent to the support address of NebulaDesk, a B2B SaaS help-desk platform,
+  by a support team at another company.
+
+  Assign the email exactly one of the four categories defined below. Those
+  definitions are the whole basis for the decision: there are no worked
+  examples and no existing label to agree with. If you are unsure, still pick
+  the single category that fits best.
+
+  Quoted verbatim from the original definitions:
+
+  Classify each email into exactly one category:
+    - billing: invoices, payments, refunds, plan/pricing changes, proration,
+      currency/exchange-rate questions, receipts, purchase orders.
+    - technical: bugs, integration/API/webhook problems, outages, performance,
+      data sync issues, exports, mobile app issues.
+    - account: login/password, roles and permissions, SSO/2FA setup, seat
+      management, account transfer/merge/deletion, team member changes.
+    - general: anything that isn't clearly billing/technical/account --
+      feature requests, sales/pricing inquiries, compliance/SOC2 questions,
+      thank-you notes, vague complaints, onboarding/training requests.
+
+  Quoted verbatim from the same original rules, for an email that two
+  categories both fit:
+
+  be only a single short sentence. Classify based on the underlying intent,
+  not the language or politeness of the wording. If an email could plausibly
+  fit two categories, pick the one that reflects what the customer needs
+  actioned first (e.g. "I can't log in because my card was declined and my
+  account got downgraded" is an account-access problem even though billing
+  caused it, if regaining access is the more urgent ask -- use judgment).
+user_template: |
+  Email:
+  {input_text}
+
+  Return the one category for this email by calling the AnnotationLabel tool.
+output_schema:
+  category: enum[billing, technical, account, general]

@@ -1,0 +1,78 @@
+{
+  "run_id": "e2_pairwise_20260915T173047Z",
+  "exp_id": "e2_pairwise",
+  "judge_prompt_version": "judge_pairwise_v1",
+  "judge_prompt_path": "experiments/prompts/judge_pairwise_v1.yaml",
+  "judge_models_requested": [
+    "claude-sonnet-5",
+    "claude-haiku-4-5"
+  ],
+  "cases": 70,
+  "layers": [
+    "easy",
+    "hard"
+  ],
+  "orders": [
+    "left_first",
+    "right_first"
+  ],
+  "pairs": 140,
+  "pairs_by_layer": {
+    "easy": 70,
+    "hard": 70
+  },
+  "pairs_with_identical_summaries": [
+    "hard:case-025",
+    "hard:case-051",
+    "hard:case-056",
+    "hard:case-062"
+  ],
+  "pairs_skipped_missing_summary": [],
+  "planned_calls": 560,
+  "baseline_from": "experiments/results/raw/e0_noise/e0_noise_20260914T115913Z.jsonl",
+  "baseline_repeats": [
+    0,
+    1
+  ],
+  "contrast_from": "experiments/results/raw/e1_v2b/e1_v2b_20260915T153711Z.jsonl",
+  "contrast_repeat": 0,
+  "judge_temperature": null,
+  "temperature_transport": "auto",
+  "concurrency": 4,
+  "cache_enabled": false,
+  "max_cost_usd": 3.0,
+  "prices_per_mtok": {
+    "claude-haiku-4-5": {
+      "input": 1.0,
+      "output": 5.0
+    },
+    "claude-sonnet-5": {
+      "input": 2.0,
+      "output": 10.0
+    }
+  },
+  "git_commit": "12ffbff74e736c831b51ff63af98621bda6b0737",
+  "dataset": "golden_dataset.json",
+  "started_utc": "2026-09-15T17:30:47.220216Z",
+  "finished_utc": "2026-09-15T17:32:45.833586Z",
+  "executed_calls": 560,
+  "ok_calls": 94,
+  "failed_calls": 466,
+  "failure_types": [
+    "BadRequestError"
+  ],
+  "cache_hits": 0,
+  "run_cost_usd": 0.44344,
+  "ledger_cumulative_usd": 8.564149,
+  "aborted_on_cost_cap": false,
+  "response_models_seen": [
+    "claude-sonnet-5"
+  ],
+  "choice_counts": {
+    "A": 9,
+    "B": 14,
+    "tie": 71
+  },
+  "sdk_max_retries": 2,
+  "raw_path": "experiments/results/raw/e2_pairwise/e2_pairwise_20260915T173047Z.jsonl"
+}

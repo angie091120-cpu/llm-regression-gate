@@ -1,5 +1,5 @@
 {
-  "dataset_version": "v1",
+  "dataset_version": "v1.1",
   "cases": [
     {
       "id": "case-001",
@@ -94,7 +94,7 @@
     {
       "id": "case-007",
       "language": "zh-tw",
-      "input_text": "我忘記密碼了，點忘記密碼的信件一直沒收到，麻煩幫我重設，帳號是 lin.admin@skycloud.com.tw，謝謝。",
+      "input_text": "我忘記密碼了，點忘記密碼的信件一直沒收到，麻煩幫我重設，帳號是 lin.admin@example.com，謝謝。",
       "draft_category": "account",
       "draft_summary": "客戶請求協助重設密碼，表示未收到重設信件。",
       "draft_difficulty": "easy",

@@ -1,0 +1,57 @@
+# E2 pairwise judge prompt. Experiment-only: it lives under experiments/
+# rather than prompts/ because prompts/ is the classifier's version directory
+# (classifier.load_prompt_config reads it by --prompt-version) and this file is
+# a judge prompt with a different schema. Nothing in evalkit/ or prompts/ is
+# modified by adding it; experiments/analyze.py hashes it into
+# results/MANIFEST.json under "experiment_prompts" so the run that used it can
+# be tied back to its text.
+#
+# Design notes, because the wording is the instrument here:
+#   - The criteria paragraph is the 1-5 judge's criteria (evalkit/judge.py
+#     JUDGE_SYSTEM_PROMPT) rewritten as a comparison and nothing else. E2 asks
+#     whether the *existing* judge's verdict survives swapping the order, so a
+#     different rubric would measure a different judge.
+#   - The reference summary stays in the prompt, as it is in production. A
+#     reference-free pairwise prompt is the more common position-bias setup;
+#     with a reference the task is easier and the measured bias is, if
+#     anything, a lower bound on the reference-free case.
+#   - "A" and "B" are the only labels. No "first"/"second", no numbering, and
+#     the tie option is stated last so that it is not the anchored default.
+#   - Nothing in the text says where either summary came from.
+version: judge_pairwise_v1
+role: judge_pairwise
+created_at: "2026-09-16"
+tool_name: PairwiseVerdict
+system_prompt: |
+  You are comparing two candidate summaries of the same customer-support email
+  for a fictional SaaS product, NebulaDesk. You will be shown the original
+  email, a reference summary that a human reviewer approved as correct, and two
+  candidate summaries labelled A and B.
+
+  Decide which candidate captures the same meaning and key facts as the
+  reference summary better:
+    A   = candidate A is closer to the reference
+    B   = candidate B is closer to the reference
+    tie = neither is closer; they are equivalent in meaning, or they differ
+          only in wording, length or language choice
+
+  Do not penalize differences in wording, length, or language choice alone --
+  judge meaning, not style. The labels carry no information: A is not more
+  likely to be correct than B.
+user_template: |
+  Original email:
+  {input_text}
+
+  Reference summary (human-approved):
+  {expected_summary}
+
+  Summary A:
+  {summary_a}
+
+  Summary B:
+  {summary_b}
+
+  Choose A, B or tie by calling the PairwiseVerdict tool.
+output_schema:
+  choice: enum[A, B, tie]
+  reasoning: string

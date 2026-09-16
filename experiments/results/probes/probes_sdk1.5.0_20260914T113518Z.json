@@ -1,0 +1,382 @@
+{
+  "generated_utc": "20260914T113518Z",
+  "sdk": {
+    "anthropic_version": "1.5.0",
+    "messages_create_accepts_temperature": false,
+    "messages_create_params": [
+      "max_tokens",
+      "messages",
+      "model",
+      "cache_control",
+      "container",
+      "inference_geo",
+      "metadata",
+      "output_config",
+      "service_tier",
+      "stop_sequences",
+      "stream",
+      "system",
+      "thinking",
+      "tool_choice",
+      "tools",
+      "user_profile_id",
+      "workspace_id",
+      "extra_headers",
+      "extra_query",
+      "extra_body",
+      "timeout"
+    ]
+  },
+  "total_cost_usd": 0.005672,
+  "probes": [
+    {
+      "tier": "classifier",
+      "request_model": "claude-haiku-4-5",
+      "response_model": "claude-haiku-4-5-20251001",
+      "ok": true,
+      "temperature": null,
+      "temperature_transport": "none",
+      "max_tokens": 512,
+      "input_tokens": 900,
+      "output_tokens": 66,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 0,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "inference_geo": "not_available",
+        "input_tokens": 900,
+        "output_tokens": 66,
+        "output_tokens_details": null,
+        "server_tool_use": null,
+        "service_tier": "standard"
+      },
+      "latency_ms": 1313.4507649810985,
+      "stop_reason": "tool_use",
+      "parsed": {
+        "category": "billing",
+        "summary": "Customer reports being charged twice for March invoice and requests a refund for the duplicate charge."
+      },
+      "raw_response_json": {
+        "id": "msg_011Cf3G9R7vSaKAHqkcJjHV3",
+        "container": null,
+        "content": [
+          {
+            "id": "toolu_01R3SAtMNksiQiqA1wZ5PP8t",
+            "caller": {
+              "type": "direct"
+            },
+            "input": {
+              "category": "billing",
+              "summary": "Customer reports being charged twice for March invoice and requests a refund for the duplicate charge."
+            },
+            "name": "ClassificationResult",
+            "type": "tool_use",
+            "toolset_name": null
+          }
+        ],
+        "model": "claude-haiku-4-5-20251001",
+        "role": "assistant",
+        "stop_details": null,
+        "stop_reason": "tool_use",
+        "stop_sequence": null,
+        "type": "message",
+        "usage": {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 0,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 0,
+          "cache_read_input_tokens": 0,
+          "inference_geo": "not_available",
+          "input_tokens": 900,
+          "output_tokens": 66,
+          "output_tokens_details": null,
+          "server_tool_use": null,
+          "service_tier": "standard"
+        }
+      },
+      "error_type": null,
+      "error_message": null,
+      "status_code": null,
+      "request_id": null,
+      "cache_hit": false,
+      "request_hash": "7f741ad5651b6d607c1f5fcad663de976817d04efd3c24f850de3d178dbcf3ea",
+      "timestamp_utc": "2026-09-14T11:35:13.716160Z",
+      "has_thinking_block": false,
+      "probe": "haiku_baseline_no_temperature",
+      "cost_usd": 0.00123,
+      "content_block_types": [
+        "tool_use"
+      ],
+      "anthropic_version": "1.5.0"
+    },
+    {
+      "tier": "judge",
+      "request_model": "claude-sonnet-5",
+      "response_model": "claude-sonnet-5",
+      "ok": true,
+      "temperature": null,
+      "temperature_transport": "none",
+      "max_tokens": 512,
+      "input_tokens": 1021,
+      "output_tokens": 117,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 0,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "inference_geo": "global",
+        "input_tokens": 1021,
+        "output_tokens": 117,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "server_tool_use": null,
+        "service_tier": "standard"
+      },
+      "latency_ms": 1878.224774991395,
+      "stop_reason": "tool_use",
+      "parsed": {
+        "score": 5,
+        "reasoning": "The candidate summary conveys the same meaning as the reference: a duplicate charge occurred on the March invoice and the customer wants the extra charge refunded. No key facts are omitted or altered."
+      },
+      "raw_response_json": {
+        "id": "msg_011Cf3G9Vc4BquqfExCk36SF",
+        "container": null,
+        "content": [
+          {
+            "id": "toolu_012rqJJ6g3EQvA7mPAg72hfj",
+            "caller": {
+              "type": "direct"
+            },
+            "input": {
+              "reasoning": "The candidate summary conveys the same meaning as the reference: a duplicate charge occurred on the March invoice and the customer wants the extra charge refunded. No key facts are omitted or altered.",
+              "score": 5
+            },
+            "name": "JudgeVerdict",
+            "type": "tool_use",
+            "toolset_name": null
+          }
+        ],
+        "model": "claude-sonnet-5",
+        "role": "assistant",
+        "stop_details": null,
+        "stop_reason": "tool_use",
+        "stop_sequence": null,
+        "type": "message",
+        "usage": {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 0,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 0,
+          "cache_read_input_tokens": 0,
+          "inference_geo": "global",
+          "input_tokens": 1021,
+          "output_tokens": 117,
+          "output_tokens_details": {
+            "thinking_tokens": 0
+          },
+          "server_tool_use": null,
+          "service_tier": "standard"
+        }
+      },
+      "error_type": null,
+      "error_message": null,
+      "status_code": null,
+      "request_id": null,
+      "cache_hit": false,
+      "request_hash": "4ae2410befa97f87a757b66881f547c4c12e347f3583f3e4d3c72e26af9596a5",
+      "timestamp_utc": "2026-09-14T11:35:15.033347Z",
+      "has_thinking_block": false,
+      "probe": "sonnet_baseline_no_temperature",
+      "cost_usd": 0.003212,
+      "content_block_types": [
+        "tool_use"
+      ],
+      "anthropic_version": "1.5.0"
+    },
+    {
+      "tier": "classifier",
+      "request_model": "claude-haiku-4-5",
+      "response_model": null,
+      "ok": false,
+      "temperature": 0.0,
+      "temperature_transport": "param",
+      "max_tokens": 512,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "usage": {},
+      "latency_ms": 0.07864399231038988,
+      "stop_reason": null,
+      "parsed": null,
+      "raw_response_json": null,
+      "error_type": "TypeError",
+      "error_message": "Messages.create() got an unexpected keyword argument 'temperature'",
+      "status_code": null,
+      "request_id": null,
+      "cache_hit": false,
+      "request_hash": "3ebbcfed9592081b469496a7e0b99a453980a5aa6fd323a57e63e4a658d230cb",
+      "timestamp_utc": "2026-09-14T11:35:16.913363Z",
+      "has_thinking_block": false,
+      "probe": "haiku_temperature0_sdk_param",
+      "cost_usd": 0.0,
+      "content_block_types": [],
+      "anthropic_version": "1.5.0"
+    },
+    {
+      "tier": "judge",
+      "request_model": "claude-sonnet-5",
+      "response_model": null,
+      "ok": false,
+      "temperature": 0.0,
+      "temperature_transport": "param",
+      "max_tokens": 512,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "usage": {},
+      "latency_ms": 0.037524005165323615,
+      "stop_reason": null,
+      "parsed": null,
+      "raw_response_json": null,
+      "error_type": "TypeError",
+      "error_message": "Messages.create() got an unexpected keyword argument 'temperature'",
+      "status_code": null,
+      "request_id": null,
+      "cache_hit": false,
+      "request_hash": "4847f6aa861b66d09d2b0a562bf0019c8c1fbebcd8308c0113f8476383018efb",
+      "timestamp_utc": "2026-09-14T11:35:16.914502Z",
+      "has_thinking_block": false,
+      "probe": "sonnet_temperature0_sdk_param",
+      "cost_usd": 0.0,
+      "content_block_types": [],
+      "anthropic_version": "1.5.0"
+    },
+    {
+      "tier": "classifier",
+      "request_model": "claude-haiku-4-5",
+      "response_model": "claude-haiku-4-5-20251001",
+      "ok": true,
+      "temperature": 0.0,
+      "temperature_transport": "extra_body",
+      "max_tokens": 512,
+      "input_tokens": 900,
+      "output_tokens": 66,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 0,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "inference_geo": "not_available",
+        "input_tokens": 900,
+        "output_tokens": 66,
+        "output_tokens_details": null,
+        "server_tool_use": null,
+        "service_tier": "standard"
+      },
+      "latency_ms": 960.0917600037064,
+      "stop_reason": "tool_use",
+      "parsed": {
+        "category": "billing",
+        "summary": "Customer reports being charged twice for March invoice and requests a refund for the duplicate charge."
+      },
+      "raw_response_json": {
+        "id": "msg_011Cf3G9dstKngLrnfi9ZhtZ",
+        "container": null,
+        "content": [
+          {
+            "id": "toolu_01TKxHJLBhEpb28sp9cTZzNC",
+            "caller": {
+              "type": "direct"
+            },
+            "input": {
+              "category": "billing",
+              "summary": "Customer reports being charged twice for March invoice and requests a refund for the duplicate charge."
+            },
+            "name": "ClassificationResult",
+            "type": "tool_use",
+            "toolset_name": null
+          }
+        ],
+        "model": "claude-haiku-4-5-20251001",
+        "role": "assistant",
+        "stop_details": null,
+        "stop_reason": "tool_use",
+        "stop_sequence": null,
+        "type": "message",
+        "usage": {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 0,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 0,
+          "cache_read_input_tokens": 0,
+          "inference_geo": "not_available",
+          "input_tokens": 900,
+          "output_tokens": 66,
+          "output_tokens_details": null,
+          "server_tool_use": null,
+          "service_tier": "standard"
+        }
+      },
+      "error_type": null,
+      "error_message": null,
+      "status_code": null,
+      "request_id": null,
+      "cache_hit": false,
+      "request_hash": "3ebbcfed9592081b469496a7e0b99a453980a5aa6fd323a57e63e4a658d230cb",
+      "timestamp_utc": "2026-09-14T11:35:16.915546Z",
+      "has_thinking_block": false,
+      "probe": "haiku_temperature0_extra_body",
+      "cost_usd": 0.00123,
+      "content_block_types": [
+        "tool_use"
+      ],
+      "anthropic_version": "1.5.0"
+    },
+    {
+      "tier": "judge",
+      "request_model": "claude-sonnet-5",
+      "response_model": null,
+      "ok": false,
+      "temperature": 0.0,
+      "temperature_transport": "extra_body",
+      "max_tokens": 512,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "usage": {},
+      "latency_ms": 459.91902900277637,
+      "stop_reason": null,
+      "parsed": null,
+      "raw_response_json": {
+        "error_body": {
+          "type": "error",
+          "error": {
+            "type": "invalid_request_error",
+            "message": "`temperature` is deprecated for this model."
+          },
+          "request_id": "req_011Cf3G9hSh5qfmua1Tc1nyF"
+        }
+      },
+      "error_type": "BadRequestError",
+      "error_message": "Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': '`temperature` is deprecated for this model.'}, 'request_id': 'req_011Cf3G9hSh5qfmua1Tc1nyF'}",
+      "status_code": 400,
+      "request_id": "req_011Cf3G9hSh5qfmua1Tc1nyF",
+      "cache_hit": false,
+      "request_hash": "4847f6aa861b66d09d2b0a562bf0019c8c1fbebcd8308c0113f8476383018efb",
+      "timestamp_utc": "2026-09-14T11:35:17.877179Z",
+      "has_thinking_block": false,
+      "probe": "sonnet_temperature0_extra_body",
+      "cost_usd": 0.0,
+      "content_block_types": [],
+      "anthropic_version": "1.5.0"
+    }
+  ]
+}

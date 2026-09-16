@@ -4,7 +4,7 @@ CI-style regression testing for LLM prompt changes — every prompt edit is eval
 
 > Spec'd, directed, and reviewed by me; implemented with an AI engineering team I orchestrate.
 
-**Status:** MVP built — 46 tests pass (fully mocked, no API key needed) and the acceptance script in [`checks/acceptance.sh`](checks/acceptance.sh) runs the machine-checkable criteria from SPEC.md §7. The regression baseline (`eval_reports/baseline.json`) was bootstrapped on 2026-09-14 from a real-API run of `prompts/v1` over all 70 confirmed cases (pass rate 0.9143), so the gate now has a fixed reference to diff against — see *CI gate* below.
+**Status:** MVP built — 46 tests pass (fully mocked, no API key needed) and the acceptance script in [`checks/acceptance.sh`](checks/acceptance.sh) runs the machine-checkable criteria from SPEC.md §7. The regression baseline (`eval_reports/baseline.json`) is a real-API run of `prompts/v1` over all 70 confirmed cases: rebuilt on dataset v1.1 from the run of 2026-09-16 19:10 UTC (2026-09-17 03:10 +08:00), pass rate 0.9 (63/70). The 2026-09-14 run it replaced, on dataset v1 and 64/70, is kept as `eval_reports/baseline-2026-09-14-dataset-v1.json` and read by nothing — [docs/DECISIONS.md D-011](docs/DECISIONS.md) says why and which single case the two differ on. See *CI gate* below.
 
 ## Why
 
@@ -16,11 +16,11 @@ Most teams ship prompt changes blind: edit a string, deploy, hope. This project 
 
   **Today this check does not block a merge.** Making it one that does requires all of the following:
 
-  - an `ANTHROPIC_API_KEY` repository secret is provisioned — until then, `eval-gate.yml` fails loud on every run with an explicit "ANTHROPIC_API_KEY secret not configured" error rather than passing silently;
+  - ~~an `ANTHROPIC_API_KEY` repository secret is provisioned~~ — done 2026-09-14; before that, `eval-gate.yml` failed loud on every run with an explicit "ANTHROPIC_API_KEY secret not configured" error rather than passing silently;
   - ~~a committed `eval_reports/baseline.json` exists~~ — done 2026-09-14 (SPEC.md §5, [docs/DECISIONS.md D-009](docs/DECISIONS.md)); runs now diff against it instead of re-bootstrapping;
   - the repository's branch protection lists this check as required — a repository-owner setting, not configured yet.
 
-  Today it only turns the check red; the scorecard comment is posted once the secret and baseline are in place.
+  The secret and the baseline are both in place, and the scorecard comment is no longer hypothetical: [PR #4](https://github.com/angie091120-cpu/llm-regression-gate/pull/4) gets one from `eval-gate.yml` on every push, each after a real-API run of `prompts/v1` against the dataset on that commit. Runs on dataset v1 came back 64/70 with a delta of 0; runs on dataset v1.1 against that v1 baseline came back 63/70. Only one of them was a local run with a per-case report, and it names what moved — `case-056`, a W-9 request the classifier answered `billing` in every earlier observation and `general` there, with the judge scoring it 5 either way. It is not `case-007`, the case the v1.1 privacy fix edited; that one answers `account` and passes in both. The baseline is now rebuilt on v1.1 (D-011), so the gate is again diffing prompts rather than prompts plus a dataset edit. The gate posts a fresh scorecard on every push, so read the newest comment rather than any figure or count quoted here. Branch protection is the one prerequisite left, so a critical regression here turns the check red without blocking the merge.
 
 ## Setup
 
@@ -29,6 +29,12 @@ python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements-dev.txt   # includes requirements.txt
 pytest -q                             # fully mocked, no API key needed
 ```
+
+`checks/acceptance.sh` runs on `python3` from `PATH` unless told otherwise, so
+activate `.venv` first or name an interpreter -- `EXP_PYTHON=$HOME/.venvs/lrg-exp/bin/python bash checks/acceptance.sh`.
+On a bare system `python3` the dependencies are missing and AC1 fails on the
+import rather than on a test, which is a wrong interpreter and not a failing
+suite; the script prints the interpreter it used on its first line.
 
 Running the real-API paths (`python -m evalkit.run_eval`, `python -m evalkit.judge`)
 needs `ANTHROPIC_API_KEY` in the environment. Copy `.env.example` to `.env` and fill
@@ -50,7 +56,13 @@ Full list in [`.env.example`](.env.example).
 `draft_category`/`draft_summary`/`draft_difficulty` fields. `evalkit.run_eval`
 only ever evaluates `label_status: confirmed` cases and warns loudly about
 (and refuses to run against) anything that reverts to draft or is missing an
-expected label (SPEC.md §3).
+expected label (SPEC.md §3). The cases are fictional: every company, person,
+domain and email address in them is invented, and any resemblance to a real
+one is coincidence. v1.1 (2026-09-17) is the only change to the file since it
+was frozen -- `case-007`'s email address moved to a domain reserved for
+documentation, the one it carried having turned out to belong to a real
+company. Reason, scope and both sha256 are in `docs/PREREGISTRATION.md`
+section 9; no label, no category and no other case moved.
 
 See [SPEC.md](SPEC.md) for the frozen specification and acceptance criteria, and [docs/DECISIONS.md](docs/DECISIONS.md) for design decisions.
 

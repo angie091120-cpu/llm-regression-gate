@@ -1,0 +1,71 @@
+{
+  "run_id": "e4_annot_20260916T145907Z",
+  "exp_id": "e4_annot",
+  "prompt_version": "annotator_model_v1",
+  "prompt_path": "experiments/prompts/annotator_model_v1.yaml",
+  "prompt_quotes_verified": {
+    "category_definitions_lines": "prompts/v1.yaml:10-19 quoted verbatim",
+    "tie_break_lines": "prompts/v1.yaml:24-29 quoted verbatim"
+  },
+  "few_shot_examples": 0,
+  "models_requested": [
+    "claude-haiku-4-5",
+    "claude-sonnet-5"
+  ],
+  "cases": 70,
+  "categories": [
+    "billing",
+    "technical",
+    "account",
+    "general"
+  ],
+  "planned_calls": 140,
+  "temperature": null,
+  "temperature_transport": "auto",
+  "concurrency": 4,
+  "max_tokens": 256,
+  "cache_enabled": false,
+  "max_cost_usd": 1.0,
+  "prices_per_mtok": {
+    "claude-haiku-4-5": {
+      "input": 1.0,
+      "output": 5.0
+    },
+    "claude-sonnet-5": {
+      "input": 2.0,
+      "output": 10.0
+    }
+  },
+  "git_commit": "957d9366828c03974cfb39aa639b19aa5fa029df",
+  "dataset": "golden_dataset.json",
+  "started_utc": "2026-09-16T14:59:07.110456Z",
+  "finished_utc": "2026-09-16T15:00:04.126444Z",
+  "executed_calls": 140,
+  "ok_calls": 140,
+  "failed_calls": 0,
+  "failure_types": [],
+  "cache_hits": 0,
+  "run_cost_usd": 0.312869,
+  "ledger_cumulative_usd": 10.430746,
+  "aborted_on_cost_cap": false,
+  "response_models_seen": [
+    "claude-haiku-4-5-20251001",
+    "claude-sonnet-5"
+  ],
+  "label_counts_by_model": {
+    "claude-haiku-4-5": {
+      "account": 18,
+      "billing": 19,
+      "general": 14,
+      "technical": 19
+    },
+    "claude-sonnet-5": {
+      "account": 18,
+      "billing": 20,
+      "general": 14,
+      "technical": 18
+    }
+  },
+  "sdk_max_retries": 2,
+  "raw_path": "experiments/results/raw/e4_annot/e4_annot_20260916T145907Z.jsonl"
+}
