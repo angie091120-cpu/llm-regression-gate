@@ -1,0 +1,6 @@
+row_rater,column_rater,row_label,billing,technical,account,general,n_row,note
+human-1 (gold),model:claude-sonnet-5,billing,19,0,0,0,19,"row = gold label, columns = the model's label on the same email"
+human-1 (gold),model:claude-sonnet-5,technical,0,16,2,0,18,"row = gold label, columns = the model's label on the same email"
+human-1 (gold),model:claude-sonnet-5,account,0,0,16,0,16,"row = gold label, columns = the model's label on the same email"
+human-1 (gold),model:claude-sonnet-5,general,1,2,0,14,17,"row = gold label, columns = the model's label on the same email"
+human-1 (gold),model:claude-sonnet-5,(all),20,18,18,14,70,column totals; 70 cases labelled by both raters

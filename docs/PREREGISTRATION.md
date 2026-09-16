@@ -368,6 +368,102 @@ in those two CSVs is a result of this study. Re-running the 560 calls needs
 account access, which returns 2026-10-01 unless the limit is raised; the design
 is unchanged and no part of it was altered in response to the failure.
 
+**2026-09-16, E2 was completed in a second batch: 466 calls, 21 hours after the
+first 94.** The entry above records the run that stopped. This one records how
+it was finished and what the gap costs the reading of the numbers.
+
+`experiments/runner_pairwise.py` gained `--resume-failed-from`, which re-sends
+only the design cells -- (judge model, layer, order, pair) -- that an earlier
+run of the same experiment recorded as failures. 466 of them, and no part of
+the design changed: the pairs are rebuilt from the same frozen E0 and E1 raw
+files, the judge prompt is the same file with the same sha256
+(`judge_pairwise_v1`, hashed into MANIFEST.json), and the runner refuses to
+start if the resumed file carries a different `exp_id` or a different prompt
+version, or if any cell would be judged against different summaries than the
+failed call used -- the source call ids on the old row are compared against the
+ones about to be sent rather than assumed equal. Cells that already succeeded
+are subtracted, so the re-run cannot produce a second answer to a question that
+already has one.
+
+Batch 1: 2026-09-15 17:30:48 to 17:32:45 UTC, 94 answered calls, all
+`claude-sonnet-5` on the easy layer. Batch 2: 2026-09-16 14:52:11 to 14:58:52
+UTC, 466 answered calls, none failed, covering the rest of all four cells.
+Every E2 number therefore comes from two sessions 21 hours apart. Only the
+`claude-sonnet-5` easy cell mixes them, 94 calls against 46; the other three
+cells are batch 2 alone.
+
+What the gap does not allow this study to exclude is judge-side drift. Section
+8.2 already fixes that `response.model` comes back as the bare alias for
+Sonnet, so "the same judge answered both batches" is an assumption and not a
+fact in the raw data. Haiku's dated snapshot is recorded per row and reads
+`claude-haiku-4-5-20251001` on every call of batch 2, and the Haiku arm ran
+inside batch 2 in any case. The batches are separable from the raw data
+(`run_id`, `timestamp_utc`) and are deliberately not compared as a test: 94
+against 46 in the one cell that broke, chosen after seeing where it broke, is
+not a hypothesis this document registered.
+
+**Duplicate cells, and the rule that resolves them.** A cell can now appear
+twice in the raw data -- refused in batch 1, answered in batch 2.
+`analyze.py`'s `e2_cell_rows` takes the answered row and leaves the refused one
+in the file as the record of what happened. Two *answered* rows for one cell is
+not resolved by a rule: the analysis stops and names the cell, because choosing
+between two answers to the same question is exactly the decision this package
+exists to avoid. Both branches were exercised before the re-run, on copies of
+the raw tree with the duplicate built by hand.
+
+**One analysis defect, found after the full run and corrected.** With all four
+cells populated, `e2_consistency.csv`'s paired easy-against-hard sensitivity row
+for the pooled `(both)` view was keyed on the case id alone, so the two judge
+models overwrote each other and a row labelled `(both)` reported one model's 70
+pairs (b = 10, c = 11, n = 70, identical to the `claude-sonnet-5` row). It is
+now keyed on (judge model, case) and reads n = 140, b = 22, c = 23, p = 1.000.
+The per-model rows were correct before and after, the row carries no
+multiplicity adjustment and belongs to no family, and the defect could only
+show itself once more than one model had data -- which is why the partial run
+did not reveal it.
+
+**2026-09-16, E4's model-annotation arm: what the models were given.** Section 5
+allots E4 140 calls ("Haiku and Sonnet each labelling 70") and section 6 gives
+the estimator (Cohen's kappa per rater pair, bootstrap interval). The prompt was
+not specified, and the prompt is the instrument, so the choices are recorded
+here rather than read as pre-registered.
+
+`experiments/prompts/annotator_model_v1.yaml` hands a model the same material
+the second human annotator gets and nothing else: the four category definitions
+(`prompts/v1.yaml` lines 10-19) and the rule for an email that two categories
+both fit (lines 24-29), quoted verbatim, no few-shot examples, no statement that
+a gold label exists, one call per case. `experiments/runner_annotator.py`
+re-reads those line ranges from `prompts/v1.yaml` at startup and refuses to run
+if the prompt has drifted from them, so three raters cannot end up working from
+three versions of the definitions without the run stopping.
+
+Three differences from the human handout, none of which better wording would
+remove:
+
+- the model's quote of the tie-break rule starts one clause earlier. Lines
+  24-29 begin mid-sentence, at "be only a single short sentence. Classify based
+  on the underlying intent, not the language or politeness of the wording.";
+  `experiments/data/annotator2_instructions_zh.md` starts its quote of the same
+  rule at "If an email could plausibly".
+- the handout is in Traditional Chinese with the English definitions quoted
+  inside it and a gloss marked non-authoritative; the model prompt is English
+  throughout.
+- the handout has a free-text `notes` column; the model returns a category and
+  nothing else, because asking a rater to write its reasoning makes it a
+  different rater.
+
+The unit is one label per case per rater. A failed call leaves that case out of
+the pairing and is counted in `n_excluded`, never scored as a disagreement
+(section 7); on 2026-09-16 no call failed. `e4_kappa.csv` reports every pair
+available -- the gold labels against each model, and the models against each
+other -- all marked descriptive: there is no null hypothesis in that table and
+no p-value in it. The second human's rows appear in the same table as soon as
+`experiments/data/annotator2_labels.json` exists, a path exercised on a
+synthetic labels file and not on real data, because on 2026-09-16 the file does
+not exist. The rank-flip check the sprint plan lists under E4 -- does the
+system's ranking change under another annotator's labels -- is still not
+implemented and is still listed as such in `experiments/README.md`.
+
 ## 10. E1 in full
 
 Written 2026-09-14, before the first degraded-prompt call. Section 4 fixes

@@ -23,17 +23,22 @@ experiments/
   runner_pairwise.py
                    E2 only: pairs of already-produced summaries, each judged in
                    both orders by both judge models; same raw-row contract,
-                   imported from runner.py rather than copied
+                   imported from runner.py rather than copied.
+                   --resume-failed-from re-sends only the cells an earlier run
+                   recorded as failures
+  runner_annotator.py
+                   E4 only: one category label per (model, case) from the
+                   category definitions alone, no few-shot examples
   analyze.py       raw JSONL -> CSV tables + PNG figures + MANIFEST.json (no API)
   stats.py         estimators, standard library only, self-checked
   probes.py        four API-behaviour probes quoted in COST_CALIBRATION.md
   import_annotator2.py
                    validate and ingest the E4 second annotator sheet (no API,
                    reads no gold label)
-  prompts/         experiment-only prompts (judge_pairwise_v1.yaml). Kept out
-                   of the repo's prompts/, which is the classifier's version
-                   directory; analyze.py hashes these into MANIFEST.json under
-                   "experiment_prompts"
+  prompts/         experiment-only prompts (judge_pairwise_v1.yaml,
+                   annotator_model_v1.yaml). Kept out of the repo's prompts/,
+                   which is the classifier's version directory; analyze.py
+                   hashes these into MANIFEST.json under "experiment_prompts"
   data/            E4 handout (annotator2_sheet.csv,
                    annotator2_instructions_zh.md) and the returned labels
                    (annotator2_labels.json), ingested by import_annotator2.py
@@ -119,6 +124,16 @@ python -m experiments.runner_pairwise --exp-id e2_pairwise \
   --contrast-from experiments/results/raw/e1_v2b/<run_id>.jsonl \
   --max-cost-usd 3.00
 
+# E2 re-run: only the cells an earlier run failed on, into a new raw file
+python -m experiments.runner_pairwise --exp-id e2_pairwise \
+  --baseline-from experiments/results/raw/e0_noise/<run_id>.jsonl \
+  --contrast-from experiments/results/raw/e1_v2b/<run_id>.jsonl \
+  --resume-failed-from experiments/results/raw/e2_pairwise/<run_id>.jsonl \
+  --max-cost-usd 3.00
+
+# E4 model-annotation arm: 70 cases x 2 models, definitions only
+python -m experiments.runner_annotator --exp-id e4_annot --max-cost-usd 1.00
+
 # analysis (free, re-runnable)
 python -m experiments.analyze --seed 20260920
 
@@ -196,6 +211,8 @@ Three properties are load-bearing:
 | 2026-09-15 | `e1_v2d` | E1 H4: v2d (bilingual / typo / zhuyin / sarcasm paragraph removed) x 70 x 3 | 420/420 | $1.237953 | `results/raw/e1_v2d/e1_v2d_20260915T154407Z.jsonl` |
 | 2026-09-15 | `e2_smoke` | E2 calibration: 2 cases x 2 layers x 2 orders x 2 judge models, to price the pairwise prompt | 16/16 | $0.061943 | `results/raw/e2_smoke/e2_smoke_20260915T172942Z.jsonl` |
 | 2026-09-15 | `e2_pairwise` | E2 main run: 70 pairs x 2 layers x 2 orders x 2 judge models. **Stopped by the account's API spend limit after 94 calls** | 94/560 | $0.443440 | `results/raw/e2_pairwise/e2_pairwise_20260915T173047Z.jsonl` |
+| 2026-09-16 | `e2_pairwise` | E2 re-run of the 466 cells the limit refused: same design, same pairs, same prompt | 466/466 | $1.553728 | `results/raw/e2_pairwise/e2_pairwise_20260916T145210Z.jsonl` |
+| 2026-09-16 | `e4_annot` | E4 model-annotation arm: Haiku 4.5 and Sonnet 5 each label the 70 cases once, from the definitions alone | 140/140 | $0.312869 | `results/raw/e4_annot/e4_annot_20260916T145907Z.jsonl` |
 
 The isolation arm's cost is $0.005338 higher than the figure the runner
 printed on the day: the one failed call was billed and recorded at $0, and
@@ -220,7 +237,8 @@ Krippendorff alpha are still `NotImplementedError` items, so the two columns
 reserved for them in the judge tables are empty and carry a note saying why --
 no approximation is written there.
 
-Still to run: E2 (the 466 calls the spend limit refused), E4.
+Still to run: nothing that costs an API call. E4's second human annotator is
+the one input this study is still waiting on, due 2026-09-23.
 
 ## What E1 found
 
@@ -368,55 +386,82 @@ way. Both fits and the absent one are in `e5_logit.csv` with a `fitted`
 column; the design choices E5 made after the data existed are listed in
 `docs/PREREGISTRATION.md` section 9, dated 2026-09-16.
 
-## E2: 94 calls of 560
+## What E2 found
 
-E2 asks whether this judge's verdict survives swapping the two candidates.
-The design is 70 pairs x 2 layers (baseline against the zero-shot degradation;
-baseline against itself on a second repeat) x 2 orders x 2 judge models.
+E2 asks whether this judge's verdict survives swapping the two candidates. The
+design is 70 pairs x 2 layers (baseline against the zero-shot degradation;
+baseline against itself on a second repeat) x 2 orders x 2 judge models, and
+all 560 calls are now in: 94 answered on 2026-09-15 before the account hit its
+spend limit, and the remaining 466 on 2026-09-16, 466/466 successful. The two
+batches are 21 hours apart; the `claude-sonnet-5` easy cell is the only one
+that mixes them (94 calls from the first batch, 46 from the second) and the
+other three cells are entirely from the second. What that allows and what it
+does not is `docs/PREREGISTRATION.md` section 9, dated 2026-09-16: the design,
+the prompt and the pair texts are unchanged and verified per cell, and
+judge-side version drift across a day is disclosed rather than excluded,
+because `response.model` returns the bare alias for Sonnet.
 
-**The run stopped 94 calls in.** Every call after 17:32:01 UTC on 2026-09-15
-returned `400 invalid_request_error`: "You have reached your specified API
-usage limits. You will regain access on 2026-10-01 at 00:00 UTC." That is a
-billing limit on the account, not a rate limit and not a bug: the `e2_smoke`
-run three minutes earlier completed 16/16 across both judge models, and the
-466 failures carry the same message and a request id each. All 560 rows are in
-the raw file, 466 of them `ok: false`.
+Order consistency -- the same summary source winning in both orders, a tie
+counting as a verdict (`e2_consistency.csv`, `figures/e2_consistency.png`):
 
-What that leaves, and what it does not:
+| Judge | Layer | consistent | rate | 95% Wilson |
+|-------|-------|-----------|------|-----------|
+| claude-haiku-4-5 | easy | 52/70 | 0.743 | 0.630-0.831 |
+| claude-haiku-4-5 | hard | 52/70 | 0.743 | 0.630-0.831 |
+| claude-sonnet-5 | easy | 58/70 | 0.829 | 0.724-0.899 |
+| claude-sonnet-5 | hard | 59/70 | 0.843 | 0.740-0.910 |
 
-| Cell | calls ok | pairs judged in both orders |
-|------|---------|------------------------------|
-| claude-sonnet-5, easy | 94/140 | 24 of 70 |
-| claude-sonnet-5, hard | 0/140 | 0 |
-| claude-haiku-4-5, easy | 0/140 | 0 |
-| claude-haiku-4-5, hard | 0/140 | 0 |
+**About one verdict in five changes when the two candidates change places**:
+221 of 280 pairs held, 0.789 overall. Neither comparison the design was built
+for separates. Between models the paired McNemar is b = 14, c = 27, p = 0.060
+pooled across layers (BH 0.358) and further from any threshold within a layer
+(easy p = 0.286, hard p = 0.167), so "Sonnet is the steadier judge" is what the
+point estimates say and not what the test supports. Between layers there is
+nothing at all: Fisher exact p = 1.000 for both judges (haiku 52/70 against
+52/70, sonnet 58/70 against 59/70), and the paired sensitivity row, which
+exists because the two layers are built from the same 70 emails, agrees
+(b = 22, c = 23, p = 1.000 pooled). Comparing a summary with a degraded
+summary is no more order-stable, on this dataset, than comparing a summary with
+another draw of itself.
 
-**No E2 question is answered.** One model of two, one layer of two, and 24
-pairs of 70 in the only cell that returned anything. The model comparison, the
-easy-against-hard comparison and three of the four consistency cells have no
-data at all. `e2_consistency.csv` puts the coverage rows first for that reason,
-and `analyze.py` refuses to draw `figures/e2_consistency.png` from part of a
-design, printing the missing cells to stderr instead -- a four-cell figure with
-one cell in it reads as a finished experiment to anyone who does not check the
-axis.
+Position preference, ties excluded (`e2_position_pref.csv`):
 
-For completeness, the partial cell: 20 of those 24 pairs got the same verdict
-in both orders (0.833, Wilson 0.641-0.933), 71 of 94 successful calls returned
-`tie`, and the 23 decisive calls split 9 first-position to 14 second-position
-(0.391, exact binomial p = 0.405 against 0.5; case-cluster bootstrap
-0.217-0.565 over 18 cases). Those are four numbers from one seventh of one
-cell and none of them is a result.
+| Judge | Layer | first position wins | rate | exact binomial vs 0.5 | BH | case-cluster 95% |
+|-------|-------|--------------------|------|----------------------|----|------------------|
+| claude-haiku-4-5 | easy | 51/94 | 0.543 | 0.470 | 0.941 | 0.495-0.596 |
+| claude-haiku-4-5 | hard | 27/46 | 0.587 | 0.302 | 0.941 | 0.476-0.702 |
+| claude-sonnet-5 | easy | 15/33 | 0.455 | 0.728 | 0.971 | 0.333-0.567 |
+| claude-sonnet-5 | hard | 11/23 | 0.478 | 1.000 | 1.000 | 0.333-0.619 |
+| both | both | 104/196 | 0.531 | 0.432 | -- | 0.482-0.580 |
 
-The 75% tie rate is the one thing worth carrying into the re-run: this prompt
-shows the judge the human reference summary, as production does, and with the
-reference in front of it the judge mostly declines to choose. If that holds at
-full n, the design's effective sample for a position-bias test is a quarter of
-its call count, which is a sample-size fact to state before the re-run rather
-than a surprise after it.
+**No cell shows a position effect**, and the two judges do not even lean the
+same way -- Haiku above 0.5 in both layers, Sonnet below it in both. The
+pre-registered test is the exact binomial (section 6); it treats calls as
+independent and they are not, so the case-cluster bootstrap interval sits in
+the same row and is the width to quote. Wang et al. (2024) report a large
+position bias in reference-free pairwise judging; this prompt keeps the human
+reference summary in front of the judge, as production does, and on 196
+decisive calls there is no sign of one. That is a result about this setup, not
+a contradiction of theirs.
 
-Re-running needs account access back (2026-10-01, or sooner if the limit is
-raised -- an account decision, not a repository one). Nothing about the design
-or the prompt changed in response to the failure.
+The tie rate is what makes those denominators small, and it is the one number
+that carried over from the partial run: 364 of 560 calls came back `tie`,
+0.650 overall, and it is not evenly spread -- 0.329 for Haiku on the easy
+layer, 0.836 for Sonnet on the hard one. Sonnet ties more than Haiku in both
+layers, and both tie more when the two summaries are two draws of the same
+prompt than when one of them is degraded, which is the direction a working
+judge should move. The cost of it is arithmetic: a 560-call design bought 196
+usable observations for the position question. Anything of this shape should be
+budgeted at four calls per decisive answer.
+
+Two controls worth their line. Four `hard` pairs have byte-identical summaries
+(the classifier returned the same string on both repeats), which makes 16 calls
+whose only correct answer is `tie` -- and all 16 came back `tie`, on both
+judges. And on the easy layer, where the pair is the baseline summary against
+the zero-shot one, the decisive consistent pairs split 24/37 to the baseline
+under Haiku and 3/10 under Sonnet: small, descriptive, and one more reading of
+E1's result that removing the four few-shot examples did not visibly damage the
+output.
 
 ## E4 second annotator
 
@@ -487,9 +532,56 @@ Agreement is computed later, by the analysis step.
 `sheet_sha256`, `dataset_version` and 70 `{case_id, label, notes}` records
 sorted by case id.
 
-Status on 2026-09-16: sheet and instructions produced, annotation not started.
-Kappa matrix, bootstrap interval and the rank-flip check remain
-`NotImplementedError` items in the table below, due 2026-09-24.
+Status on 2026-09-16: sheet and instructions produced, annotation not started,
+due back 2026-09-23. The kappa estimator and its bootstrap interval are
+implemented and running against the model annotators below; the second human's
+rows appear in the same `e4_kappa.csv` the moment
+`experiments/data/annotator2_labels.json` exists, and that path was exercised
+on a synthetic labels file before this was written. The rank-flip check -- does
+the system's ranking change when the gold labels are swapped for another
+annotator's -- is still a `NotImplementedError` item in the table below.
+
+## What the E4 model annotators agreed with
+
+Haiku 4.5 and Sonnet 5 each labelled the same 70 emails once, from the four
+category definitions and the two-categories-fit rule alone: the material the
+human second annotator gets, quoted verbatim from the same lines of
+`prompts/v1.yaml` (`experiments/prompts/annotator_model_v1.yaml`, quotes
+re-checked against the source at startup). No few-shot examples, nothing saying
+a label already exists, one call per case. 140 calls, none failed.
+
+| Rater A | Rater B | n | raw agreement | kappa | 95% bootstrap |
+|---------|---------|---|---------------|-------|---------------|
+| human-1 (gold) | claude-haiku-4-5 | 70 | 0.929 | 0.905 | 0.809-0.981 |
+| human-1 (gold) | claude-sonnet-5 | 70 | 0.929 | 0.905 | 0.810-0.981 |
+| claude-haiku-4-5 | claude-sonnet-5 | 70 | 0.971 | 0.962 | 0.902-1.000 |
+
+Five disagreements out of 70 for each model, and **the two models agree with
+each other (0.962) more than either agrees with the human who wrote the
+labels**. The intervals overlap almost exactly, so the first two rows cannot be
+told apart at this n; the band names carried in the table are Landis & Koch
+(1977), a reading convention quoted with its source rather than a result. All
+of it is descriptive: `e4_kappa.csv` has no p-value column, because agreement
+with one annotator is an estimate and not a test.
+
+Exploratory, from the confusion tables rather than from any test: four of the
+five disagreements are the same email labelled the same wrong way by both
+models -- case-012 and case-043 (`general` read as `technical`), case-020
+(`general` read as `billing`), case-018 (`technical` read as `account`). Two of
+those four are cases this study had already written about before the arm ran.
+case-043 is the leaked case of PREREGISTRATION section 10.10.1, whose label
+sits verbatim in `prompts/v1.yaml`'s fourth few-shot example: shown the
+definitions without that example, both raters put it somewhere else.
+case-018 is the email `docs/DEGRADATION_DESIGN.md` named in advance as the one
+v1's "SSO/2FA setup" line pulls into `account` -- and both raters, given that
+same line in the definitions, put it in `account`. Of the three `general`
+emails both models moved, `general` is also the category E5 found weakest for
+the classifier itself (13/17 in the baseline arm).
+
+What this arm cannot say is in PREREGISTRATION section 8.3: kappa measures
+agreement, not correctness, and two raters agreeing at 0.9 with one annotator
+can also mean all three share a blind spot. The second human is the check on
+that, and is not in yet.
 
 ## What is implemented, and what is not
 
@@ -560,7 +652,7 @@ approximation:
 | Fleiss kappa | E0 | 2026-09-19 |
 | Krippendorff alpha | E0 / E4 | 2026-09-24 |
 | Firth penalised likelihood | E5's separated baseline-arm model | open |
-| Second-annotator ingestion, kappa matrix, rank-flip check | E4 | 2026-09-24 |
+| Rank-flip check: does the system ranking change under another annotator's labels | E4 | 2026-09-24 |
 
 Firth is the remedy for the separation described under *What E5 found*.
 statsmodels 0.15.0 does not have it and `firthlogist` is not installed, so the
@@ -568,18 +660,20 @@ row in `e5_logit.csv` says not run and carries no approximate coefficients. It
 is listed with no due date because nothing in the study depends on it: the
 model that is reported is fitted on data where no level is constant.
 
-Closed since the last revision of this file: the logistic model with
-case-clustered standard errors (shipped 2026-09-16 with E5), and the pairwise
-judge prompt and position-bias analysis (shipped 2026-09-16 --
-`experiments/prompts/judge_pairwise_v1.yaml`, `runner_pairwise.py`,
-`table_e2_consistency`, `table_e2_position`; the *code* is done, the *run* is
-94 calls of 560, see above). "Newcombe method 10 checked against the paper's
-printed example" was closed on 2026-09-15 against Newcombe (1998) Table III as
-described above.
+Closed since the last revision of this file: E2's run (all 560 cells, in two
+batches -- `runner_pairwise.py --resume-failed-from`), and E4's second-annotator
+ingestion and kappa matrix (`import_annotator2.py`, `table_e4_kappa`,
+`table_e4_confusions`), which now report the model raters and take the second
+human's labels as soon as the file exists. Closed on 2026-09-16 with E5: the
+logistic model with case-clustered standard errors. Closed on 2026-09-15:
+"Newcombe method 10 checked against the paper's printed example", against
+Newcombe (1998) Table III as described above.
 
-`e5_strata.csv`, `e5_logit.csv`, `e2_consistency.csv` and
-`e2_position_pref.csv` carry rows since 2026-09-16; `figures/e5_forest.png` is
-drawn and `figures/e2_consistency.png` is not, for the reason given above.
+`e5_strata.csv`, `e5_logit.csv`, `e2_consistency.csv`, `e2_position_pref.csv`,
+`e4_kappa.csv` and the two `e4_confusion_*.csv` carry rows since 2026-09-16;
+`figures/e5_forest.png` and `figures/e2_consistency.png` are both drawn. The E2
+figure was skipped while one of its four cells had data, which is the rule
+described above doing its job rather than an error.
 `paired_mcnemar.csv`, `e1_main.csv` and `e1_power.csv` carry rows since
 2026-09-15; before a v2* run existed they were written with headers and no
 data, and `figures/e1_forest.png` / `figures/e1_power.png` were skipped rather

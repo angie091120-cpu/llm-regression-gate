@@ -35,6 +35,15 @@ won without having to know which order it was in.
         --baseline-from experiments/results/raw/e0_noise/<run_id>.jsonl \
         --contrast-from experiments/results/raw/e1_v2b/<run_id>.jsonl \
         --max-cost-usd 3.00
+
+--resume-failed-from <jsonl> sends only the design cells that an earlier run of
+this experiment recorded as failures. The 2026-09-15 run wrote all 560 rows and
+the API answered 94 of them before the account hit its spend limit, so the
+re-run is 466 calls and not 560: re-asking a question that already has an answer
+spends money twice and leaves two successful rows in one cell, which the
+analysis refuses to resolve. The new rows go to a new raw file -- the old one is
+evidence and is never appended to or rewritten -- and analyze.py reads both,
+keeping the answered row of each cell.
 """
 from __future__ import annotations
 
@@ -180,6 +189,102 @@ def build_pairs(cases: list[GoldenCase], sources: dict[str, dict[str, dict]]) ->
     return pairs, skipped
 
 
+RESUME_KEY_FIELDS = ("request_model", "layer", "order", "pair_id")
+
+
+def cell_key(request_model: str, layer: str, order: str, pair_id: str) -> tuple[str, str, str, str]:
+    """The unit a re-run resumes on: one judge model asked about one pair in
+    one order. analyze.py groups the raw rows by the same four fields."""
+    return (str(request_model), str(layer), str(order), str(pair_id))
+
+
+def load_resume_targets(path: Path, *, exp_id: str, prompt_version: str) -> tuple[dict[tuple, dict], dict]:
+    """Cells of an earlier run that failed and still have no answer.
+
+    Cells that succeeded are subtracted, so a resumed batch cannot produce a
+    second successful row for a cell that already has one -- the case
+    analyze.py stops on. Two properties of the earlier file are checked rather
+    than assumed, because getting either wrong merges two different
+    experiments without saying so: the same exp_id (the analysis joins on it)
+    and the same judge prompt version (the prompt is the instrument).
+    """
+    ok_cells: dict[tuple, dict] = {}
+    failed_cells: dict[tuple, dict] = {}
+    n_rows = 0
+    exp_ids: set[str] = set()
+    versions: set[str] = set()
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        row = json.loads(line)
+        if row.get("tier") != TIER:
+            continue
+        n_rows += 1
+        exp_ids.add(str(row.get("exp_id")))
+        versions.add(str(row.get("prompt_version")))
+        key = cell_key(row.get("request_model"), row.get("layer"), row.get("order"), row.get("pair_id"))
+        (ok_cells if row.get("ok") else failed_cells)[key] = row
+    if not n_rows:
+        raise SystemExit(f"--resume-failed-from {path} has no {TIER} rows")
+    if exp_ids != {exp_id}:
+        raise SystemExit(
+            f"--resume-failed-from {path} carries exp_id {sorted(exp_ids)} and this run is {exp_id!r}; "
+            "a resumed batch has to land in the same experiment or the analysis will not join the two"
+        )
+    if versions != {prompt_version}:
+        raise SystemExit(
+            f"--resume-failed-from {path} used judge prompt {sorted(versions)} and this run would use "
+            f"{prompt_version!r}; the prompt is the instrument here, so resuming across a prompt change "
+            "is a different experiment rather than a continuation"
+        )
+    targets = {k: v for k, v in failed_cells.items() if k not in ok_cells}
+    stats = {
+        "resume_rows_read": n_rows,
+        "resume_cells_already_answered": len(ok_cells),
+        "resume_cells_failed": len(failed_cells),
+        "resume_cells_failed_but_answered_elsewhere": len(failed_cells) - len(targets),
+        "resume_cells_to_run": len(targets),
+    }
+    return targets, stats
+
+
+def check_resume_inputs(targets: dict[tuple, dict], pairs: list[dict], judge_models: list[str]) -> None:
+    """Every resumed cell has to be reproducible from the summaries this run
+    loaded, and has to be the *same* two summaries the failed call would have
+    compared.
+
+    The pair texts come from --baseline-from / --contrast-from. Pointing either
+    at a different file would re-run the design against different texts while
+    the raw rows still claimed to be one experiment, so the source call ids
+    recorded on the old row are compared with the ones about to be sent, and a
+    mismatch stops the run.
+    """
+    index: dict[tuple, tuple[dict, str]] = {}
+    for model in judge_models:
+        for order in ORDERS:
+            for pair in pairs:
+                index[cell_key(model, pair["layer"], order, pair["pair_id"])] = (pair, order)
+    missing = sorted(k for k in targets if k not in index)
+    if missing:
+        raise SystemExit(
+            f"{len(missing)} cell(s) to resume cannot be built from the pairs this run loaded, e.g. "
+            f"{missing[:5]}; check --judge-models, --cases and the two --*-from files"
+        )
+    mismatched: list[str] = []
+    for key, row in sorted(targets.items()):
+        pair, order = index[key]
+        a_key, b_key = ("left", "right") if order == "left_first" else ("right", "left")
+        want = row.get("source_call_ids") or {}
+        got = {"position_a": pair[a_key]["source_call_id"], "position_b": pair[b_key]["source_call_id"]}
+        if want and want != got:
+            mismatched.append(f"{key}: recorded {want}, would send {got}")
+    if mismatched:
+        raise SystemExit(
+            f"{len(mismatched)} cell(s) would be judged against different summaries than the failed call "
+            f"used, e.g. {mismatched[:3]}; the summaries are inputs to the design, so this is a stop"
+        )
+
+
 async def judge_pair(
     pair: dict, order: str, model: str, prompt: PairwisePrompt,
     state: RunState, semaphore: asyncio.Semaphore, args: argparse.Namespace, cache_dir: Path | None,
@@ -244,7 +349,8 @@ async def judge_pair(
 
 
 async def orchestrate(pairs: list[dict], prompt: PairwisePrompt, args: argparse.Namespace,
-                      state: RunState, cache_dir: Path | None) -> None:
+                      state: RunState, cache_dir: Path | None,
+                      only_cells: set[tuple] | None = None) -> None:
     semaphore = asyncio.Semaphore(args.concurrency)
     tasks = []
     for model in args.judge_models:
@@ -252,6 +358,8 @@ async def orchestrate(pairs: list[dict], prompt: PairwisePrompt, args: argparse.
             for order in ORDERS:
                 for pair in pairs:
                     if pair["layer"] != layer:
+                        continue
+                    if only_cells is not None and cell_key(model, layer, order, pair["pair_id"]) not in only_cells:
                         continue
                     tasks.append(judge_pair(pair, order, model, prompt, state, semaphore, args, cache_dir))
     results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -269,6 +377,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p.add_argument("--contrast-from", required=True, help="JSONL of the E1 v2b arm (supplies the easy-layer contrast)")
     p.add_argument("--baseline-repeats", default="0,1", help="two repeat indices of --baseline-from: first is the left summary, second is the hard-layer contrast")
     p.add_argument("--contrast-repeat", type=int, default=0)
+    p.add_argument("--resume-failed-from", default=None,
+                   help="JSONL of an earlier run of this experiment: send only the cells it recorded as failures")
     p.add_argument("--judge-models", default=",".join(DEFAULT_JUDGE_MODELS))
     p.add_argument("--cases", default=None, help="N | id,id,id | @file-of-ids (default: all confirmed cases)")
     p.add_argument("--concurrency", type=int, default=DEFAULT_CONCURRENCY)
@@ -321,6 +431,20 @@ def main(argv: list[str] | None = None) -> int:
     pairs, skipped = build_pairs(cases, sources)
     n_planned = len(pairs) * len(ORDERS) * len(args.judge_models)
 
+    resume_targets: dict[tuple, dict] | None = None
+    resume_stats: dict = {}
+    if args.resume_failed_from:
+        resume_targets, resume_stats = load_resume_targets(
+            Path(args.resume_failed_from), exp_id=args.exp_id, prompt_version=prompt.version
+        )
+        check_resume_inputs(resume_targets, pairs, args.judge_models)
+        n_planned = len(resume_targets)
+        if n_planned == 0:
+            raise SystemExit(
+                f"--resume-failed-from {args.resume_failed_from} leaves nothing to run: every failed cell "
+                "in that file already has a successful row"
+            )
+
     args.run_id = args.run_id or f"{args.exp_id}_{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}"
     out_dir = Path(args.raw_dir) / args.exp_id
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -344,6 +468,8 @@ def main(argv: list[str] | None = None) -> int:
         "pairs_with_identical_summaries": identical,
         "pairs_skipped_missing_summary": skipped,
         "planned_calls": n_planned,
+        "resume_failed_from": _repo_relative(Path(args.resume_failed_from)) if args.resume_failed_from else None,
+        **resume_stats,
         "baseline_from": _repo_relative(Path(args.baseline_from)),
         "baseline_repeats": args.baseline_repeats,
         "contrast_from": _repo_relative(Path(args.contrast_from)),
@@ -374,7 +500,10 @@ def main(argv: list[str] | None = None) -> int:
     state = RunState(out_path, args.max_cost_usd)
     started = now_iso()
     try:
-        asyncio.run(orchestrate(pairs, prompt, args, state, None))
+        asyncio.run(orchestrate(
+            pairs, prompt, args, state, None,
+            set(resume_targets) if resume_targets is not None else None,
+        ))
     finally:
         state.close()
     finished = now_iso()

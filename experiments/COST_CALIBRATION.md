@@ -104,7 +104,11 @@ measured above rather than projected.
 | E1 H4 (`e1_v2d_20260915T154407Z.jsonl`) | 420 | $1.237953 |
 | E2 calibration (`e2_smoke_20260915T172942Z.jsonl`) | 16 | $0.061943 |
 | E2 main run, stopped by the spend limit (`e2_pairwise_20260915T173047Z.jsonl`) | 560 (94 successful) | $0.443440 |
-| **Total** | 3,272 | **$8.586773** |
+| probes, SDK 0.117.0, 2026-09-16 with the limit still in force | 6 (0 successful) | $0.000000 |
+| probes, SDK 0.117.0, 2026-09-16 after the limit was raised | 6 (4 successful) | $0.006932 |
+| E2 re-run of the refused cells (`e2_pairwise_20260916T145210Z.jsonl`) | 466 | $1.553728 |
+| E4 model annotation (`e4_annot_20260916T145907Z.jsonl`) | 140 | $0.312869 |
+| **Total** | 3,890 | **$10.460302** |
 
 E1 cost $4.839267 for 1,680 calls, all four arms successful, which is
 $0.002880 per call against E0 main arm's $0.002973. The four runs were
@@ -144,15 +148,16 @@ Where each number now lives:
 
 | Number | Value | Meaning |
 |--------|-------|---------|
-| `MANIFEST.totals.raw_cost_usd` | $8.569487 | recomputed from `usage` at pinned prices -- the published figure |
-| `MANIFEST.totals.raw_cost_usd_recorded_by_runner` | $8.564149 | what the runner wrote into the raw files at run time |
-| `MANIFEST.totals.raw_cost_usd_unrecorded_at_run_time` | $0.005338 | the difference, i.e. this one call, unchanged by the E2 runs |
-| `cost_ledger.json` `cumulative_usd` | $8.564149 | append-only, runner runs only, never edited afterwards |
-| `MANIFEST.totals.total_cost_usd` | $8.582081 | raw (recomputed) + the two surviving probe files |
+| `MANIFEST.totals.raw_cost_usd` | $10.436084 | recomputed from `usage` at pinned prices -- the published figure |
+| `MANIFEST.totals.raw_cost_usd_recorded_by_runner` | $10.430746 | what the runner wrote into the raw files at run time |
+| `MANIFEST.totals.raw_cost_usd_unrecorded_at_run_time` | $0.005338 | the difference, i.e. this one call, unchanged by the E2 and E4 runs |
+| `cost_ledger.json` `cumulative_usd` | $10.430746 | append-only, runner runs only, never edited afterwards |
+| `MANIFEST.totals.total_cost_usd` | $10.455610 | raw (recomputed) + the four surviving probe files |
 
 `checks/experiments_acceptance.sh` C4 reconciles the first against the fourth
-and needs them within 1%; the gap is 0.06%, and it is now a number with a
-named cause rather than a silent agreement.
+and needs them within 1%; the gap is 0.05%, and it is a number with a named
+cause rather than a silent agreement. It shrinks as the study spends more,
+because it is one fixed call's worth of money against a growing total.
 
 **2026-09-15: the API account refused the rest of E2.** The main pairwise run
 executed 94 of 560 calls and then took `400 invalid_request_error` on every
@@ -177,13 +182,40 @@ and any spend made with the same key outside this repository is invisible from
 inside it. The plan's $20 is a planning figure; the console is the only place
 the real one can be read.
 
+**2026-09-16: the limit was raised, and the rest of E2 plus E4 ran.** Two probe
+runs date the change from inside the repository. At 14:33:54 UTC six probe
+calls came back 400 with the same "You have reached your specified API usage
+limits" body as the E2 failures, costing nothing
+(`probes_sdk0.117.0_20260916T143354Z.json`, `total_cost_usd` 0.0). At 14:39:23
+UTC the same script got 200s from Haiku and the ordinary `temperature is
+deprecated` 400 from Sonnet -- section 4.1 behaviour, not a limit
+(`probes_sdk0.117.0_20260916T143923Z.json`, $0.006932). Both files are
+committed; the refused one is kept because a probe that proves the account was
+still locked is evidence, not a failed artifact.
+
+What the two runs then cost, at concurrency 4:
+
+| Run | Calls | Model split | $ per call | Total |
+|-----|-------|-------------|-----------|-------|
+| E2 re-run | 466 | 280 Haiku / 186 Sonnet | $0.002584 / $0.004463 | $1.553728 |
+| E4 model annotation | 140 | 70 Haiku / 70 Sonnet | $0.001425 / $0.003044 | $0.312869 |
+
+E2's pairwise calls are the dearest per call in the study apart from the E0
+judge: the prompt carries an email, a reference summary and two candidate
+summaries, and the judge writes a `reasoning` field (Haiku averaged 286 output
+tokens, Sonnet 202). E4's are the cheapest, 33 output tokens on average,
+because the tool returns one enum field and nothing else. Neither run aborted
+on its cost cap ($3.00 and $1.00), neither used the cache, and no call failed,
+so recomputed and recorded cost agree on both files.
+
 Not in the table above and not in this package's ledger: the production
 baseline bootstrap run on `main` (70 cases, 140 calls,
 `eval_reports/baseline.json`, commit fe1cea8) cost $0.415487 through
 `evalkit.cost`. It is listed here only so the total this repository can
-account for is findable in one place: **$9.002260**. Whether that is 45% of a
-$20 limit or all of a smaller one is not answerable from inside the
-repository, and on 2026-09-15 the account answered it by refusing calls.
+account for is findable in one place: **$10.875789**. What share of the
+account's limit that is remains unanswerable from inside the repository; the
+limit was raised on 2026-09-16 by an account decision, and its new value is
+not visible here either.
 
 ## 4. Measured API behaviour
 

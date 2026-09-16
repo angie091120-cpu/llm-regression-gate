@@ -64,6 +64,7 @@ from experiments.stats import (  # noqa: E402
     bh_adjust,
     bootstrap_ci,
     clopper_pearson_ci,
+    cohen_kappa,
     exact_binomial_test,
     fisher_exact_2x2,
     holm_adjust,
@@ -150,6 +151,47 @@ E2_TIE_NOTE = (
 )
 E2_DEPENDENCE_NOTE = (
     "the exact binomial treats calls as independent; each case contributes several calls, so the case-cluster bootstrap interval in the same row is the honest width"
+)
+# E2 ran in two batches: 2026-09-15 wrote all 560 cells and the API answered 94
+# of them before the account hit its spend limit; 2026-09-16 re-sent the 466
+# that had failed. Both raw files stay in the repository, so a cell can appear
+# twice -- once refused, once answered -- and `e2_cell_rows` resolves that.
+E2_DEDUP_NOTE = (
+    "one row per design cell (judge model, layer, order, pair) across both batches; where a cell has "
+    "a failed row and a successful row, the successful row is the observation "
+    "(docs/PREREGISTRATION.md section 9, 2026-09-16)"
+)
+
+# ---- E4, rater agreement -------------------------------------------------
+# Three raters label the same 70 emails from the same four definitions: the
+# gold labels in golden_dataset.json (one human, July 2026), a second human who
+# is not on the project (experiments/data/annotator2_labels.json, due
+# 2026-09-23), and the models of the E4 annotation arm. Everything here is an
+# agreement estimate with an interval, not a test: there is no null hypothesis
+# in this table and no p-value in it.
+E4_EXP_ID = "e4_annot"
+E4_TIER = "annotator"
+E4_CATEGORIES = ("billing", "technical", "account", "general")
+E4_GOLD_RATER = "human-1 (gold)"
+E4_HUMAN2_RATER = "human-2 (non-member)"
+E4_HUMAN2_PATH = REPO_ROOT / "experiments" / "data" / "annotator2_labels.json"
+E4_FAMILY = "descriptive"
+E4_KAPPA_HEADER = [
+    "family", "rater_a", "rater_b", "n", "n_excluded", "po", "pe", "kappa",
+    "boot_ci_low", "boot_ci_high", "n_boot", "seed", "landis_koch", "method", "note",
+]
+E4_CONFUSION_HEADER = [
+    "row_rater", "column_rater", "row_label", *E4_CATEGORIES, "n_row", "note",
+]
+E4_KAPPA_NOTE = (
+    "Cohen (1960) kappa on one label per case; interval is a percentile bootstrap over cases "
+    "(one case = one unit), so it reflects sampling of these 70 emails and not annotator variance"
+)
+E4_BAND_NOTE = (
+    "band names are Landis & Koch (1977) Table 1, a convention for reading the number, not a test"
+)
+E4_EMPTY_NOTE = (
+    "no e4_annot raw data and no annotator2_labels.json yet; header written, no rows"
 )
 
 E5_FIRTH_NOTE = (
@@ -1186,18 +1228,62 @@ E2_POSITION_HEADER = [
 E2_ALL = "(both)"
 
 
+def e2_cell_rows(rows: list[dict]) -> tuple[list[dict], dict]:
+    """One raw row per E2 design cell, taken across every batch on disk.
+
+    The experiment was run twice (E2_DEDUP_NOTE): the second run re-sent only
+    the cells the first one could not get an answer for, so a cell holds either
+    one row or two, and when it holds two exactly one of them succeeded. The
+    successful row is the observation and the refused row stays in the raw file
+    as the record of what happened.
+
+    Two successful rows in one cell is not a case with a rule. It would mean
+    the same question was asked twice and somebody has to choose which answer
+    counts -- which is the choice this whole package exists to avoid -- so it
+    stops the analysis and names the cell instead.
+    """
+    grouped: dict[tuple, list[dict]] = defaultdict(list)
+    for row in rows:
+        if row.get("exp_id") != E2_EXP_ID or row.get("tier") != E2_TIER:
+            continue
+        grouped[(str(row.get("request_model")), str(row.get("layer")),
+                 str(row.get("order")), str(row.get("pair_id")))].append(row)
+    chosen: list[dict] = []
+    cells_twice = 0
+    superseded = 0
+    for key in sorted(grouped):
+        # Sorted so that "the first row" is a property of the data, not of the
+        # order rglob happened to return the files in.
+        group = sorted(grouped[key], key=lambda r: (str(r.get("timestamp_utc")), str(r.get("call_id"))))
+        ok_rows = [r for r in group if r.get("ok")]
+        if len(ok_rows) > 1:
+            where = "; ".join(f"{r.get('_source_file')} call_id={r.get('call_id')}" for r in ok_rows)
+            raise SystemExit(
+                "E2 design cell " + " / ".join(key) + f" has {len(ok_rows)} successful rows ({where}). "
+                "One cell is one question asked once: two answers cannot be resolved by a rule, so the "
+                "analysis stops rather than picking one."
+            )
+        if len(group) > 1:
+            cells_twice += 1
+            superseded += len(group) - 1
+        chosen.append(ok_rows[0] if ok_rows else group[0])
+    return chosen, {
+        "cells": len(chosen),
+        "cells_present_in_two_batches": cells_twice,
+        "rows_superseded_by_a_later_answer": superseded,
+    }
+
+
 def e2_calls(rows: list[dict]) -> list[dict]:
-    """One entry per successful pairwise call, with the verdict translated out
-    of position space.
+    """One entry per E2 design cell, with the verdict translated out of
+    position space.
 
     `choice` is "A" or "B" -- a position. `winner` is the summary *source* that
     position held on this call, which is the same quantity in both orders and
     the only one worth comparing across them.
     """
     out: list[dict] = []
-    for row in rows:
-        if row.get("exp_id") != E2_EXP_ID or row.get("tier") != E2_TIER:
-            continue
+    for row in e2_cell_rows(rows)[0]:
         choice = (row.get("parsed") or {}).get("choice") if row.get("ok") else None
         if choice == "A":
             winner, first_win = row["position_a_source"], 1
@@ -1210,6 +1296,7 @@ def e2_calls(rows: list[dict]) -> list[dict]:
         out.append({
             "judge_model": row["request_model"],
             "response_model": row.get("response_model"),
+            "source_file": row.get("_source_file"),
             "layer": row["layer"],
             "order": row["order"],
             "pair_id": row["pair_id"],
@@ -1303,12 +1390,17 @@ def table_e2_consistency(rows: list[dict]) -> tuple[list[str], list[list]]:
             ok = [c for c in group if c["ok"]]
             complete = [p for p in subset(model, layer) if p["complete"]]
             errors = sorted({str(c["error_type"]) for c in group if not c["ok"]})
+            by_batch: dict[str, int] = defaultdict(int)
+            for call in ok:
+                by_batch[Path(str(call["source_file"])).name] += 1
+            batches = ", ".join(f"{name}={n}" for name, n in sorted(by_batch.items())) or "none"
             out.append([
-                "coverage", E5_FAMILY_DESCRIPTIVE, model, layer, "calls in the raw file",
+                "coverage", E5_FAMILY_DESCRIPTIVE, model, layer, "design cells",
                 len(group), len(ok), len(ok) / len(group), None, None, None,
                 None, None, None, None, "", len(group) - len(ok),
                 f"{len(complete)} of {len(group) // len(E2_ORDERS)} pairs have both orders; "
-                f"failure types: {', '.join(errors) if errors else 'none'}",
+                f"failure types: {', '.join(errors) if errors else 'none'}; "
+                f"answered rows by batch: {batches}",
             ])
 
     unit_note = "unit = one pair judged in both orders; consistent means the same summary source won both times (tie counts as a verdict)"
@@ -1387,8 +1479,13 @@ def table_e2_consistency(rows: list[dict]) -> tuple[list[str], list[list]]:
             "Fisher exact assumes two independent samples and these two layers are built from the "
             "same 70 emails, so the paired row below is the honest version",
         ])
-        paired_keys = {p["pair_id"].split(":", 1)[1]: p["consistent"] for p in easy}
-        hard_by_case = {p["pair_id"].split(":", 1)[1]: p["consistent"] for p in hard}
+        # Keyed by (judge model, case), not by case: in the pooled row both
+        # models contribute a pair for the same email, and a case-only key
+        # kept whichever model was iterated last -- a row labelled "(both)"
+        # that reported one model. Found on 2026-09-16 after the full run,
+        # recorded in docs/PREREGISTRATION.md section 9.
+        paired_keys = {(p["judge_model"], p["pair_id"].split(":", 1)[1]): p["consistent"] for p in easy}
+        hard_by_case = {(p["judge_model"], p["pair_id"].split(":", 1)[1]): p["consistent"] for p in hard}
         shared = sorted(set(paired_keys) & set(hard_by_case))
         b = sum(1 for k in shared if paired_keys[k] == 1 and hard_by_case[k] == 0)
         c = sum(1 for k in shared if paired_keys[k] == 0 and hard_by_case[k] == 1)
@@ -1595,6 +1692,131 @@ def figure_e2_consistency(consistency_rows: list[list], position_rows: list[list
     fig.savefig(out_path, dpi=160, metadata={"Software": "experiments/analyze.py"})
     plt.close(fig)
     return rel_to_repo(out_path)
+
+
+# --------------------------------------------------------------------------
+# E4: agreement between raters (exploratory)
+# --------------------------------------------------------------------------
+def _landis_koch(kappa: float) -> str:
+    """Landis & Koch (1977) Table 1 band for a kappa. A reading convention
+    quoted with its source, not a threshold anything in this study depends on."""
+    for upper, name in ((0.0, "poor"), (0.20, "slight"), (0.40, "fair"),
+                        (0.60, "moderate"), (0.80, "substantial")):
+        if kappa <= upper:
+            return name
+    return "almost perfect"
+
+
+def e4_rater_labels(rows: list[dict], dataset_path: Path) -> tuple[dict[str, dict[str, str]], dict[str, int]]:
+    """rater -> {case_id: label}, plus the failed-call count per model rater.
+
+    The gold rater is read from the dataset, not from any run. A model rater
+    contributes only its successful calls; a failed call leaves that case out
+    of the pair rather than scoring it as a disagreement (PREREGISTRATION
+    section 7).
+    """
+    labels: dict[str, dict[str, str]] = {
+        E4_GOLD_RATER: {c.id: c.expected_category for c in load_all_cases(dataset_path)}
+    }
+    failures: dict[str, int] = defaultdict(int)
+    for row in rows:
+        if row.get("exp_id") != E4_EXP_ID or row.get("tier") != E4_TIER:
+            continue
+        rater = f"model:{row.get('request_model')}"
+        if not row.get("ok"):
+            failures[rater] += 1
+            continue
+        category = (row.get("parsed") or {}).get("category")
+        if not category:
+            failures[rater] += 1
+            continue
+        labels.setdefault(rater, {})[row["case_id"]] = category
+    if E4_HUMAN2_PATH.exists():
+        data = json.loads(E4_HUMAN2_PATH.read_text(encoding="utf-8"))
+        labels[E4_HUMAN2_RATER] = {r["case_id"]: r["label"] for r in data["labels"]}
+    return labels, dict(failures)
+
+
+def e4_rater_pairs(labels: dict[str, dict[str, str]]) -> list[tuple[str, str]]:
+    """Which pairs go in the table, in a fixed order: every rater against the
+    gold labels first, then the second human against each model, then the
+    models against each other."""
+    models = sorted(r for r in labels if r.startswith("model:"))
+    human2 = [E4_HUMAN2_RATER] if E4_HUMAN2_RATER in labels else []
+    pairs = [(E4_GOLD_RATER, other) for other in human2 + models]
+    pairs += [(E4_HUMAN2_RATER, m) for m in models if human2]
+    pairs += [(models[i], models[j]) for i in range(len(models)) for j in range(i + 1, len(models))]
+    return pairs
+
+
+def table_e4_kappa(rows: list[dict], dataset_path: Path, seed: int, n_boot: int) -> tuple[list[str], list[list]]:
+    """Cohen's kappa for each pair of raters, with a case-level bootstrap
+    interval.
+
+    What the interval covers and what it does not: resampling cases says how
+    much of the number is these 70 emails. It says nothing about annotator
+    variance -- there is one second human and one call per model per case, so
+    "another annotator would have got this" is outside what the design can
+    estimate (PREREGISTRATION section 8).
+    """
+    labels, failures = e4_rater_labels(rows, dataset_path)
+    if set(labels) == {E4_GOLD_RATER}:
+        return E4_KAPPA_HEADER, []
+    out: list[list] = []
+    for rater_a, rater_b in e4_rater_pairs(labels):
+        a, b = labels[rater_a], labels[rater_b]
+        shared = sorted(set(a) & set(b))
+        if not shared:
+            continue
+        units = [(a[cid], b[cid]) for cid in shared]
+        result = cohen_kappa([u[0] for u in units], [u[1] for u in units])
+        boot = bootstrap_ci(
+            units,
+            lambda u: cohen_kappa([x[0] for x in u], [x[1] for x in u])["kappa"],
+            seed=seed, n_boot=n_boot,
+        )
+        excluded = (len(set(a) | set(b)) - len(shared))
+        note = E4_KAPPA_NOTE + "; " + E4_BAND_NOTE
+        for rater in (rater_a, rater_b):
+            if failures.get(rater):
+                note += f"; {rater} has {failures[rater]} failed call(s), excluded from the pairing"
+        out.append([
+            E4_FAMILY, rater_a, rater_b, len(shared), excluded,
+            result["po"], result["pe"], result["kappa"],
+            boot["ci_low"], boot["ci_high"], n_boot, seed,
+            _landis_koch(result["kappa"]), result["method"], note,
+        ])
+    return E4_KAPPA_HEADER, out
+
+
+def table_e4_confusions(rows: list[dict], dataset_path: Path) -> list[tuple[str, tuple[list[str], list[list]]]]:
+    """One confusion table per model rater: gold label down the side, the
+    model's label across the top. Written only for raters that have labels, so
+    an absent file means an arm that has not run rather than an empty result."""
+    labels, _ = e4_rater_labels(rows, dataset_path)
+    gold = labels[E4_GOLD_RATER]
+    specs: list[tuple[str, tuple[list[str], list[list]]]] = []
+    for rater in sorted(r for r in labels if r.startswith("model:")):
+        model = rater.split(":", 1)[1]
+        other = labels[rater]
+        shared = sorted(set(gold) & set(other))
+        if not shared:
+            continue
+        body: list[list] = []
+        for row_label in E4_CATEGORIES:
+            counts = [sum(1 for cid in shared if gold[cid] == row_label and other[cid] == col)
+                      for col in E4_CATEGORIES]
+            body.append([
+                E4_GOLD_RATER, rater, row_label, *counts, sum(counts),
+                "row = gold label, columns = the model's label on the same email",
+            ])
+        totals = [sum(1 for cid in shared if other[cid] == col) for col in E4_CATEGORIES]
+        body.append([
+            E4_GOLD_RATER, rater, "(all)", *totals, len(shared),
+            f"column totals; {len(shared)} cases labelled by both raters",
+        ])
+        specs.append((f"e4_confusion_{model}.csv", (E4_CONFUSION_HEADER, body)))
+    return specs
 
 
 def table_tokens(rows: list[dict]) -> tuple[list[str], list[list]]:
@@ -2161,6 +2383,9 @@ def main(argv: list[str] | None = None) -> int:
     e5_strata_spec = table_e5_strata(observations)
     e2_consistency_spec = table_e2_consistency(rows)
     e2_position_spec = table_e2_position(rows, args.seed, args.n_boot)
+    e4_kappa_spec = table_e4_kappa(rows, dataset_path, args.seed, args.n_boot)
+    if not e4_kappa_spec[1]:
+        print(f"e4: {E4_EMPTY_NOTE}")
     e1_power_spec = table_e1_power(pair_sets, args.seed, n_sim=args.power_n_sim)
 
     rescore_header, rescore_rows = table_judge_rescore(rows)
@@ -2174,6 +2399,8 @@ def main(argv: list[str] | None = None) -> int:
         ("e5_logit.csv", table_e5_logit(observations)),
         ("e2_consistency.csv", e2_consistency_spec),
         ("e2_position_pref.csv", e2_position_spec),
+        ("e4_kappa.csv", e4_kappa_spec),
+        *table_e4_confusions(rows, dataset_path),
         ("rates_bootstrap.csv", table_bootstrap(observations, args.seed, args.n_boot)),
         ("paired_mcnemar.csv", table_mcnemar(observations)),
         ("e1_main.csv", e1_main_spec),
