@@ -80,6 +80,23 @@ def sdk_accepts_temperature() -> bool:
         return False
 
 
+def sdk_version() -> str:
+    """`anthropic.__version__`, for the provenance block of a run's metadata.
+
+    PREREGISTRATION section 10.3 lists "a different `anthropic` major version"
+    as a reversal condition, and until 2026-09-17 no run artifact recorded the
+    version, so that condition could not be checked by reading files. Runs from
+    that date carry it in their `.meta.json`. Never back-filled into an older
+    file.
+    """
+    try:
+        import anthropic
+
+        return str(getattr(anthropic, "__version__", "unknown"))
+    except Exception:  # noqa: BLE001 -- provenance must not break a run
+        return "unknown"
+
+
 def resolve_temperature_transport(requested: str) -> str:
     if requested != "auto":
         return requested

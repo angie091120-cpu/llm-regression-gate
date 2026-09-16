@@ -30,6 +30,12 @@ pip install -r requirements-dev.txt   # includes requirements.txt
 pytest -q                             # fully mocked, no API key needed
 ```
 
+`checks/acceptance.sh` runs on `python3` from `PATH` unless told otherwise, so
+activate `.venv` first or name an interpreter -- `EXP_PYTHON=$HOME/.venvs/lrg-exp/bin/python bash checks/acceptance.sh`.
+On a bare system `python3` the dependencies are missing and AC1 fails on the
+import rather than on a test, which is a wrong interpreter and not a failing
+suite; the script prints the interpreter it used on its first line.
+
 Running the real-API paths (`python -m evalkit.run_eval`, `python -m evalkit.judge`)
 needs `ANTHROPIC_API_KEY` in the environment. Copy `.env.example` to `.env` and fill
 it in locally, or export the variables directly. Key ones:
@@ -50,7 +56,11 @@ Full list in [`.env.example`](.env.example).
 `draft_category`/`draft_summary`/`draft_difficulty` fields. `evalkit.run_eval`
 only ever evaluates `label_status: confirmed` cases and warns loudly about
 (and refuses to run against) anything that reverts to draft or is missing an
-expected label (SPEC.md §3).
+expected label (SPEC.md §3). The cases are fictional: every company, person,
+domain and email address in them -- including the file's one email-shaped
+string, `lin.admin@skycloud.com.tw` -- is invented, and any resemblance to a
+real one is coincidence. This note changes no case; the dataset is frozen for
+the study (`docs/PREREGISTRATION.md` section 2).
 
 See [SPEC.md](SPEC.md) for the frozen specification and acceptance criteria, and [docs/DECISIONS.md](docs/DECISIONS.md) for design decisions.
 

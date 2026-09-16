@@ -74,7 +74,9 @@ if [ ! -f .github/workflows/eval-gate.yml ]; then
 elif grep -q 'TODO(S2)' .github/workflows/eval-gate.yml; then
   echo "AC4 FAIL: eval-gate.yml is still a stub (TODO(S2) marker present)"; fail=1
 else
-  echo "AC4 PARTIAL: workflow file present and implemented (no stub marker) -- open a real test PR to confirm green + PR comment end-to-end, this script can't drive GitHub Actions itself"
+  echo "AC4 PARTIAL: workflow file present and implemented (no stub marker) -- this script can't drive GitHub Actions itself"
+  echo "  end-to-end has run for real on PR #4: eval-gate.yml fired on the pull_request event on 2026-09-16 and posted its scorecard comment twice (candidate 0.9143, baseline 0.9143, delta 0, severity ok, check green)"
+  echo "  not yet shown on any PR: a critical regression turning the check red -- the only red eval-gate run to date (PR #2, 2026-08-24) was the missing-ANTHROPIC_API_KEY guard failing loud, not a regression. Branch protection still does not list this check as required"
 fi
 
 exit $fail

@@ -43,7 +43,7 @@ if str(REPO_ROOT) not in sys.path:
 
 from evalkit.cost import record_usage  # noqa: E402
 from evalkit.dataset import GoldenCase, load_confirmed_cases  # noqa: E402
-from experiments.client import CallRecord, call_structured  # noqa: E402
+from experiments.client import CallRecord, call_structured, sdk_version  # noqa: E402
 from experiments.runner import (  # noqa: E402
     DEFAULT_CONCURRENCY,
     DEFAULT_DATASET,
@@ -310,6 +310,7 @@ def main(argv: list[str] | None = None) -> int:
         "aborted_on_cost_cap": state.aborted,
         "response_models_seen": sorted({str(r.get("response_model")) for r in state.rows if r.get("response_model")}),
         "label_counts_by_model": {m: dict(sorted(v.items())) for m, v in sorted(labels.items())},
+        "anthropic_sdk_version": sdk_version(),
         "sdk_max_retries": 2,
         "raw_path": str(out_path.relative_to(REPO_ROOT)),
     }

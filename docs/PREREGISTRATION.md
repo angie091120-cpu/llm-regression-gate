@@ -464,6 +464,82 @@ not exist. The rank-flip check the sprint plan lists under E4 -- does the
 system's ranking change under another annotator's labels -- is still not
 implemented and is still listed as such in `experiments/README.md`.
 
+**2026-09-17, section 10.1's "byte-identical" sentence, and the five lines it
+does not cover.** Section 10.1 says "Every line each file keeps is
+byte-identical to `prompts/v1.yaml`". That holds for every kept line, and it
+is not the whole account of what the files contain: three of the four also
+carry lines that appear nowhere in v1. A line-set comparison against v1, run
+on 2026-09-17 under the normalisation `docs/DEGRADATION_DESIGN.md` prints
+(drop `#` comments, the `version:` line and the `created_at:` line), gives
+-8 / +0 for v2a, -17 / +1 for v2b, -15 / +3 for v2c and -5 / +1 for v2d. The
+five added lines are:
+
+- v2c, two: `Classify each email into exactly one category: billing,
+  technical, account` and `or general.` -- a condensed lead-in written for
+  that file, keeping the four category labels and dropping the nine definition
+  lines that stood under them;
+- v2c, one: `not the language or politeness of the wording.` -- v1's line of
+  that text with the tie-break clause cut off, so a truncation rather than a
+  copy;
+- v2d, one: `If an email could plausibly` -- the other half of that same v1
+  line, kept because v2d removes the paragraph in front of the tie-break rule
+  and not the rule;
+- v2b, one: `few_shot_examples: []`, the key with an empty list where four
+  example blocks were.
+
+The counts have been in `docs/DEGRADATION_DESIGN.md`'s table as `+3` and `+1`
+since the files were built on 2026-09-14; the prose in that file also said
+"nothing was re-typed", which is false for v2c, and that sentence has been
+replaced by the list above. No analysis number moves: the four confirmatory
+tests read model outputs, the prompt files are inputs, and their sha256 are in
+`MANIFEST.json` either way. Section 10.1 is frozen text and is not edited;
+this entry is the correction to it.
+
+**2026-09-17, section 10.3's reversal condition (c) cannot be checked by
+reading the raw data, and what the SDK-version claim rests on instead.**
+Section 10.3 ends with "the trigger is a property of the raw data, so it is
+checked by reading files, not by judgement at analysis time". That is true of
+(a), which is `response_model` on every E1 classifier row, and of (b), which
+is `timestamp_utc`. Condition (c) names three things: `LLM_CLASSIFIER_MODEL`
+is in each meta file as `classifier_model_requested` and the price table is
+there as `prices_per_mtok`, both checkable, and the `anthropic` version is
+**in no meta file and in no raw row this study produced.**
+
+What the SDK version rests on instead: `requirements.txt` pins
+`anthropic==0.117.0`, and `git show <commit>:requirements.txt` returns that
+pin at every commit the meta files record -- 434fc31 (E0 main arm and
+judge-isolation arm), 786f32a (all four E1 arms), 12ffbff (E2 calibration and
+batch 1), 957d936 (E2 batch 2 and E4). The repository interpreter `.venv`
+carries 0.117.0 today, and `experiments/README.md` fixes the convention that
+study runs use it rather than the analysis venv, which carries 1.5.0. A pin
+plus a convention is not a record of what executed. The probe files are the
+nearest artifact and they are separate processes:
+`probes_sdk0.117.0_20260914T113405Z.json` and
+`probes_sdk1.5.0_20260914T113518Z.json` were both written on the E0 day, so
+"only one SDK was installed on that machine" is not available as an argument;
+`probes_sdk0.117.0_20260916T143354Z.json` and `..._20260916T143923Z.json` sit
+18 and 13 minutes before the E2 re-run; and there is no probe file at all on
+2026-09-15, the E1 day.
+
+Per arm, in the strongest form the evidence supports: E0, the four E1 arms,
+both E2 batches and E4 ran with `anthropic==0.117.0` pinned at their recorded
+commit, and not one of them carries a field showing that the interpreter
+obeyed the pin. `temperature` was null on every call in the study, so the one
+row field that reacts to the SDK version -- `temperature_transport`, which
+resolves to `param` on 0.117.0 and `extra_body` on 1.5.0 -- reads `none`
+throughout and separates nothing. The 2026-09-14 smoke run sits outside that
+list: it predates the pin (its commit 2727d9e has `anthropic>=0.40`) and
+predates `experiments/runner.py` being committed at all, so the runner that
+wrote it was uncommitted at run time.
+
+Nothing in E1 turns on this. The two auditable parts of (c) did not fire, and
+neither did (a) or (b). The gap is closed going forward only: `runner.py`,
+`runner_pairwise.py` and `runner_annotator.py` now write
+`anthropic_sdk_version`, read from `anthropic.__version__` at run time, into
+the `.meta.json` of every run from 2026-09-17. No existing meta or raw file is
+back-filled, for the reason the 2026-09-14 cost entry above gives: a raw file
+is evidence.
+
 ## 10. E1 in full
 
 Written 2026-09-14, before the first degraded-prompt call. Section 4 fixes
