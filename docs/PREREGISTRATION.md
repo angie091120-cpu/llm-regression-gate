@@ -540,6 +540,40 @@ the `.meta.json` of every run from 2026-09-17. No existing meta or raw file is
 back-filled, for the reason the 2026-09-14 cost entry above gives: a raw file
 is evidence.
 
+**2026-09-17, one email address in `golden_dataset.json` belonged to a real
+company; the dataset moves to v1.1.** `case-007`'s `input_text` carried
+`lin.admin@skycloud.com.tw`. The dataset is fictional by design (section 2:
+NebulaDesk and everyone in it are invented), and that domain is not: on
+2026-09-17 it resolves to a live host serving a site that identifies itself
+as a Taiwanese CDN and DDoS-mitigation provider. Publishing a support-email
+corpus that places an invented account holder at a real company's domain is a
+privacy and impersonation risk with no analytical benefit on the other side
+of it, so the address is now `lin.admin@example.com`, in the domain RFC 2606
+reserves for documentation.
+
+What changed: one string, in one case. `case-007`'s category, summary,
+difficulty, language and `label_status` are untouched, the other 69 cases are
+untouched byte for byte, and the envelope's `dataset_version` moves from `v1`
+to `v1.1` so that the edit is visible in the file and not only in this entry.
+sha256 before
+`af33d77841d9c17f55f4acd3abbe241d237333e433cf4545263a6e4d6fa1c3d9`, after
+`1590949032efbf123ca11394b3c12576aa3b2315a9edb03d30f01d0d6cdf2d5e`; the file
+goes from 62,562 to 62,560 bytes. `tests/test_golden_dataset.py` pins the
+shipped envelope version and now pins `v1.1` -- the assertion is moved, not
+relaxed.
+
+What did not change is any result. Every number in this study was computed
+from model outputs that already exist under `experiments/results/raw/`, and
+those files are evidence: the old address survives in 30 places across six
+raw files, inside model summaries that quoted the email they were handed, and
+not one of them is rewritten. Each run's `.meta.json` names the dataset it
+read and belongs to the day it ran, so none is back-filled.
+`MANIFEST.json` is regenerated from the file on disk and now carries the
+v1.1 sha256, which is the only published artifact that moves. A future run of
+any arm will send the v1.1 text; its raw file was never going to be
+byte-comparable with these ones in any case, because the calls cannot be
+seeded.
+
 ## 10. E1 in full
 
 Written 2026-09-14, before the first degraded-prompt call. Section 4 fixes

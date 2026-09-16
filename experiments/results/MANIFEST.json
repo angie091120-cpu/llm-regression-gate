@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-09-16T18:15:23.354286Z",
+  "generated_at_utc": "2026-09-16T18:27:59.262099Z",
   "analysis": {
     "seed": 20260920,
     "n_boot": 10000,
@@ -9,7 +9,7 @@
   "inputs": {
     "dataset": {
       "path": "golden_dataset.json",
-      "sha256": "af33d77841d9c17f55f4acd3abbe241d237333e433cf4545263a6e4d6fa1c3d9"
+      "sha256": "1590949032efbf123ca11394b3c12576aa3b2315a9edb03d30f01d0d6cdf2d5e"
     },
     "prompts": {
       "prompts/v1.yaml": "26302a1dea259ac4e881c2ad3f166e6bf95fbf3da93e997462f1fa48a64b9e55",

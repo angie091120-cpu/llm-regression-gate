@@ -57,10 +57,12 @@ Full list in [`.env.example`](.env.example).
 only ever evaluates `label_status: confirmed` cases and warns loudly about
 (and refuses to run against) anything that reverts to draft or is missing an
 expected label (SPEC.md §3). The cases are fictional: every company, person,
-domain and email address in them -- including the file's one email-shaped
-string, `lin.admin@skycloud.com.tw` -- is invented, and any resemblance to a
-real one is coincidence. This note changes no case; the dataset is frozen for
-the study (`docs/PREREGISTRATION.md` section 2).
+domain and email address in them is invented, and any resemblance to a real
+one is coincidence. v1.1 (2026-09-17) is the only change to the file since it
+was frozen -- `case-007`'s email address moved to a domain reserved for
+documentation, the one it carried having turned out to belong to a real
+company. Reason, scope and both sha256 are in `docs/PREREGISTRATION.md`
+section 9; no label, no category and no other case moved.
 
 See [SPEC.md](SPEC.md) for the frozen specification and acceptance criteria, and [docs/DECISIONS.md](docs/DECISIONS.md) for design decisions.
 
