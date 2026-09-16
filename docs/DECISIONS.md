@@ -221,6 +221,15 @@ test, not a real-API eval; real-API eval is `workflow_dispatch`-only
   baseline-auto-commit step (that's exactly the kind of scope decision this
   patch's brief said not to make unilaterally -- documenting the gap is the
   right-sized fix here, not solving it).
+- **Closed 2026-09-14, commit fe1cea8**: `eval_reports/baseline.json` is now
+  committed on `main` -- a real-API run of `prompts/v1` over all 70 confirmed
+  cases (pass_rate 0.9143, 64/70; $0.415487), bootstrapped through the
+  documented `evalkit.run_eval` + `evalkit.diff` path. `eval-gate.yml` runs
+  from that commit onward compute a real diff and post a scorecard instead of
+  re-bootstrapping. The other go-live prerequisites in this entry are
+  unchanged: the `ANTHROPIC_API_KEY` repository secret, and branch protection
+  listing the check as required. Auto-committing a refreshed baseline from CI
+  is still not implemented and still an open design question.
 
 ## D-010: Sonnet 5 pricing corrected to $2/$10; env-var override stays the only
 no-code way to change a price
