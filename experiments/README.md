@@ -95,7 +95,7 @@ Environment variables:
 | Name | Where | Note |
 |------|-------|------|
 | `ANTHROPIC_API_KEY` | `.env` at the repo root (gitignored, mode 600) | loaded by `runner.py`; names are logged, values never |
-| `PRICE_CLAUDE_SONNET_5_INPUT=2.00` | export before a run on any checkout that predates D-005 | this branch was cut from a `main` whose `evalkit/cost.py` still had $3/$15; the runner aborts unless the effective price is $2/$10, whichever way it gets there |
+| `PRICE_CLAUDE_SONNET_5_INPUT=2.00` | export before a run on any checkout that predates D-010 | this branch was cut from a `main` whose `evalkit/cost.py` still had $3/$15; the runner aborts unless the effective price is $2/$10, whichever way it gets there |
 | `PRICE_CLAUDE_SONNET_5_OUTPUT=10.00` | same | same |
 | `LLM_CLASSIFIER_MODEL` / `LLM_JUDGE_MODEL` | optional | same contract as production `llm.py` |
 | `EXP_PYTHON` | optional | interpreter for `checks/experiments_acceptance.sh`; unset, it takes `~/.venvs/lrg-exp/bin/python` if that exists, then the repo `.venv`, then `python3` |
@@ -286,7 +286,10 @@ observed effect, a study of this size rejects 55% of the time at alpha 0.05
 and 32% at the 0.0125 Holm charges the first of four tests; at n = 50, 38% and
 17%; at n = 30, 12% and 2%. For the other three versions the observed effect
 is zero, so simulated power is zero at every n -- the resampling cannot invent
-an effect that is not in the pairs.
+an effect that is not in the pairs. Each of those percentages is a proportion
+of B = 2,000 resamples and carries simulation error of its own: sqrt(p(1-p)/B)
+is at most 0.011 at this B, so power is read to two decimal places and no
+further. The per-row value is the `mc_se` column of `e1_power.csv`.
 
 The blunt version of the same arithmetic: with no cases flipping the other
 way, an exact McNemar test at n = 70 needs 6 discordant pairs to clear a
@@ -331,7 +334,7 @@ The baseline arm, 64/70 overall, by stratum
 | category billing | 19 | 18 | 0.947 | 0.754-0.991 | 0.24 | 1.000 | 1.000 |
 | category technical | 18 | 17 | 0.944 | 0.742-0.990 | 0.25 | 1.000 | 1.000 |
 | category general | 17 | 13 | 0.765 | 0.527-0.904 | 0.38 | 0.028 | 0.092 |
-| category account | 16 | 16 | 1.000 | 0.806-1.000 | 0.19 | 0.325 | 0.812 |
+| category account | 16 | 16 | 1.000 | 0.806-1.000 | 0.194 | 0.325 | 0.812 |
 
 One stratum survives BH: `edge`, 4 of 8, against 60 of 62 everywhere else.
 `general` and `easy` move at a nominal 0.05 and not after correction.
@@ -344,7 +347,10 @@ case-070, a consecutive block written in one sitting to fill the 10%
 bilingual quota rather than seven draws spread across the dataset, which is
 derived from the case ids at analysis time and printed in the table's `note`
 column. The same holds, less dramatically, everywhere below n = 20: nine of
-the ten strata have an interval wider than 19 points.
+the ten strata have an interval wider than 19 points -- `account` at 0.194,
+printed to three places above because it is the one that rounds onto the
+threshold, is the narrowest of the nine, and `easy` at 0.112 is the only
+stratum below it.
 
 `e5_logit.csv` carries `pass ~ language + difficulty + category` with
 standard errors clustered on case. **The pre-specified fit -- baseline arm

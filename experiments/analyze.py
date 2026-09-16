@@ -694,9 +694,23 @@ def table_e1_leak_sensitivity(pair_sets: dict[tuple[str, str], dict]) -> list[li
 
 
 E1_POWER_HEADER = [
-    "metric", "candidate_version", "n", "alpha", "alpha_basis", "power", "n_sim", "seed",
+    "metric", "candidate_version", "n", "alpha", "alpha_basis", "power", "mc_se", "n_sim", "seed",
     "n_observed_pairs", "observed_b", "observed_c", "mean_b", "mean_c", "method", "note",
 ]
+
+
+def monte_carlo_se(power: float, n_sim: int) -> float:
+    """Standard error of a simulated rejection rate: sqrt(p(1-p)/n_sim).
+
+    Every `power` value in `e1_power.csv` is a proportion of `n_sim` draws, so
+    it carries simulation error of its own. At n_sim = 2000 the worst case is
+    0.011, which is why the power numbers in the write-up are read to two
+    decimal places and not three. Raising n_sim would shrink this; it is not
+    an interval on the effect, only on the simulation.
+    """
+    if n_sim <= 0:
+        return 0.0
+    return math.sqrt(max(power * (1.0 - power), 0.0) / n_sim)
 
 
 def table_e1_power(pair_sets: dict[tuple[str, str], dict], seed: int, n_sim: int = E1_POWER_N_SIM) -> tuple[list[str], list[list]]:
@@ -723,6 +737,7 @@ def table_e1_power(pair_sets: dict[tuple[str, str], dict], seed: int, n_sim: int
         for res in results:
             rows.append([
                 metric, version, res["n"], res["alpha"], basis[res["alpha"]], res["power"],
+                monte_carlo_se(res["power"], res["n_sim"]),
                 res["n_sim"], res["seed"], res["n_observed_pairs"], res["observed_b"], res["observed_c"],
                 res["mean_b"], res["mean_c"], res["method"],
                 "simulated by resampling the observed pairs with replacement; "
@@ -851,12 +866,16 @@ def figure_e1_power(power_rows: list[list], main_rows: list[list], out_path: Pat
     ax.grid(alpha=0.3)
     ax.legend(fontsize=7, ncol=2, framealpha=0.95)
     n_sim = nominal[0][pcol["n_sim"]]
+    n_pairs = nominal[0][pcol["n_observed_pairs"]]
+    worst_se = monte_carlo_se(0.5, n_sim)
     footnote = _wrap(
-        f"Open markers: {n_sim} resamples of the observed paired cases at each n, exact McNemar at "
-        f"alpha=0.05, analysis seed={seed} -- conditional on the effect this study observed, not a "
-        f"design power calculation. Filled diamonds: the single test that actually ran at n=70, plotted "
-        f"as 1 if it rejected under Holm and 0 if it did not; one realized decision is not a rate. "
-        f"Holm's worst-case level (alpha=0.0125) is in e1_power.csv.",
+        f"Open markers: {n_sim} resamples of the n={n_pairs} observed paired cases at each n, exact "
+        f"McNemar at alpha=0.05, analysis seed={seed} -- conditional on the effect this study observed, "
+        f"not a design power calculation. No interval applies to a power curve: each point is a "
+        f"simulated rejection rate, and its Monte-Carlo standard error (at most {worst_se:.3f} at "
+        f"n_sim={n_sim}) is the mc_se column of e1_power.csv. Filled diamonds: the single test that "
+        f"actually ran at n=70, plotted as 1 if it rejected under Holm and 0 if it did not; one "
+        f"realized decision is not a rate. Holm's worst-case level (alpha=0.0125) is in e1_power.csv.",
         width=104,
     )
     fig.text(0.01, 0.01, footnote, fontsize=7, va="bottom")
