@@ -550,11 +550,23 @@ Agreement is computed later, by the analysis step.
 
 `experiments/data/annotator2_labels.json` holds `annotator: "human-2
 (non-member)"` (no name is recorded), `annotated_on`, `sheet_seed`,
-`sheet_sha256`, `sheet_dataset_version`, `dataset_version_on_disk` and 70
-`{case_id, label, notes}` records sorted by case id. The two version fields are
-separate on purpose: the labels describe the text the annotator read, which is
-dataset v1, and that is what `sheet_dataset_version` records, read off the rows
-rather than off whatever the dataset says on the day of the import.
+`sheet_sha256`, `sheet_dataset_version`, `sheet_dataset_version_basis`,
+`dataset_version_on_disk` and 70 `{case_id, label, notes}` records sorted by
+case id. The version fields are separate on purpose: the labels describe the
+text the annotator read, which is dataset v1, not whatever the dataset says on
+the day of the import.
+
+`sheet_dataset_version` is decided from the file before it is decided from any
+row, because only one case differs between v1 and v1.1 and a v1 sheet with
+that row pasted over would otherwise pass for a v1.1 one. In order: the
+returned file's own sha256 against the handout's; the same hash with
+`your_label` and `notes` blanked, which is what a filled-in handout reduces
+to; then rows carrying text unique to v1, which also warns that the file is
+not the handout with only the answer columns filled. When none of those
+decides it, the field is `unknown` and a warning says so -- the importer does
+not fall back to the version on disk, because that is a guess in exactly the
+case where the guess is wrong. `sheet_dataset_version_basis` records which of
+those four it was.
 
 Status on 2026-09-16: sheet and instructions produced, annotation not started,
 due back 2026-09-23. The kappa estimator and its bootstrap interval are

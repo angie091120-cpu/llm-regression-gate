@@ -548,8 +548,11 @@ an invented account name at a domain that is not invented. The dataset is
 fictional by design (section 2: NebulaDesk and everyone in it are invented),
 and that domain belongs to a live Taiwanese CDN and DDoS-mitigation provider
 -- checked on 2026-09-17, it resolves and serves that company's site. The
-address itself is not reprinted here; it is still readable in the raw files
-described below, which is where it has to stay. Publishing a support-email
+address itself is not reprinted here. It is still readable in seven files
+that are deliberately not rewritten: the six raw JSONL files described below,
+and `experiments/data/annotator2_sheet.csv`, the human-readable handout built
+from the dataset at v1 and left at v1 for the reason given later in this
+entry. Those seven are the whole residue, and it stays. Publishing a support-email
 corpus that places an invented account holder at a real company's domain is a
 privacy and impersonation risk with no analytical benefit on the other side
 of it, so the address is now `lin.admin@example.com`, in the domain RFC 2606
@@ -587,20 +590,21 @@ byte-comparable with these ones in any case, because the calls cannot be
 seeded.
 
 **2026-09-17, what the gate did after v1.1, and what E0's five repeats do not
-cover.** Two end-to-end `evalkit` runs have now been made over dataset v1.1
-with `prompts/v1`: the `eval-gate.yml` run on PR #4 at 18:37 UTC on
-2026-09-16, and a local run on 2026-09-17 ($0.419296, 70 cases). Both returned
-63/70 where every v1-era run returned 64/70 -- E0's five repeats, the
-2026-09-14 baseline bootstrap, and three gate runs on PR #4.
+cover.** End-to-end `evalkit` runs of `prompts/v1` over dataset v1 returned
+64/70 -- E0's five repeats, the 2026-09-14 baseline bootstrap and the gate
+runs on PR #4 before the dataset moved. Runs over dataset v1.1 against that
+same v1 baseline have returned 63/70. `eval-gate.yml` posts a scorecard on
+every push, so counting those runs in this document would date it within a
+day; what follows is the one run with a per-case report, made locally at 2026-09-16 19:10 UTC (2026-09-17 03:10 +08:00) ($0.419296, 70 cases).
 
-The local run names the case the gate run did not: **`case-056`**, a request
-for a signed W-9 form. Baseline: predicted `billing`, judge 5, passed.
-2026-09-17: predicted `general`, `category_match` false, judge 5, not passed.
-The category moved; the judge score did not, and the summary still describes a
-W-9 request. `case-007`, the case whose email address v1.1 edited, answers
+That run names the case a scorecard cannot: **`case-056`**, a request for a
+signed W-9 form. Baseline: predicted `billing`, judge 5, passed. This run:
+predicted `general`, `category_match` false, judge 5, not passed. The category
+moved; the judge score did not, and the summary still describes a W-9
+request. `case-007`, the case whose email address v1.1 edited, answers
 `account` with judge 5 and passes in both runs, so the string edit did not
-move it. The 2026-09-16 gate run produced no artifact, so whether it lost the
-same case is not recoverable.
+move it. Gate runs produce no per-case artifact, so whether any of them lost
+the same case is not recoverable from the scorecard.
 
 `case-056` is a billing/general boundary case, and this study's own raw data
 says where its instability sits. The classifier answered `billing` on all 17
@@ -609,13 +613,24 @@ of its calls -- E0's five repeats and three each under v2a, v2b, v2c and v2d
 data is on the judge instead: of the 21 judge scores that case carries, twenty
 are 5 and one is a 2, on `e1_v2b` repeat 0.
 
+The judge moved on far more than one case between the two baseline runs, and
+only the verdicts hid it. Comparing them case by case: 51 of the 70 cases
+carry the same `judge_score` in both, **19 carry a different one** -- fifteen
+by a single point and four by two, eight up and eleven down (`case-012`
+5 -> 3, `case-048` 5 -> 3, `case-016` 3 -> 5, `case-044` 3 -> 5, and fifteen
+more) --
+and not one of those 19 changed its verdict, because the pass threshold is 3
+and the movement stayed on one side of it. So the single flipped verdict is
+the visible part of a scoring surface that was moving underneath it on more
+than a quarter of the dataset.
+
 What this does not license is calling the 63/70 runs a noise floor. Section
 6's run-to-run figures are five repeats inside one session on 2026-09-14, and
 `rates_run_spread.csv` reports their sample SD as 0. A classifier that never
 changed a verdict across those five repeats has still changed one two days
 later, on a different session, which means the five repeats measure
 within-session stability and are not a bound on anything wider. No number in
-this document is revised on the strength of two runs; the observation is
+this document is revised on the strength of these runs; the observation is
 recorded because the opposite -- a stability claim resting on five repeats --
 would be.
 
