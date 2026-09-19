@@ -692,10 +692,9 @@ against anything else. A1's category file, received 2026-09-19:
 author's reference-summary review file, received 2026-09-19:
 `48b1d1d3c5becab83c6554920499eeced3a643774e77c6ffcb655d8f4d6a7759`, 20,750
 bytes; at the moment that hash was registered the file's contents had been
-neither read nor validated. The
-labelling files enter the repository in the import pull request; the pull
-request carrying this entry changes documentation only and opens no labelling
-file.
+neither read nor validated. The labelling files enter the repository in the
+import pull request; the pull request carrying this entry changes documentation
+only and opens no labelling file.
 
 A sheet that fails validation -- a case missing, a category outside the four, a
 file that will not parse -- goes back to its annotator for correction and is not
@@ -707,10 +706,10 @@ record shows that a file was replaced and which one it was.
 majority of A1, A2 and A3. Where all three differ, the author rules on that
 case. The adjudication sheet carries the email text and that case's existing
 human labels -- three of them on the main path, two under the two-vote rule and
-under fallback 1 -- and nothing else: it does not carry
-`golden_dataset.json`'s `draft_*` fields,
-the dated 2026-07-20 rulings in `notes`, the v1.1 `expected_category`, or model
-output from any arm of this study. Every adjudicated case id is listed.
+under fallback 1 -- and nothing else: it does not carry `golden_dataset.json`'s
+`draft_*` fields, the dated 2026-07-20 rulings in `notes`, the v1.1
+`expected_category`, or model output from any arm of this study. Every
+adjudicated case id is listed.
 
 Where all three sheets have arrived and one case is short a valid vote -- that
 sheet omitted the case, or its entry failed validation and no correction came
@@ -789,11 +788,11 @@ recorded -- the same numbers, recombined with the new `category_match` -- and it
 obtains no new score and sends no call. E2 carries no `category_match` and is
 untouched by it.
 
-The author's replacements are
-stored in a new dataset field or in a file of their own -- which of the two is a
-choice for the import pull request -- and do not overwrite `expected_summary`.
-Overwriting it, and re-running the judge against the result, takes a further
-dated entry in this section and is reported as the new measurement it would be.
+The author's replacements are stored in a new dataset field or in a file of
+their own -- which of the two is a choice for the import pull request -- and do
+not overwrite `expected_summary`. Overwriting it, and re-running the judge
+against the result, takes a further dated entry in this section and is reported
+as the new measurement it would be.
 
 **What gets reported.** Agreement: Cohen's kappa for each human pair, Fleiss'
 kappa and Krippendorff's alpha (nominal) across the three, each annotator

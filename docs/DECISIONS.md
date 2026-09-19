@@ -337,15 +337,14 @@ gold v2 is their majority, and the protocol is registered before any comparison
   `expected_summary` and `expected_difficulty` are not re-labelled. The
   envelope moves to `dataset_version: v2.0`, `labeled_by` carries the decision
   route rather than a person, and the E0, E1 and E5 tables are recomputed on
-  gold v2 and
-  published beside their pre-registered v1.1 versions, which stay the
-  confirmatory result of section 4 while the gold v2 versions are a sensitivity
-  analysis carrying no multiplicity correction. E4 gains rows rather than
-  replacements: the three-human agreement figures are added to its kappa table,
-  whose name the import pull request fixes. The protocol in full --
-  annotator constraints, the return deadline, the two fallbacks, the statistics
-  and the hash rule -- is `docs/PREREGISTRATION.md` section 9, entry dated
-  **2026-09-19**.
+  gold v2 and published beside their pre-registered v1.1 versions, which stay
+  the confirmatory result of section 4 while the gold v2 versions are a
+  sensitivity analysis carrying no multiplicity correction. E4 gains rows
+  rather than replacements: the three-human agreement figures are added to its
+  kappa table, whose name the import pull request fixes. The protocol in full
+  -- annotator constraints, the return deadline, the two fallbacks, the
+  statistics and the hash rule -- is `docs/PREREGISTRATION.md` section 9, entry
+  dated **2026-09-19**.
 - **Why:** `expected_category` today is an agent draft that the author
   confirmed on 2026-07-20. 69 of the 70 are identical to `draft_category` and
   the one change is `case-031`, so the label set is agent-shaped and
