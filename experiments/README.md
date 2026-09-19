@@ -32,6 +32,10 @@ experiments/
   analyze.py       raw JSONL -> CSV tables + PNG figures + MANIFEST.json (no API)
   stats.py         estimators, standard library only, self-checked
   probes.py        four API-behaviour probes quoted in COST_CALIBRATION.md
+  blank_sheet_notes.py
+                   write the notes-blanked copy of a returned sheet and print
+                   the hash of both; run on receipt, before anything is
+                   committed
   import_annotations.py
                    validate and ingest one E4 annotator's returned sheet, A1,
                    A2 or A3 (no API, reads no gold label). Was
@@ -582,10 +586,26 @@ records no person's name, and neither does any results table; `labeled_by` in
 `golden_dataset.json` still carries one, and stops at the move to v2.0, which
 section 9's dataset paragraph fixes), `annotated_on`, `sheet_seed`, `sheet_sha256`,
 `sheet_dataset_version`, `sheet_dataset_version_basis`,
-`dataset_version_on_disk`, `missing_case_ids` and 70 `{case_id, label, notes}`
-records sorted by case id. The version fields are separate on purpose: the
+`dataset_version_on_disk`, `missing_case_ids` and 70
+`{case_id, label, has_notes}` records sorted by case id -- whether the
+annotator wrote a note, not what it said, for the reason the next paragraph
+gives. The version fields are separate on purpose: the
 labels describe the text the annotator read, which is dataset v1, not whatever
 the dataset says on the day of the import.
+
+A2's and A3's sheets are registered under two hashes and enter the repository
+with their `notes` column empty. The instruction sheet promises those two
+anonymity and a published category answer, and promises nothing about
+publishing what they write in `notes`, so on receipt
+`python -m experiments.blank_sheet_notes --sheet <received> --out <copy>`
+writes the copy that gets committed and prints the sha256 of both files; the
+original stays with the author, outside the repository, and both hashes go into
+`docs/PREREGISTRATION.md` section 9. Blanking touches one column, so
+`case_id`, `email_body` and `your_label` come through unchanged and the
+provenance check still recognises the copy as the handout with its answers
+filled in. A1's sheet came back with no notes at all, which makes the step a
+no-op there: run against the committed file it reproduces it byte for byte, so
+A1's two hashes are one value and it is the one already registered.
 
 `sheet_dataset_version` is decided from the file before it is decided from any
 row, because only one case differs between v1 and v1.1 and a v1 sheet with

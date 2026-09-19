@@ -22,6 +22,15 @@
 #   a1_category_labels_2026-09-19.csv  774e62bc...02cfbb   70 category labels
 #   a1_summary_review_2026-09-19.csv   48b1d1d3...6a7759   70 ok/edit verdicts
 #
+# A2's and A3's sheets arrive under two hashes each: the file as received, and
+# the copy with the notes column emptied, which is the one committed here. The
+# original stays with the author. Those two are outside the project and were
+# promised anonymity and a published category answer, not a published notes
+# column; blanking touches that one column, so the labels, the case ids and the
+# email bodies are unchanged. blank_sheet_notes.py makes the copy and prints
+# both hashes. A1's notes came back empty, so the step is a no-op on that sheet
+# and its two hashes are the single value above.
+#
 # Derived, written by the importers and regenerable from the CSVs above:
 #
 #   annotations/<id>_labels.json    import_annotations.py --annotator A1|A2|A3

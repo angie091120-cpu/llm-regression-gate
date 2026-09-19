@@ -15,7 +15,7 @@ import json
 
 import pytest
 
-from experiments import import_annotations, import_summary_review
+from experiments import blank_sheet_notes, import_annotations, import_summary_review
 
 CATEGORIES = ("billing", "technical", "account", "general")
 
@@ -66,10 +66,16 @@ def dataset(tmp_path, monkeypatch):
     return path
 
 
-def category_sheet(tmp_path, labels, bodies=None, name="sheet.csv"):
+def category_sheet(tmp_path, labels, bodies=None, name="sheet.csv", notes=None):
     bodies = bodies or {}
+    notes = notes or {}
     rows = [
-        [f"case-{i:03d}", bodies.get(f"case-{i:03d}", f"email body {i}"), label, ""]
+        [
+            f"case-{i:03d}",
+            bodies.get(f"case-{i:03d}", f"email body {i}"),
+            label,
+            notes.get(f"case-{i:03d}", ""),
+        ]
         for i, label in enumerate(labels)
     ]
     return write_csv(tmp_path / name, ["case_id", "email_body", "your_label", "notes"], rows)
@@ -139,6 +145,60 @@ def test_an_unknown_annotator_is_not_accepted(dataset, tmp_path):
     sheet = category_sheet(tmp_path, ["billing", "technical", "account", "general"])
     with pytest.raises(SystemExit):
         import_annotations.main(["--annotator", "A4", "--sheet", str(sheet)])
+
+
+def test_the_ingested_labels_record_whether_there_was_a_note_and_not_the_note(
+    dataset, tmp_path
+):
+    """A2 and A3 are outside the project and were promised anonymity and a
+    published category answer, not a published notes column."""
+    sheet = category_sheet(
+        tmp_path, ["billing", "technical", "account", "general"],
+        notes={"case-001": "hesitated between billing and account"},
+    )
+    out = tmp_path / "a2_labels.json"
+    assert import_annotations.main([
+        "--annotator", "A2", "--sheet", str(sheet), "--out", str(out),
+    ]) == 0
+    payload = json.loads(out.read_text(encoding="utf-8"))
+    assert set(payload["labels"][0]) == {"case_id", "label", "has_notes"}
+    assert [record["has_notes"] for record in payload["labels"]] == [False, True, False, False]
+    assert "hesitated" not in out.read_text(encoding="utf-8")
+
+
+# -- the notes-blanked copy that enters version control --------------------
+def test_blanking_empties_the_notes_column_and_leaves_the_answers_alone(tmp_path):
+    sheet = category_sheet(
+        tmp_path, ["billing", "technical", "account", "general"],
+        notes={"case-000": "unsure", "case-003": "could be technical"},
+    )
+    out = tmp_path / "copy.csv"
+    assert blank_sheet_notes.main(["--sheet", str(sheet), "--out", str(out)]) == 0
+    rows = list(csv.DictReader(out.read_text(encoding="utf-8-sig").splitlines(True)))
+    assert [row["notes"] for row in rows] == ["", "", "", ""]
+    assert [row["your_label"] for row in rows] == ["billing", "technical", "account", "general"]
+    assert [row["case_id"] for row in rows] == [f"case-{i:03d}" for i in range(4)]
+    assert [row["email_body"] for row in rows] == [f"email body {i}" for i in range(4)]
+    assert "unsure" not in out.read_text(encoding="utf-8-sig")
+
+
+def test_blanking_a_sheet_with_no_notes_reproduces_it_byte_for_byte(tmp_path):
+    """Which is why A1's single registered hash serves as both of its hashes:
+    the file committed for A1 already is its own notes-blanked copy."""
+    sheet = category_sheet(tmp_path, ["billing", "technical", "account", "general"])
+    out = tmp_path / "copy.csv"
+    assert blank_sheet_notes.main(["--sheet", str(sheet), "--out", str(out)]) == 0
+    assert out.read_bytes() == sheet.read_bytes()
+
+
+def test_blanking_refuses_to_overwrite_without_force(tmp_path):
+    sheet = category_sheet(tmp_path, ["billing", "technical", "account", "general"])
+    out = tmp_path / "copy.csv"
+    out.write_bytes(b"do not clobber")
+    assert blank_sheet_notes.main(["--sheet", str(sheet), "--out", str(out)]) == 1
+    assert out.read_bytes() == b"do not clobber"
+    assert blank_sheet_notes.main(["--sheet", str(sheet), "--out", str(out), "--force"]) == 0
+    assert out.read_bytes() != b"do not clobber"
 
 
 # -- the summary review sheet ----------------------------------------------

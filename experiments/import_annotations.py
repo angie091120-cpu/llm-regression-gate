@@ -26,6 +26,14 @@ error message. On any problem nothing is written and the exit code is 1 -- the
 sheet goes back to its annotator for correction and is not repaired here
 (section 9), and the corrected file arrives with its own hash line.
 
+What this writes out of the `notes` column is whether there was one, not what
+it said. A2 and A3 are outside the project and were promised anonymity and a
+published category answer, and nothing promised them their working notes would
+be published. The file this runs on is already the notes-blanked copy for those
+two -- `experiments/blank_sheet_notes.py` makes it, and the original stays with
+the author -- so `has_notes` is `false` throughout on their sheets and carries
+its information only for A1's, whose original is what is committed.
+
 `your_label` is accepted with surrounding whitespace and in any capitalisation
 (`Billing ` -> `billing`); every other deviation is an error. The email text is
 compared against `golden_dataset.json` and a mismatch is fatal, because a row
@@ -354,7 +362,19 @@ def build_payload(
         # not label that case" is recorded rather than reconstructed.
         "missing_case_ids": sorted(missing_case_ids),
         "imported_at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "labels": sorted(records, key=lambda record: record["case_id"]),
+        # The label and whether the annotator wrote a note, and not the note.
+        # A2 and A3 are outside the project and were promised anonymity and a
+        # published category answer; nothing promised them their free-text
+        # notes would be published. The same rule as the summary review's
+        # verdicts (section 9, entry dated 2026-09-19).
+        "labels": [
+            {
+                "case_id": record["case_id"],
+                "label": record["label"],
+                "has_notes": bool(record["notes"]),
+            }
+            for record in sorted(records, key=lambda record: record["case_id"])
+        ],
     }
 
 

@@ -1024,6 +1024,53 @@ that rule, and the script now writes the seal date on the `majority` and
 `adjudicated` cases. The earlier sentence records what the program did between
 those two entries and does not describe it now.
 
+**2026-09-19, A2's and A3's sheets are registered under two hashes, and the
+copy that enters the repository has its notes column empty.** The entry above
+settled the same question for the author's summary review. It is sharper for
+A2 and A3, who are two people outside the project: what the instruction sheet
+promises them is anonymity and a category answer, and it does not promise that
+whatever they write in `notes` will be published. The rule for their sheets,
+fixed here before either has arrived.
+
+On receipt, two sha256 values go into this section: the file as received, and a
+copy of it with the `notes` column emptied and nothing else touched. The copy
+is what enters version control, byte for byte, and the original stays with the
+author outside the repository. `experiments/blank_sheet_notes.py` produces the
+copy and prints both hashes, and does nothing else -- it validates nothing,
+reads no label and opens no dataset, so the file that is hashed on arrival has
+not been near anything that could have changed it.
+
+Registering both is what keeps the arrival check honest. One hash of a file
+nobody else holds would make "the repository has the sheet as received" an
+assertion rather than something a reader can test; with both, the author can be
+asked to produce a file matching the first, and anyone can recompute the second
+against what is committed. Neither hash is a claim about the labels. The
+blanking touches one column: `case_id`, `email_body` and `your_label` come
+through unchanged, so the body check in `import_annotations.py`, the
+`sheet_dataset_version` decision and the residue category of the entry above --
+one byte-identical copy of every returned sheet, still carrying `case-007`'s
+v1 wording -- all read exactly as they did before.
+
+A1's sheet is not reopened and its record does not change. A1's `notes` column
+came back empty on all 70 rows, so the blanking step is a no-op on it: run
+against the committed file it reproduces that file byte for byte, and the two
+hashes this entry would require are the same value,
+`774e62bc6c8337b188b87f249b66f1991196c6d616ef4d6d2e1cae1cde02cfbb`, which is
+the one already registered above. That is computed, not assumed.
+
+Two consequences. `experiments/data/annotations/<annotator>_labels.json` now
+records `has_notes` instead of the note text, the same way the summary review's
+verdicts do; on A2's and A3's files it will read `false` throughout, because
+the file it is built from is already the blanked copy. And
+`experiments/data/annotator2_instructions_zh.md` gains a line telling the
+annotator what happens to their notes: only the researcher sees them, only the
+category answers are published, and no name is recorded. A1 did not see that
+line, which is a real difference between what the three annotators were handed
+and is recorded here rather than papered over -- the line is about what becomes
+of a note after the sheet comes back, so it cannot have changed a category
+judgement, and A1 is the author, for whom the question the line answers does
+not arise.
+
 ## 10. E1 in full
 
 Written 2026-09-14, before the first degraded-prompt call. Section 4 fixes
