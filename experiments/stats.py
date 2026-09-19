@@ -15,21 +15,23 @@ Two reasons:
 
 Self-check against published worked examples:
 
-    python -m experiments.stats            # 35/35, standard library only
-    python -m experiments.stats --cross-check   # 42/42 under the analysis venv.
-                                                # On an interpreter without
-                                                # scipy the scipy row is FAIL
-                                                # and the exit code is 1 --
-                                                # never a silent skip.
+    python -m experiments.stats            # standard library only
+    python -m experiments.stats --cross-check   # adds the scipy comparisons
+                                                # under the analysis venv. On an
+                                                # interpreter without scipy the
+                                                # scipy row is FAIL and the exit
+                                                # code is 1 -- never a silent skip.
     python -m experiments.stats --coverage      # Monte-Carlo coverage of the
                                                 # paired risk-difference interval
 
 The command line is strict: an unrecognised flag exits 2 rather than falling
 through to the default self-check.
 
-Not implemented yet (deliberately left as errors rather than approximations,
-so nothing unvalidated can leak into a table):
-  - Fleiss kappa / Krippendorff alpha                     -> fleiss_kappa, krippendorff_alpha
+Fleiss' kappa and Krippendorff's alpha (nominal) arrived on 2026-09-19 for the
+three-annotator panel of docs/PREREGISTRATION.md section 9, each pinned to a
+printed worked example the same way every other estimator here is --
+`FLEISS_RANDOLPH_EXAMPLE` and `KRIPPENDORFF_2011_EXAMPLE` name the source and
+the page.
 """
 from __future__ import annotations
 
@@ -59,6 +61,9 @@ __all__ = [
     "paired_power_simulation",
     "fleiss_kappa",
     "krippendorff_alpha",
+    "AGREEMENT_VALIDATION",
+    "FLEISS_RANDOLPH_EXAMPLE",
+    "KRIPPENDORFF_2011_EXAMPLE",
 ]
 
 _TOL = 1e-12
@@ -109,6 +114,84 @@ NEWCOMBE_VALIDATION = (
     "0.0562 to 0.3292) to the 4 dp it is printed at, and also checked by "
     "structural invariants and Monte-Carlo coverage (experiments/stats.py "
     "--coverage)"
+)
+
+
+# Worked example for Fleiss' kappa, from Randolph, J. J. (2005), "Free-Marginal
+# Multirater Kappa (multirater kappa-free): An Alternative to Fleiss'
+# Fixed-Marginal Multirater Kappa", Joensuu Learning and Instruction Symposium
+# 2005 (ERIC ED490661). The paper's Tables 1 and 2 are on its page 17 and the
+# arithmetic is worked line by line on pages 7 and 8.
+#
+# Why this paper and not Fleiss (1971), Psychological Bulletin 76(5):378-382,
+# which is the source of the coefficient: no copy of that paper was reachable
+# from this machine on 2026-09-19 (it is not open access; OpenAlex confirms the
+# citation and lists no OA location), so its printed table could not be
+# transcribed from the paper itself. Transcribing it from a third-party
+# reimplementation would be a check of that reimplementation, not of the
+# printed value, so it is not done here. Randolph prints Fleiss' quantities for
+# two tables and is open access.
+#
+# Each table is (yes_count, no_count) per case: N = 4 cases, n = 3 raters,
+# k = 2 categories. The pair is the point. Both tables have the same observed
+# agreement, .67, and differ only in marginal symmetry, so:
+#
+#   Table 1 (symmetric marginals, 6 yes / 6 no)   Fleiss kappa =  1/3
+#   Table 2 (skewed marginals,   10 yes / 2 no)   Fleiss kappa = -0.2
+#
+# and the paper states that the free-marginal coefficient is .33 for *both*.
+# An implementation that builds expected agreement from free marginals reads
+# -0.2 as +0.33, so the Table 2 row catches the one substitution most likely to
+# pass every other sanity check. `table1_kappa_printed` is the paper's own
+# .34: it divides its already-rounded .67 by 1 - .50, and 2/3 exact gives
+# 1/3. Both are asserted, the printed one at the precision it is printed at,
+# so the example is reproduced without the rounding being copied into the code.
+FLEISS_RANDOLPH_EXAMPLE = {
+    "source": "Randolph (2005), ERIC ED490661, Tables 1 and 2 (p. 17), worked on pp. 7-8",
+    "table1": ((3, 0), (2, 1), (1, 2), (0, 3)),
+    "table1_po": 0.67,
+    "table1_pe": 0.50,
+    "table1_kappa_printed": 0.34,  # from the paper's rounded po, see above
+    "table1_kappa_exact": 1.0 / 3.0,
+    "table2": ((3, 0), (2, 1), (2, 1), (3, 0)),
+    "table2_po": 0.67,
+    "table2_kappa": -0.2,
+    "free_marginal_both_tables": 0.33,  # the value a free-marginal formula returns
+    "printed_tolerance": 5e-3,  # the paper prints two decimals
+}
+
+# Worked example for Krippendorff's alpha, from Krippendorff, K. (2011),
+# "Computing Krippendorff's Alpha-Reliability", University of Pennsylvania
+# Annenberg School for Communication. The 4-observers-by-12-units reliability
+# data matrix is printed on the paper's page 4 and alpha-nominal = .743 on page
+# 5, re-derived on pages 8 and 10 by two further computational routes.
+#
+# `None` is the paper's ".", a value an observer did not assign. Seven of the
+# 48 cells are missing, unit 12 is left with one value and is therefore not
+# pairable, and the paper's own working carries n = 40 pairable values with
+# category counts 9, 13, 10, 5, 3 -- all of which the self-check asserts
+# alongside the coefficient, so a missing-value rule that silently drops or
+# imputes the wrong cells fails on the margins before it fails on alpha.
+KRIPPENDORFF_2011_EXAMPLE = {
+    "source": "Krippendorff (2011), Computing Krippendorff's Alpha-Reliability, pp. 4-5",
+    "observers": (
+        ("1", "2", "3", "3", "2", "1", "4", "1", "2", None, None, None),
+        ("1", "2", "3", "3", "2", "2", "4", "1", "2", "5", None, "3"),
+        (None, "3", "3", "3", "2", "3", "4", "2", "2", "5", "1", None),
+        ("1", "2", "3", "3", "2", "4", "4", "1", "2", "5", "1", None),
+    ),
+    "alpha_nominal": 0.743,
+    "n_pairable": 40,
+    "category_counts": {"1": 9, "2": 13, "3": 10, "4": 5, "5": 3},
+    "n_units_dropped": 1,
+    "printed_tolerance": 5e-4,  # the paper prints three decimals
+}
+
+AGREEMENT_VALIDATION = (
+    "Fleiss kappa reproduces Randolph (2005) Tables 1 and 2 (ERIC ED490661), including the "
+    "-0.2 the free-marginal coefficient reads as +0.33; Krippendorff alpha (nominal) reproduces "
+    "the 4-observers-by-12-units example of Krippendorff (2011), alpha = .743, together with its "
+    "printed margins. Both checks run in experiments/stats.py"
 )
 
 
@@ -610,14 +693,143 @@ def cohen_kappa(labels_a: Sequence[str], labels_b: Sequence[str]) -> dict:
     }
 
 
-def fleiss_kappa(ratings: Iterable[Sequence[str]]) -> float:
-    """TODO(E0, due 2026-09-19): Fleiss kappa across the five repeated runs."""
-    raise NotImplementedError("fleiss_kappa is not implemented yet (E0 analysis, 2026-09-19)")
+def fleiss_kappa(ratings: Iterable[Sequence[str]]) -> dict:
+    """Fleiss' kappa for m raters on the same items, nominal categories.
+
+    `ratings` is one sequence per item, each holding that item's labels, one
+    per rater. Every item must carry the same number of labels; an item with
+    fewer raises rather than being folded in under one of the several
+    unequal-n generalisations, none of which this study has validated. The
+    caller decides what to do with an item a rater skipped -- E4 drops it from
+    the panel and records the count, which is what `table_e4_kappa` already
+    does for a model rater's failed call.
+
+    Fixed marginals: the expected agreement is built from the pooled category
+    proportions, which is what makes this Fleiss' coefficient rather than a
+    free-marginal one (Randolph 2005). The two differ on exactly the data this
+    study has -- four categories the annotators are not told to fill evenly --
+    so `FLEISS_RANDOLPH_EXAMPLE` pins the difference, not just the formula.
+
+    Returns the same shape as `cohen_kappa`: po is Fleiss' P-bar (mean
+    within-item agreement), pe is P-bar-sub-e.
+    """
+    items = [list(item) for item in ratings]
+    if not items:
+        raise ValueError("fleiss_kappa over zero items")
+    sizes = {len(item) for item in items}
+    if len(sizes) != 1:
+        raise ValueError(
+            "fleiss_kappa needs the same number of raters on every item; got sizes "
+            f"{sorted(sizes)}. Drop the incomplete items and say how many were dropped"
+        )
+    n_raters = sizes.pop()
+    if n_raters < 2:
+        raise ValueError(f"fleiss_kappa needs at least 2 raters per item, got {n_raters}")
+    categories = sorted({label for item in items for label in item})
+    n_items = len(items)
+
+    agreement_sum = 0.0
+    for item in items:
+        counts = [sum(1 for label in item if label == cat) for cat in categories]
+        agreement_sum += (sum(c * c for c in counts) - n_raters) / (n_raters * (n_raters - 1))
+    po = agreement_sum / n_items
+
+    total = n_items * n_raters
+    pe = 0.0
+    for cat in categories:
+        p = sum(1 for item in items for label in item if label == cat) / total
+        pe += p * p
+    if abs(1.0 - pe) < _TOL:
+        raise ValueError("fleiss_kappa undefined: expected agreement is 1.0 (all items in one category)")
+    return {
+        "kappa": (po - pe) / (1.0 - pe),
+        "po": po,
+        "pe": pe,
+        "n_items": n_items,
+        "n_raters": n_raters,
+        "n_categories": len(categories),
+        "method": "fleiss_kappa",
+    }
 
 
-def krippendorff_alpha(ratings: Iterable[Sequence[str]]) -> float:
-    """TODO(E0/E4, due 2026-09-24): Krippendorff alpha with missing values."""
-    raise NotImplementedError("krippendorff_alpha is not implemented yet (E0/E4 analysis)")
+def krippendorff_alpha(ratings: Iterable[Sequence[str | None]]) -> dict:
+    """Krippendorff's alpha, nominal metric, missing values allowed.
+
+    `ratings` is one sequence per unit of analysis, holding that unit's values
+    with `None` (or an absent entry) where an observer did not label it. Units
+    left with fewer than two values are not pairable and drop out of both
+    disagreements, which is Krippendorff's own treatment and the reason this
+    coefficient is in section 9 beside Fleiss' kappa: a sheet that comes back
+    with a case missing costs that case, not the whole estimate.
+
+    Computed from the coincidence matrix, in exact rational arithmetic
+    (`fractions.Fraction`) so the result does not depend on the order the
+    units arrive in. Two algebraically identical forms are evaluated and
+    compared -- the disagreement ratio `1 - Do/De` and the closed form the
+    source prints -- because a single path can agree with itself while being
+    wrong.
+    """
+    from fractions import Fraction
+
+    units = [[v for v in unit if v is not None] for unit in ratings]
+    pairable = [unit for unit in units if len(unit) >= 2]
+    if not pairable:
+        raise ValueError("krippendorff_alpha: no unit carries two or more values")
+
+    categories = sorted({v for unit in pairable for v in unit})
+    index = {cat: i for i, cat in enumerate(categories)}
+    k = len(categories)
+    coincidences = [[Fraction(0) for _ in range(k)] for _ in range(k)]
+    for unit in pairable:
+        m = len(unit)
+        counts = [0] * k
+        for value in unit:
+            counts[index[value]] += 1
+        for c in range(k):
+            if not counts[c]:
+                continue
+            for j in range(k):
+                if not counts[j]:
+                    continue
+                pairs = counts[c] * (counts[j] - 1) if c == j else counts[c] * counts[j]
+                if pairs:
+                    coincidences[c][j] += Fraction(pairs, m - 1)
+
+    margins = [sum(row) for row in coincidences]
+    n = sum(margins)
+    if n < 2:
+        raise ValueError("krippendorff_alpha: fewer than two pairable values")
+    observed_matches = sum(coincidences[c][c] for c in range(k))
+    mismatch = n - observed_matches
+    expected_mismatch = Fraction(n * n - sum(m * m for m in margins), n - 1)
+    if expected_mismatch == 0:
+        raise ValueError(
+            "krippendorff_alpha undefined: expected disagreement is 0 "
+            "(every pairable value is in one category)"
+        )
+    do = mismatch / n
+    de = expected_mismatch / n
+    alpha = 1 - do / de
+
+    closed_form_num = (n - 1) * observed_matches - sum(m * (m - 1) for m in margins)
+    closed_form_den = n * (n - 1) - sum(m * (m - 1) for m in margins)
+    if closed_form_den == 0 or Fraction(closed_form_num, closed_form_den) != alpha:
+        raise AssertionError(
+            "krippendorff_alpha: the disagreement ratio and the closed form disagree "
+            f"({alpha} vs {closed_form_num}/{closed_form_den}) -- this is a bug in this function"
+        )
+
+    return {
+        "alpha": float(alpha),
+        "observed_disagreement": float(do),
+        "expected_disagreement": float(de),
+        "category_counts": {cat: int(margins[i]) for cat, i in index.items()},
+        "n_pairable": int(n),
+        "n_units_pairable": len(pairable),
+        "n_units_dropped": len(units) - len(pairable),
+        "n_categories": k,
+        "method": "krippendorff_alpha_nominal",
+    }
 
 
 # --------------------------------------------------------------------------
@@ -750,14 +962,95 @@ def _selftest(cross_check: bool = False) -> int:
     b4 = bootstrap_ci(units, mean_stat, seed=20260920, n_boot=2000, alpha=0.20)
     checks.append(("bootstrap_ci honours alpha (80% CI narrower than 95%)", (b4["ci_high"] - b4["ci_low"]) < (b1["ci_high"] - b1["ci_low"]), f"80%={b4['ci_low']:.4f}-{b4['ci_high']:.4f}"))
 
-    for name in ("fleiss_kappa", "krippendorff_alpha"):
-        fn = globals()[name]
-        try:
-            fn([])
-            ok = False
-        except NotImplementedError:
-            ok = True
-        checks.append((f"{name} raises NotImplementedError (not a silent approximation)", ok, ""))
+    # ---- Fleiss kappa, Randolph (2005) Tables 1 and 2 ---------------------
+    # The paper prints counts, this module takes labels, so the counts are
+    # expanded here rather than the function being taught a second input shape.
+    fl = FLEISS_RANDOLPH_EXAMPLE
+    ftol = fl["printed_tolerance"]
+
+    def _expand(counts) -> list[list[str]]:
+        return [["yes"] * yes + ["no"] * no for yes, no in counts]
+
+    t1 = fleiss_kappa(_expand(fl["table1"]))
+    checks.append((
+        f"fleiss: {fl['source']} Table 1 -> po {fl['table1_po']}, pe {fl['table1_pe']}",
+        _close(t1["po"], fl["table1_po"], ftol)
+        and _close(t1["pe"], fl["table1_pe"], ftol)
+        and _close(t1["kappa"], fl["table1_kappa_exact"], 1e-12),
+        f"po={t1['po']:.6f} pe={t1['pe']:.6f} kappa={t1['kappa']:.6f}",
+    ))
+    checks.append((
+        "fleiss: Table 1's printed .34 is recovered from the paper's own rounded po",
+        _close((round(t1["po"], 2) - fl["table1_pe"]) / (1 - fl["table1_pe"]),
+               fl["table1_kappa_printed"], ftol),
+        f"({round(t1['po'], 2)} - {fl['table1_pe']}) / {1 - fl['table1_pe']}",
+    ))
+
+    t2 = fleiss_kappa(_expand(fl["table2"]))
+    checks.append((
+        f"fleiss: the same paper's Table 2 -> kappa {fl['table2_kappa']} on skewed marginals",
+        _close(t2["po"], fl["table2_po"], ftol) and _close(t2["kappa"], fl["table2_kappa"], 1e-12),
+        f"po={t2['po']:.6f} kappa={t2['kappa']:.6f}",
+    ))
+    # The discriminating row: free marginals give +0.33 on Table 2, which is
+    # the wrong coefficient reading as a respectable positive agreement.
+    checks.append((
+        "fleiss: Table 2 is not the free-marginal .33 the same paper prints beside it",
+        not _close(t2["kappa"], fl["free_marginal_both_tables"], 0.02),
+        f"{t2['kappa']:.6f} vs free-marginal {fl['free_marginal_both_tables']}",
+    ))
+    checks.append((
+        "fleiss: unanimous labels give kappa 1",
+        _close(fleiss_kappa([["a"] * 3, ["b"] * 3, ["a"] * 3])["kappa"], 1.0, 1e-12),
+        "",
+    ))
+    try:
+        fleiss_kappa([["a", "b"], ["a", "b", "b"]])
+        ragged_ok = False
+    except ValueError:
+        ragged_ok = True
+    checks.append((
+        "fleiss: unequal raters per item raises instead of guessing a generalisation",
+        ragged_ok, "",
+    ))
+
+    # ---- Krippendorff alpha (nominal), Krippendorff (2011) ----------------
+    kx = KRIPPENDORFF_2011_EXAMPLE
+    ktol = kx["printed_tolerance"]
+    units = [list(col) for col in zip(*kx["observers"])]
+    ka = krippendorff_alpha(units)
+    checks.append((
+        f"krippendorff: {kx['source']} -> alpha_nominal {kx['alpha_nominal']}",
+        _close(ka["alpha"], kx["alpha_nominal"], ktol),
+        f"alpha={ka['alpha']:.6f}",
+    ))
+    checks.append((
+        "krippendorff: the same example's printed margins (40 pairable values, 1 unpairable unit, "
+        "category counts 9/13/10/5/3)",
+        ka["n_pairable"] == kx["n_pairable"]
+        and ka["n_units_dropped"] == kx["n_units_dropped"]
+        and ka["category_counts"] == kx["category_counts"],
+        f"n_pairable={ka['n_pairable']} dropped={ka['n_units_dropped']} counts={ka['category_counts']}",
+    ))
+    # Order independence is a property of the exact-rational coincidence
+    # matrix, and the reason the margins above are asserted separately: a
+    # missing-value rule can be wrong in a way that still sums to 40.
+    shuffled = list(reversed([list(reversed(u)) for u in units]))
+    checks.append((
+        "krippendorff: alpha does not depend on the order of units or of observers",
+        krippendorff_alpha(shuffled)["alpha"] == ka["alpha"],
+        f"{krippendorff_alpha(shuffled)['alpha']:.12f}",
+    ))
+    checks.append((
+        "krippendorff: perfect agreement gives alpha 1",
+        _close(krippendorff_alpha([["a", "a"], ["b", "b"], ["a", "a"]])["alpha"], 1.0, 1e-12),
+        "",
+    ))
+    checks.append((
+        "krippendorff: a unit no two observers labelled is dropped, not scored",
+        krippendorff_alpha([["a", "a"], ["b", "b"], ["a", None]])["n_units_dropped"] == 1,
+        "",
+    ))
 
     # ---- Fisher exact 2x2 -------------------------------------------------
     tea = TEA_TASTING_EXAMPLE
@@ -911,6 +1204,30 @@ def _selftest(cross_check: bool = False) -> int:
             sp_wil = sp.binomtest(8, 10, 0.5).proportion_ci(method="wilson")
             mine_w = wilson_ci(8, 10)
             checks.append(("scipy Wilson agrees", _close(sp_wil.low, mine_w[0], 1e-6) and _close(sp_wil.high, mine_w[1], 1e-6), f"{sp_wil.low:.6f},{sp_wil.high:.6f}"))
+
+        # statsmodels is the only second implementation of Fleiss' kappa on this
+        # machine. It is a cross-check and not the validation: the validation is
+        # the printed Randolph tables above, which run with no third party
+        # installed. Listed separately so a missing statsmodels fails its own row
+        # rather than the scipy one.
+        try:
+            from statsmodels.stats.inter_rater import fleiss_kappa as sm_fleiss  # type: ignore
+        except ImportError as exc:
+            checks.append(("statsmodels cross-check", False, f"statsmodels unavailable: {exc}"))
+        else:
+            for name, counts in (("Randolph table 1", FLEISS_RANDOLPH_EXAMPLE["table1"]),
+                                 ("Randolph table 2", FLEISS_RANDOLPH_EXAMPLE["table2"]),
+                                 ("a 4-category table", ((2, 1, 0, 0), (0, 0, 3, 0), (1, 1, 1, 0), (0, 2, 0, 1)))):
+                sm_value = float(sm_fleiss([list(row) for row in counts]))
+                expanded: list[list[str]] = []
+                for row in counts:
+                    item: list[str] = []
+                    for i, c in enumerate(row):
+                        item.extend([str(i)] * c)
+                    expanded.append(item)
+                mine_fl = fleiss_kappa(expanded)["kappa"]
+                checks.append((f"statsmodels fleiss_kappa agrees on {name}",
+                               _close(sm_value, mine_fl, 1e-12), f"{sm_value:.9f}"))
 
     failures = 0
     for name, ok, detail in checks:

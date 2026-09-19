@@ -1,0 +1,8 @@
+{
+  "reviewer_id": "A1",
+  "reviewed_on": "2026-09-19",
+  "source_sheet_sha256": "48b1d1d3c5becab83c6554920499eeced3a643774e77c6ffcb655d8f4d6a7759",
+  "note": "proposed replacements for expected_summary, held apart from golden_dataset.json. Nothing in experiments/ scores against these: every recorded judge_score was measured against the summaries as shipped (docs/PREREGISTRATION.md section 9, 2026-09-19). Writing them into the dataset takes its own dated entry and a judge re-run.",
+  "n_replacements": 0,
+  "replacements": []
+}

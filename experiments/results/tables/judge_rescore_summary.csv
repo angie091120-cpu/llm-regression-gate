@@ -1,2 +1,2 @@
 exp_id,run_id,n_cases,scores_per_case,share_unanimous,mean_within_case_sd,max_within_case_range,share_gate_flip,fleiss_kappa,krippendorff_alpha,note
-e0_judge_iso,e0_judge_iso_20260914T120557Z,70,3|4,0.900000,0.052210,1,0.014286,,,fleiss_kappa and krippendorff_alpha are not implemented; left empty rather than approximated (experiments/README.md)
+e0_judge_iso,e0_judge_iso_20260914T120557Z,70,3|4,0.900000,0.052210,1,0.014286,,,"fleiss_kappa and krippendorff_alpha are nominal-scale coefficients and these repeats are ordinal 1-5 judge scores; no ordinal agreement coefficient is specified for this table, so the two columns are left empty rather than filled with a coefficient for a different measurement scale (experiments/README.md)"

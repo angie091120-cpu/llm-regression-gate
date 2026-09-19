@@ -1,0 +1,367 @@
+{
+  "annotator_id": "A1",
+  "annotator": "A1 (author)",
+  "annotator_role": "author",
+  "annotated_on": "2026-09-19",
+  "sheet_seed": 20260916,
+  "sheet_file": "a1_category_labels_2026-09-19.csv",
+  "sheet_sha256": "774e62bc6c8337b188b87f249b66f1991196c6d616ef4d6d2e1cae1cde02cfbb",
+  "sheet_dataset_version": "v1",
+  "sheet_dataset_version_basis": "identical to the handout once your_label and notes are blanked",
+  "dataset_version_on_disk": "v1.1",
+  "n": 70,
+  "missing_case_ids": [],
+  "imported_at_utc": "2026-09-19T15:45:42+00:00",
+  "labels": [
+    {
+      "case_id": "case-001",
+      "label": "billing",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-002",
+      "label": "technical",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-003",
+      "label": "account",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-004",
+      "label": "general",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-005",
+      "label": "billing",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-006",
+      "label": "technical",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-007",
+      "label": "account",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-008",
+      "label": "general",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-009",
+      "label": "billing",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-010",
+      "label": "technical",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-011",
+      "label": "account",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-012",
+      "label": "general",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-013",
+      "label": "billing",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-014",
+      "label": "technical",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-015",
+      "label": "technical",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-016",
+      "label": "general",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-017",
+      "label": "billing",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-018",
+      "label": "technical",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-019",
+      "label": "account",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-020",
+      "label": "billing",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-021",
+      "label": "general",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-022",
+      "label": "technical",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-023",
+      "label": "account",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-024",
+      "label": "technical",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-025",
+      "label": "billing",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-026",
+      "label": "technical",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-027",
+      "label": "general",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-028",
+      "label": "general",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-029",
+      "label": "billing",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-030",
+      "label": "technical",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-031",
+      "label": "technical",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-032",
+      "label": "general",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-033",
+      "label": "billing",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-034",
+      "label": "technical",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-035",
+      "label": "account",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-036",
+      "label": "billing",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-037",
+      "label": "technical",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-038",
+      "label": "account",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-039",
+      "label": "general",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-040",
+      "label": "billing",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-041",
+      "label": "technical",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-042",
+      "label": "account",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-043",
+      "label": "general",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-044",
+      "label": "billing",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-045",
+      "label": "technical",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-046",
+      "label": "technical",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-047",
+      "label": "technical",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-048",
+      "label": "billing",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-049",
+      "label": "general",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-050",
+      "label": "account",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-051",
+      "label": "billing",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-052",
+      "label": "billing",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-053",
+      "label": "general",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-054",
+      "label": "technical",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-055",
+      "label": "general",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-056",
+      "label": "billing",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-057",
+      "label": "technical",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-058",
+      "label": "account",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-059",
+      "label": "general",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-060",
+      "label": "technical",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-061",
+      "label": "technical",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-062",
+      "label": "account",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-063",
+      "label": "general",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-064",
+      "label": "billing",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-065",
+      "label": "technical",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-066",
+      "label": "account",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-067",
+      "label": "general",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-068",
+      "label": "billing",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-069",
+      "label": "technical",
+      "has_notes": false
+    },
+    {
+      "case_id": "case-070",
+      "label": "billing",
+      "has_notes": false
+    }
+  ]
+}

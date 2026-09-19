@@ -1,20 +1,38 @@
-"""Ingest the second annotator's returned sheet for E4 (label reliability).
+"""Ingest a blind category sheet returned by one of the three E4 annotators.
 
 The sheet handed out (`experiments/data/annotator2_sheet.csv`) carries the case
 id and the email text and nothing else: no gold category, no model output, no
 difficulty or language stratum. This script is the other half of that
-arrangement. It validates the returned file and writes
-`experiments/data/annotator2_labels.json`; it never reads, prints or compares a
-gold label. Agreement against the gold labels and against the model annotators
-belongs to the analysis step, after ingestion, so that nothing here can leak
-back into a re-labelling round.
+arrangement. It validates one returned file and writes
+`experiments/data/annotations/<annotator>_labels.json`; it never reads, prints
+or compares a gold label. Agreement against the shipped labels, against gold v2
+and against the model annotators belongs to the analysis step, after ingestion,
+so that nothing here can leak back into a re-labelling round.
+
+Three people label these 70 emails, each alone, from that one sheet
+(`docs/PREREGISTRATION.md` section 9, entry dated 2026-09-19): A1 is the
+author, A2 and A3 are outside the project. This module was the
+single-annotator `import_annotator2.py` until 2026-09-19; the roster is the
+only thing that changed, because the sheet, the validation rules, the
+`case-007` handout exception and the `sheet_dataset_version` decision are the
+same for all three and a second copy of them could drift from the first.
+
+    python -m experiments.import_annotations --annotator A1 --sheet <file>
+    python -m experiments.import_annotations --annotator A2 --sheet <file> --annotated-on 2026-09-23
 
 It reports every problem it finds rather than stopping at the first, because
 the annotator is doing a favour and a second round trip costs more than a long
-error message. On any problem nothing is written and the exit code is 1.
+error message. On any problem nothing is written and the exit code is 1 -- the
+sheet goes back to its annotator for correction and is not repaired here
+(section 9), and the corrected file arrives with its own hash line.
 
-    python -m experiments.import_annotator2 --sheet ~/Downloads/annotator2_sheet.csv
-    python -m experiments.import_annotator2 --sheet <file> --annotated-on 2026-09-23
+What this writes out of the `notes` column is whether there was one, not what
+it said. A2 and A3 are outside the project and were promised anonymity and a
+published category answer, and nothing promised them their working notes would
+be published. The file this runs on is already the notes-blanked copy for those
+two -- `experiments/blank_sheet_notes.py` makes it, and the original stays with
+the author -- so `has_notes` is `false` throughout on their sheets and carries
+its information only for A1's, whose original is what is committed.
 
 `your_label` is accepted with surrounding whitespace and in any capitalisation
 (`Billing ` -> `billing`); every other deviation is an error. The email text is
@@ -49,18 +67,36 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DATASET = REPO_ROOT / "golden_dataset.json"
 DEFAULT_SHEET = REPO_ROOT / "experiments" / "data" / "annotator2_sheet.csv"
-DEFAULT_OUT = REPO_ROOT / "experiments" / "data" / "annotator2_labels.json"
+ANNOTATION_DIR = REPO_ROOT / "experiments" / "data" / "annotations"
 
-ANNOTATOR = "human-2 (non-member)"
+# The roster of section 9. The display name is what every results table calls
+# this rater, so it carries the role and not a person: `labeled_by` stopped
+# carrying a personal name at dataset v2.0 and the agreement tables never
+# carried one. "author" is a role this repository already names in prose.
+ANNOTATORS = {
+    "A1": {"rater": "A1 (author)", "role": "author"},
+    "A2": {"rater": "A2 (outside)", "role": "outside the project"},
+    "A3": {"rater": "A3 (outside)", "role": "outside the project"},
+}
+
 SHEET_SEED = 20260916
 EXPECTED_ROWS = 70
 
 # The dataset version `experiments/data/annotator2_sheet.csv` was built from,
 # and the sha256 of every email text that has moved since. Hashes rather than
-# the strings themselves: the v1 text of case-007 is the third-party address
-# this repository took out (PREREGISTRATION section 9) and it is not
-# reintroduced here. A returned row matching one of these is the handout, not
-# an edit.
+# the strings themselves, so that this module does not add another copy: the v1
+# text of case-007 carries the third-party address `golden_dataset.json` took
+# out at v1.1. That address is not removed from the repository -- it is in the
+# handout, which is published unmodified because a regenerated handout would
+# describe a file no annotator saw, and in every returned sheet, because the
+# email column is never rewritten. What enters version control differs by
+# annotator: A1's sheet is the file as received, byte for byte; A2's and A3's
+# are the notes-blanked copies `blank_sheet_notes.py` makes, byte for byte,
+# with the originals held by the author. Both are hash-registered. Which files
+# hold the address, and why that is the same privacy decision rather than a
+# reversal of it, is the PREREGISTRATION section 9 entry headed "the residue of
+# the 2026-09-17 address removal is described by category". A returned row
+# matching one of these hashes is the handout, not an edit.
 SHEET_DATASET_VERSION = "v1"
 HANDOUT_BODY_SHA256 = {
     "case-007": "8b20b51d6f57bb239a4d0a2ade6e148028a7a5dddc95da9f5fa936e43b20a79d",
@@ -75,6 +111,10 @@ UNKNOWN_VERSION = "unknown"
 VALID_LABELS = ("billing", "technical", "account", "general")
 REQUIRED_COLUMNS = ("case_id", "email_body", "your_label", "notes")
 BLANKS = " \t　​"
+
+
+def default_out(annotator: str) -> Path:
+    return ANNOTATION_DIR / f"{annotator.lower()}_labels.json"
 
 
 def load_case_texts() -> dict[str, str]:
@@ -196,6 +236,7 @@ def validate(
     rows: list[dict[str, str]],
     case_texts: dict[str, str],
     allow_body_drift: bool,
+    allow_missing_cases: bool = False,
 ) -> tuple[list[str], list[str], list[dict[str, str]], list[str]]:
     """Returns (errors, warnings, normalised records, handout-era case ids).
 
@@ -219,7 +260,7 @@ def validate(
     if extra:
         warnings.append(f"ignoring extra column(s): {', '.join(extra)}")
 
-    if len(rows) != EXPECTED_ROWS:
+    if len(rows) != EXPECTED_ROWS and not allow_missing_cases:
         errors.append(f"expected {EXPECTED_ROWS} data rows, found {len(rows)}")
 
     records: list[dict[str, str]] = []
@@ -282,7 +323,14 @@ def validate(
 
     absent = sorted(set(case_texts) - set(seen))
     if absent:
-        errors.append(f"{len(absent)} case(s) missing from the sheet: {', '.join(absent)}")
+        if allow_missing_cases:
+            warnings.append(
+                f"{len(absent)} case(s) missing from the sheet and accepted as gaps by "
+                f"--allow-missing-cases: {', '.join(absent)}. Section 9's two-vote rule decides "
+                f"each of them from the other sheets, and covers per-case gaps and nothing wider"
+            )
+        else:
+            errors.append(f"{len(absent)} case(s) missing from the sheet: {', '.join(absent)}")
 
     if normalised:
         warnings.append("normalised label spelling on " + str(len(normalised)) + " row(s): " + "; ".join(normalised))
@@ -291,15 +339,19 @@ def validate(
 
 
 def build_payload(
+    annotator: str,
     records: list[dict[str, str]],
     sheet: Path,
     sheet_sha256: str,
     annotated_on: str,
     sheet_dataset_version: str,
     sheet_dataset_version_basis: str,
+    missing_case_ids: list[str],
 ) -> dict[str, object]:
     return {
-        "annotator": ANNOTATOR,
+        "annotator_id": annotator,
+        "annotator": ANNOTATORS[annotator]["rater"],
+        "annotator_role": ANNOTATORS[annotator]["role"],
         "annotated_on": annotated_on,
         "sheet_seed": SHEET_SEED,
         "sheet_file": sheet.name,
@@ -308,17 +360,41 @@ def build_payload(
         "sheet_dataset_version_basis": sheet_dataset_version_basis,
         "dataset_version_on_disk": dataset_version(),
         "n": len(records),
+        # Empty on a complete sheet. A gold v2 run reads this list rather than
+        # inferring a gap from a shorter `labels` array, so "this annotator did
+        # not label that case" is recorded rather than reconstructed.
+        "missing_case_ids": sorted(missing_case_ids),
         "imported_at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "labels": sorted(records, key=lambda record: record["case_id"]),
+        # The label and whether the annotator wrote a note, and not the note.
+        # A2 and A3 are outside the project and were promised anonymity and a
+        # published category answer; nothing promised them their free-text
+        # notes would be published. The same rule as the summary review's
+        # verdicts (section 9, entry dated 2026-09-19).
+        "labels": [
+            {
+                "case_id": record["case_id"],
+                "label": record["label"],
+                "has_notes": bool(record["notes"]),
+            }
+            for record in sorted(records, key=lambda record: record["case_id"])
+        ],
     }
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Validate and ingest the E4 second annotator's CSV.",
+        description="Validate and ingest one E4 annotator's returned category CSV.",
+        allow_abbrev=False,
+    )
+    parser.add_argument(
+        "--annotator",
+        required=True,
+        choices=sorted(ANNOTATORS),
+        help="which annotator of the section 9 roster returned this sheet",
     )
     parser.add_argument("--sheet", type=Path, default=DEFAULT_SHEET, help="returned CSV (default: %(default)s)")
-    parser.add_argument("--out", type=Path, default=DEFAULT_OUT, help="output JSON (default: %(default)s)")
+    parser.add_argument("--out", type=Path, default=None,
+                        help="output JSON (default: experiments/data/annotations/<annotator>_labels.json)")
     parser.add_argument(
         "--annotated-on",
         default=date.today().isoformat(),
@@ -329,7 +405,19 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="downgrade an edited email_body from an error to a warning",
     )
+    parser.add_argument(
+        "--allow-missing-cases",
+        action="store_true",
+        help=(
+            "accept a sheet that is short one or more cases, recording which. Off by default: "
+            "a short sheet normally goes back for correction (section 9). Use it for the case "
+            "section 9 does name -- a sheet that omitted a case, or whose entry failed "
+            "validation and no correction came back -- so that gold v2's two-vote rule has "
+            "something to apply to"
+        ),
+    )
     args = parser.parse_args(argv)
+    out_path = args.out or default_out(args.annotator)
 
     try:
         date.fromisoformat(args.annotated_on)
@@ -340,7 +428,7 @@ def main(argv: list[str] | None = None) -> int:
     case_texts = load_case_texts()
     fieldnames, rows = read_sheet(args.sheet)
     errors, warnings, records, handout_era_rows = validate(
-        fieldnames, rows, case_texts, args.allow_body_drift
+        fieldnames, rows, case_texts, args.allow_body_drift, args.allow_missing_cases
     )
     raw_sha256 = hashlib.sha256(args.sheet.read_bytes()).hexdigest()
     sheet_dataset_version, version_basis, version_warning = sheet_provenance(
@@ -348,6 +436,20 @@ def main(argv: list[str] | None = None) -> int:
     )
     if version_warning:
         warnings.append(version_warning)
+
+    # A replacement is a documented event in section 9 -- the failed file's
+    # hash stays in the record above the corrected one -- so overwriting is
+    # allowed and is announced rather than done quietly.
+    if out_path.exists():
+        try:
+            previous = json.loads(out_path.read_text(encoding="utf-8")).get("sheet_sha256")
+        except (json.JSONDecodeError, OSError):
+            previous = None
+        if previous and previous != raw_sha256:
+            warnings.append(
+                f"{out_path.name} already held labels from sheet {previous}; this run replaces "
+                f"them with {raw_sha256}. Record both hashes in PREREGISTRATION section 9"
+            )
 
     for warning in warnings:
         print(f"WARNING: {warning}", file=sys.stderr)
@@ -358,22 +460,22 @@ def main(argv: list[str] | None = None) -> int:
             print(f"  - {error}", file=sys.stderr)
         return 1
 
-    sheet_sha256 = raw_sha256
     payload = build_payload(
-        records, args.sheet, sheet_sha256, args.annotated_on,
+        args.annotator, records, args.sheet, raw_sha256, args.annotated_on,
         sheet_dataset_version, version_basis,
+        sorted(set(case_texts) - {record["case_id"] for record in records}),
     )
-    args.out.parent.mkdir(parents=True, exist_ok=True)
-    with args.out.open("w", encoding="utf-8") as handle:
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    with out_path.open("w", encoding="utf-8") as handle:
         json.dump(payload, handle, ensure_ascii=False, indent=2)
         handle.write("\n")
 
     counts = {label: sum(1 for record in records if record["label"] == label) for label in VALID_LABELS}
     with_notes = sum(1 for record in records if record["notes"])
-    print(f"OK: {len(records)} labels -> {args.out}")
+    print(f"OK: {len(records)} labels from {args.annotator} -> {out_path}")
     print("  annotator's own distribution: " + ", ".join(f"{label}={counts[label]}" for label in VALID_LABELS))
     print(f"  rows carrying a note: {with_notes}")
-    print(f"  sheet sha256: {sheet_sha256}")
+    print(f"  sheet sha256: {raw_sha256}")
     print(f"  sheet is keyed to dataset {sheet_dataset_version} "
           f"(on disk: {dataset_version()}) -- {version_basis}")
     return 0

@@ -33,9 +33,19 @@ written without coefficients rather than with approximated ones. Its
 pre-specified baseline-arm form is not estimable at all -- two levels have no
 failures -- and is reported as not fitted, with the levels named.
 
+Fleiss' kappa and Krippendorff's alpha (nominal) arrived on 2026-09-19 with the
+three-annotator panel of docs/PREREGISTRATION.md section 9, each reproducing a
+printed worked example in `python -m experiments.stats`. They are used in
+`e4_kappa.csv`'s panel rows and nowhere else.
+
 What is still not implemented, and is therefore absent from the output rather
-than approximated: Fleiss kappa, Krippendorff alpha, and Firth's penalised
-likelihood for the separated model. See the table in experiments/README.md.
+than approximated: Firth's penalised likelihood for the separated model. See
+the table in experiments/README.md.
+
+The gold v2 sensitivity analysis writes `*_gold_v2.csv` beside each
+recomputed table and `gold_v2_diff.csv` listing what moved, and it runs only
+when `experiments/data/gold_v2.json` exists and is sealed. No v1.1 table is
+opened for writing by it.
 """
 from __future__ import annotations
 
@@ -59,7 +69,9 @@ if str(REPO_ROOT) not in sys.path:
 from evalkit.dataset import load_all_cases  # noqa: E402
 from evalkit.run_eval import DEFAULT_PASS_THRESHOLD  # noqa: E402
 from experiments import cost_from_usage, price_key  # noqa: E402
+from experiments.import_annotations import ANNOTATION_DIR, ANNOTATORS  # noqa: E402
 from experiments.stats import (  # noqa: E402
+    AGREEMENT_VALIDATION,
     NEWCOMBE_VALIDATION,
     bh_adjust,
     bootstrap_ci,
@@ -67,7 +79,9 @@ from experiments.stats import (  # noqa: E402
     cohen_kappa,
     exact_binomial_test,
     fisher_exact_2x2,
+    fleiss_kappa,
     holm_adjust,
+    krippendorff_alpha,
     mcnemar_exact,
     newcombe_paired_diff_ci,
     paired_power_simulation,
@@ -79,9 +93,19 @@ DEFAULT_N_BOOT = 10000
 FLOAT_FMT = "{:.6f}"
 BASELINE_PROMPT_VERSION = "v1"
 JUDGE_PASS_SOURCE = "frozen_classifier_output"
+# These two columns stay empty, and the reason changed on 2026-09-19. Until
+# then both estimators raised NotImplementedError. They exist now, for the
+# three-annotator panel of docs/PREREGISTRATION.md section 9, and they are
+# nominal-scale coefficients: the judge's repeated 1-5 scores are ordinal, so
+# running a nominal coefficient over them would answer a different question
+# from the one the column name suggests. Nothing in this study specifies which
+# question that would be, so the cells stay empty and say so. The two
+# `_gold_v2` files and `e4_kappa.csv` are where the new estimators are used.
 NOT_IMPLEMENTED_NOTE = (
-    "fleiss_kappa and krippendorff_alpha are not implemented; "
-    "left empty rather than approximated (experiments/README.md)"
+    "fleiss_kappa and krippendorff_alpha are nominal-scale coefficients and these repeats are "
+    "ordinal 1-5 judge scores; no ordinal agreement coefficient is specified for this table, so "
+    "the two columns are left empty rather than filled with a coefficient for a different "
+    "measurement scale (experiments/README.md)"
 )
 
 # ---- E1, frozen by docs/PREREGISTRATION.md section 10 ---------------------
@@ -163,19 +187,55 @@ E2_DEDUP_NOTE = (
 )
 
 # ---- E4, rater agreement -------------------------------------------------
-# Three raters label the same 70 emails from the same four definitions: the
-# gold labels in golden_dataset.json (one human, July 2026), a second human who
-# is not on the project (experiments/data/annotator2_labels.json, due
-# 2026-09-23), and the models of the E4 annotation arm. Everything here is an
-# agreement estimate with an interval, not a test: there is no null hypothesis
-# in this table and no p-value in it.
+# The raters that label the same 70 emails from the same four definitions: the
+# shipped v1.1 labels in golden_dataset.json, the three humans of the blind
+# re-labelling panel (experiments/data/annotations/*_labels.json, A2 and A3 due
+# 2026-09-23), gold v2 once the panel produces it, and the models of the E4
+# annotation arm. Everything here is an agreement estimate with an interval,
+# not a test: there is no null hypothesis in this table and no p-value in it.
+#
+# `human-1 (gold)` keeps its name. It is the v1.1 label set, which
+# docs/PREREGISTRATION.md section 9 (2026-09-19) discloses is an agent draft
+# the author confirmed rather than an independent human annotation; every row
+# that rater takes part in picks up a note pointing at the entry rather than a
+# new name, so the numbers published under it stay findable. How many rows that
+# is depends on who has returned, which is why the condition is written as a
+# property of the pairing rather than as a count.
 E4_EXP_ID = "e4_annot"
 E4_TIER = "annotator"
 E4_CATEGORIES = ("billing", "technical", "account", "general")
 E4_GOLD_RATER = "human-1 (gold)"
-E4_HUMAN2_RATER = "human-2 (non-member)"
-E4_HUMAN2_PATH = REPO_ROOT / "experiments" / "data" / "annotator2_labels.json"
+E4_ANNOTATION_DIR = ANNOTATION_DIR
+E4_GOLD_V2_RATER = "gold v2 (panel)"
+E4_PANEL_RATER_B = "(3 human raters)"
 E4_FAMILY = "descriptive"
+# Two clauses, because they are true of different rows. The provenance is true
+# of every pairing that rater takes part in. The second sentence is true only
+# where the other rater is a model: a human annotator measured against these
+# labels is not "a model against labels a model drafted", and putting that
+# sentence on A1's row would describe A1 as a model.
+E4_GOLD_PROVENANCE_NOTE = (
+    "human-1 (gold) is the shipped v1.1 label set, agent-drafted and author-confirmed on "
+    "2026-07-20, not an independent human annotation (docs/PREREGISTRATION.md section 9, "
+    "entry dated 2026-09-19)"
+)
+E4_GOLD_VS_MODEL_NOTE = (
+    "this row therefore measures a model against labels a model drafted, and how much of the "
+    "agreement that shared origin buys is not estimable from this design"
+)
+E4_PANEL_NOTE = (
+    "across the three human annotators of docs/PREREGISTRATION.md section 9; interval is the "
+    "same percentile bootstrap over cases as every other row here"
+)
+E4_KRIPPENDORFF_NOTE = (
+    "po and pe are 1 - observed disagreement and 1 - expected disagreement, so the kappa column "
+    "reads (po - pe) / (1 - pe) for this row as well; no Landis & Koch band is quoted because "
+    "that convention was published for kappa"
+)
+E4_PANEL_INCOMPLETE_NOTE = (
+    "the three-rater rows (Fleiss kappa, Krippendorff alpha, exact three-way agreement) are "
+    "absent rather than approximated until all three human sheets are in"
+)
 E4_KAPPA_HEADER = [
     "family", "rater_a", "rater_b", "n", "n_excluded", "po", "pe", "kappa",
     "boot_ci_low", "boot_ci_high", "n_boot", "seed", "landis_koch", "method", "note",
@@ -191,8 +251,71 @@ E4_BAND_NOTE = (
     "band names are Landis & Koch (1977) Table 1, a convention for reading the number, not a test"
 )
 E4_EMPTY_NOTE = (
-    "no e4_annot raw data and no annotator2_labels.json yet; header written, no rows"
+    "no e4_annot raw data and no imported annotator labels yet; header written, no rows"
 )
+
+# ---- gold v2 sensitivity analysis ----------------------------------------
+# docs/PREREGISTRATION.md section 9, entry dated 2026-09-19: the E0, E1 and E5
+# tables are recomputed on the three-annotator gold v2 and published beside
+# their pre-registered v1.1 versions, which stay the confirmatory result of
+# section 4. Beside, and not instead: each recomputed table is written as its
+# own `*_gold_v2.csv` file and the v1.1 file is not touched, so "the published
+# v1.1 numbers did not move" is checkable by hashing them rather than by
+# reading a family column.
+#
+# Every gold v2 row carries the family below and takes no multiplicity
+# correction of any kind: `p_holm` and `p_bh` are emptied and the note says to
+# read `p_raw`. That is the form `sensitivity_drop_leaked_case` already ships
+# in `e1_main.csv`, reused here rather than invented. The family a row had
+# under v1.1 is kept in its note, because the leak-sensitivity rows and the
+# confirmatory rows are still different rows.
+GOLD_V2_PATH = REPO_ROOT / "experiments" / "data" / "gold_v2.json"
+GOLD_V2_FAMILY = "sensitivity_gold_v2"
+GOLD_V2_SUFFIX = "_gold_v2"
+GOLD_V2_MULTIPLICITY_COLUMNS = ("p_holm", "p_bh", "p_value_holm")
+GOLD_V2_NOTE = (
+    "recomputed on gold v2, the majority label of the three blind human annotators "
+    "(docs/PREREGISTRATION.md section 9, entry dated 2026-09-19). Sensitivity analysis, not "
+    "confirmatory: no multiplicity correction is applied to this family, the adjusted p-value "
+    "columns are empty, and p_raw is the p-value to read. The v1.1 version of this row is the "
+    "pre-registered result and is in the file of the same name without the gold_v2 suffix"
+)
+GOLD_V2_UNSEALED_NOTE = (
+    "gold v2 exists but is not sealed (cases still waiting on a ruling); no gold v2 table is "
+    "written, because a half-decided label set is not a label set"
+)
+# Which columns identify a row, per table, for the row-by-row difference
+# listing. Named rather than guessed: a diff keyed on "everything that is not a
+# float" silently re-keys itself the day a table gains a column.
+GOLD_V2_DIFF_KEYS = {
+    "per_case_outcomes.csv": ("exp_id", "run_id", "prompt_version", "repeat_idx", "case_id"),
+    "rates_by_run.csv": ("exp_id", "run_id", "prompt_version", "repeat_idx", "metric", "method"),
+    "rates_run_spread.csv": ("exp_id", "run_id", "prompt_version", "metric"),
+    "per_case_instability.csv": ("exp_id", "run_id", "prompt_version", "metric", "case_id"),
+    "rates_by_stratum.csv": ("exp_id", "run_id", "prompt_version", "stratum_kind", "stratum", "metric", "method"),
+    "rates_bootstrap.csv": ("exp_id", "run_id", "prompt_version", "metric", "method"),
+    "paired_mcnemar.csv": ("metric", "baseline_version", "candidate_version", "method"),
+    "e1_main.csv": ("metric", "baseline_version", "candidate_version", "method", "family"),
+    "e1_power.csv": ("metric", "candidate_version", "n", "alpha_basis"),
+    "e5_strata.csv": ("exp_id", "prompt_version", "metric", "stratum_kind", "stratum", "family"),
+    "e5_logit.csv": ("model_id", "term", "data"),
+}
+# The diff runs on the recomputed tables *before* `relabel_gold_v2` touches
+# them, which is the only order that works. Relabelling rewrites `family` to
+# one constant value, and `family` is part of the key for `e1_main.csv` and
+# `e5_strata.csv`: keyed after relabelling, no gold v2 row would ever match its
+# v1.1 counterpart, and worse, `e1_main.csv`'s confirmatory and
+# leak-sensitivity rows would collapse onto the same key and two of them would
+# vanish into a dict overwrite without a word.
+#
+# Columns excluded from the comparison: `note` is prose, and the adjusted
+# p-value columns are left empty by rule in every published gold v2 table, so a
+# difference in one of them would describe a number that does not appear in the
+# file it claims to be about.
+GOLD_V2_DIFF_IGNORE = ("note", "p_holm", "p_bh", "p_value_holm")
+GOLD_V2_DIFF_HEADER = [
+    "table", "row_key", "column", "v1_1_value", "gold_v2_value", "note",
+]
 
 E5_FIRTH_NOTE = (
     "Firth penalised likelihood not run: no validated implementation is available here "
@@ -1750,22 +1873,121 @@ def e4_rater_labels(rows: list[dict], dataset_path: Path) -> tuple[dict[str, dic
             failures[rater] += 1
             continue
         labels.setdefault(rater, {})[row["case_id"]] = category
-    if E4_HUMAN2_PATH.exists():
-        data = json.loads(E4_HUMAN2_PATH.read_text(encoding="utf-8"))
-        labels[E4_HUMAN2_RATER] = {r["case_id"]: r["label"] for r in data["labels"]}
+    for annotator in e4_human_annotators():
+        path = E4_ANNOTATION_DIR / f"{annotator.lower()}_labels.json"
+        data = json.loads(path.read_text(encoding="utf-8"))
+        labels[ANNOTATORS[annotator]["rater"]] = {r["case_id"]: r["label"] for r in data["labels"]}
+    gold_v2 = load_gold_v2_labels()
+    if gold_v2:
+        labels[E4_GOLD_V2_RATER] = dict(gold_v2)
     return labels, dict(failures)
 
 
+def e4_human_annotators() -> list[str]:
+    """The roster members whose sheet has been imported, in roster order.
+
+    A missing file is an annotator who has not returned, which is a fact about
+    the calendar and not an error: the rows for that rater are absent rather
+    than written empty, the same way the E1 tables were written with headers
+    and no data before a v2* run existed.
+    """
+    return [
+        annotator for annotator in sorted(ANNOTATORS)
+        if (E4_ANNOTATION_DIR / f"{annotator.lower()}_labels.json").exists()
+    ]
+
+
+def e4_human_raters(labels: dict[str, dict[str, str]]) -> list[str]:
+    return [ANNOTATORS[a]["rater"] for a in e4_human_annotators() if ANNOTATORS[a]["rater"] in labels]
+
+
 def e4_rater_pairs(labels: dict[str, dict[str, str]]) -> list[tuple[str, str]]:
-    """Which pairs go in the table, in a fixed order: every rater against the
-    gold labels first, then the second human against each model, then the
-    models against each other."""
+    """Which pairs go in the table, in a fixed order.
+
+    The order is: the shipped v1.1 labels against each model, then the models
+    against each other, then the panel rows -- v1.1 against each human, each
+    human pair, each human against each model, and gold v2 against each model.
+    The two blocks that existed before the panel stay first and in their
+    original order, so a reader diffing two revisions of `e4_kappa.csv` sees
+    rows added rather than rows moved.
+    """
     models = sorted(r for r in labels if r.startswith("model:"))
-    human2 = [E4_HUMAN2_RATER] if E4_HUMAN2_RATER in labels else []
-    pairs = [(E4_GOLD_RATER, other) for other in human2 + models]
-    pairs += [(E4_HUMAN2_RATER, m) for m in models if human2]
+    humans = e4_human_raters(labels)
+    pairs = [(E4_GOLD_RATER, m) for m in models]
     pairs += [(models[i], models[j]) for i in range(len(models)) for j in range(i + 1, len(models))]
+    pairs += [(E4_GOLD_RATER, h) for h in humans]
+    pairs += [(humans[i], humans[j]) for i in range(len(humans)) for j in range(i + 1, len(humans))]
+    pairs += [(h, m) for h in humans for m in models]
+    if E4_GOLD_V2_RATER in labels:
+        pairs += [(E4_GOLD_V2_RATER, m) for m in models]
     return pairs
+
+
+def e4_panel_rows(
+    labels: dict[str, dict[str, str]], seed: int, n_boot: int
+) -> list[list]:
+    """Fleiss' kappa, Krippendorff's alpha and the exact three-way agreement
+    rate across the three human annotators.
+
+    Written only when all three have returned. Two humans are a Cohen's kappa,
+    which the pair rows already carry; a three-rater coefficient computed on
+    two raters would be a different quantity wearing the name section 9 fixed.
+    Cases one annotator skipped are dropped from Fleiss (which needs the same
+    raters on every item) and from the exact rate, and kept by Krippendorff,
+    which is the reason section 9 asks for both.
+    """
+    humans = e4_human_raters(labels)
+    if len(humans) != len(ANNOTATORS):
+        return []
+    per_rater = [labels[h] for h in humans]
+    all_cases = sorted(set().union(*(set(d) for d in per_rater)))
+    complete = [cid for cid in all_cases if all(cid in d for d in per_rater)]
+    n_excluded = len(all_cases) - len(complete)
+    panel_name = "panel: " + " + ".join(humans)
+    out: list[list] = []
+
+    complete_units = [tuple(d[cid] for d in per_rater) for cid in complete]
+    if complete_units:
+        fleiss = fleiss_kappa(complete_units)
+        boot = bootstrap_ci(
+            complete_units, lambda u: fleiss_kappa(u)["kappa"], seed=seed, n_boot=n_boot,
+        )
+        out.append([
+            E4_FAMILY, panel_name, E4_PANEL_RATER_B, len(complete), n_excluded,
+            fleiss["po"], fleiss["pe"], fleiss["kappa"], boot["ci_low"], boot["ci_high"],
+            n_boot, seed, _landis_koch(fleiss["kappa"]), fleiss["method"],
+            E4_PANEL_NOTE + "; " + E4_BAND_NOTE + "; " + AGREEMENT_VALIDATION,
+        ])
+
+        rate = sum(1 for unit in complete_units if len(set(unit)) == 1) / len(complete_units)
+        rate_boot = bootstrap_ci(
+            complete_units,
+            lambda u: sum(1 for unit in u if len(set(unit)) == 1) / len(u),
+            seed=seed, n_boot=n_boot,
+        )
+        out.append([
+            E4_FAMILY, panel_name, E4_PANEL_RATER_B, len(complete), n_excluded,
+            rate, None, None, rate_boot["ci_low"], rate_boot["ci_high"], n_boot, seed,
+            None, "three_way_exact_agreement",
+            "po is the share of cases all three annotators labelled identically, chance "
+            "agreement not removed; the kappa column is empty because this row is a raw rate. "
+            + E4_PANEL_NOTE,
+        ])
+
+    alpha_units = [tuple(d.get(cid) for d in per_rater) for cid in all_cases]
+    alpha = krippendorff_alpha(alpha_units)
+    alpha_boot = bootstrap_ci(
+        alpha_units, lambda u: krippendorff_alpha(u)["alpha"], seed=seed, n_boot=n_boot,
+    )
+    out.append([
+        E4_FAMILY, panel_name, E4_PANEL_RATER_B,
+        len(all_cases) - alpha["n_units_dropped"], alpha["n_units_dropped"],
+        1.0 - alpha["observed_disagreement"], 1.0 - alpha["expected_disagreement"],
+        alpha["alpha"], alpha_boot["ci_low"], alpha_boot["ci_high"], n_boot, seed,
+        None, alpha["method"],
+        E4_PANEL_NOTE + "; " + E4_KRIPPENDORFF_NOTE + "; " + AGREEMENT_VALIDATION,
+    ])
+    return out
 
 
 def table_e4_kappa(rows: list[dict], dataset_path: Path, seed: int, n_boot: int) -> tuple[list[str], list[list]]:
@@ -1799,12 +2021,18 @@ def table_e4_kappa(rows: list[dict], dataset_path: Path, seed: int, n_boot: int)
         for rater in (rater_a, rater_b):
             if failures.get(rater):
                 note += f"; {rater} has {failures[rater]} failed call(s), excluded from the pairing"
+        if E4_GOLD_RATER in (rater_a, rater_b):
+            note += "; " + E4_GOLD_PROVENANCE_NOTE
+            other = rater_b if rater_a == E4_GOLD_RATER else rater_a
+            if other.startswith("model:"):
+                note += "; " + E4_GOLD_VS_MODEL_NOTE
         out.append([
             E4_FAMILY, rater_a, rater_b, len(shared), excluded,
             result["po"], result["pe"], result["kappa"],
             boot["ci_low"], boot["ci_high"], n_boot, seed,
             _landis_koch(result["kappa"]), result["method"], note,
         ])
+    out.extend(e4_panel_rows(labels, seed, n_boot))
     return E4_KAPPA_HEADER, out
 
 
@@ -2357,6 +2585,208 @@ def build_manifest(files: list[Path], rows: list[dict], out_dir: Path, seed: int
 
 
 # --------------------------------------------------------------------------
+# gold v2 sensitivity analysis
+# --------------------------------------------------------------------------
+def load_gold_v2_labels(path: Path | None = None) -> dict[str, str] | None:
+    """case id -> gold v2 category, or None when there is no sealed gold v2.
+
+    Absent file and unsealed file both return None, and both are the normal
+    state until A2 and A3 have returned. Nothing downstream approximates the
+    missing tables: they are simply not written.
+    """
+    path = path or GOLD_V2_PATH
+    if not path.exists():
+        return None
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not payload.get("sealed"):
+        return None
+    labels = {entry["case_id"]: entry["label"] for entry in payload["labels"]}
+    if any(label is None for label in labels.values()):
+        return None
+    return labels
+
+
+def regrade_observations(observations: list[dict], gold: dict[str, str]) -> list[dict]:
+    """The same observations with `expected_category` taken from gold v2.
+
+    `category_match` and `passed` are recomputed from it. `passed` is
+    `category_match` AND `judge_score >= threshold` (PREREGISTRATION section
+    3), so this is arithmetic over judge scores already recorded -- the same
+    numbers recombined with the new match -- and it obtains no new score and
+    sends no call. Every other field, including `judge_score` itself, is
+    carried across untouched.
+    """
+    missing = sorted({obs["case_id"] for obs in observations} - set(gold))
+    if missing:
+        raise SystemExit(
+            f"gold v2 has no label for {len(missing)} case(s) present in the raw data: "
+            f"{', '.join(missing)}"
+        )
+    out: list[dict] = []
+    for obs in observations:
+        new = dict(obs)
+        new["expected_category"] = gold[obs["case_id"]]
+        new["category_match"] = (
+            None if not new["classifier_ok"]
+            else int(new["predicted_category"] == new["expected_category"])
+        )
+        new["passed"] = (
+            None
+            if (new["category_match"] is None or new["judge_score"] is None)
+            else int(bool(new["category_match"]) and new["judge_score"] >= DEFAULT_PASS_THRESHOLD)
+        )
+        out.append(new)
+    return out
+
+
+def relabel_gold_v2(header: list[str], rows: list[list]) -> list[list]:
+    """Put every row of a recomputed table into the gold v2 sensitivity family.
+
+    The table functions are the pre-registered ones, run unchanged on the
+    re-graded observations; this is the only thing done to their output. Family
+    becomes `sensitivity_gold_v2`, the adjusted p-value columns are emptied,
+    and the note records both that and the family the row carried under v1.1.
+    """
+    index = {name: i for i, name in enumerate(header)}
+    out: list[list] = []
+    for row in rows:
+        new = list(row)
+        note = GOLD_V2_NOTE
+        if "family" in index:
+            previous = new[index["family"]]
+            if previous:
+                note += f"; this row is the gold v2 version of a {previous} row"
+            new[index["family"]] = GOLD_V2_FAMILY
+        for column in GOLD_V2_MULTIPLICITY_COLUMNS:
+            if column in index:
+                new[index[column]] = None
+        if "note" in index:
+            existing = new[index["note"]]
+            new[index["note"]] = f"{note}; {existing}" if existing else note
+        out.append(new)
+    return out
+
+
+def _diff_key(header: list[str], row: list, key_columns: Sequence[str]) -> str:
+    index = {name: i for i, name in enumerate(header)}
+    return "|".join(f"{name}={fmt(row[index[name]])}" for name in key_columns if name in index)
+
+
+def _diff_index(
+    name: str, side: str, header: list[str], rows: list[list], key_columns: Sequence[str]
+) -> dict[str, list]:
+    """key -> row, refusing to build an index that loses rows.
+
+    A key that repeats means the declared key columns do not identify a row in
+    this table, and a dict would keep the last one and drop the rest without
+    saying so -- the difference listing would then be quietly wrong about a
+    table it claims to have compared.
+    """
+    index: dict[str, list] = {}
+    duplicates: list[str] = []
+    for row in rows:
+        key = _diff_key(header, row, key_columns)
+        if key in index:
+            duplicates.append(key)
+            continue
+        index[key] = row
+    if duplicates:
+        raise SystemExit(
+            f"gold v2 diff: GOLD_V2_DIFF_KEYS[{name!r}] does not identify a row uniquely in the "
+            f"{side} table -- {len(duplicates)} duplicate key(s), first: {duplicates[0]}. "
+            f"Fix the key columns; do not let the diff drop rows"
+        )
+    return index
+
+
+def table_gold_v2_diff(
+    pairs: list[tuple[str, tuple[list[str], list[list]], tuple[list[str], list[list]]]],
+) -> tuple[list[str], list[list]]:
+    """The table-by-table list of what moved between the v1.1 and gold v2 runs.
+
+    Takes the gold v2 tables as recomputed, before `relabel_gold_v2` flattens
+    their `family` column -- two of these tables are keyed on `family`.
+
+    One row per (table, row, column) that differs, plus one row for any key
+    present in only one of the two versions. A table that comes out identical
+    contributes a single row saying so, because "no difference" is a result
+    here and an empty section is indistinguishable from a section that was
+    never computed.
+    """
+    out: list[list] = []
+    for name, (header_a, rows_a), (header_b, rows_b) in pairs:
+        key_columns = GOLD_V2_DIFF_KEYS.get(name)
+        if key_columns is None:
+            out.append([name, "", "", "", "", "no key columns declared for this table; not diffed"])
+            continue
+        if header_a != header_b:
+            out.append([name, "", "", "", "", "headers differ between the two runs; not diffed"])
+            continue
+        index_a = _diff_index(name, "v1.1", header_a, rows_a, key_columns)
+        index_b = _diff_index(name, "gold v2", header_b, rows_b, key_columns)
+        differences = 0
+        for key in sorted(set(index_a) | set(index_b)):
+            if key not in index_b:
+                out.append([name, key, "(whole row)", "present", "absent", "row has no gold v2 counterpart"])
+                differences += 1
+                continue
+            if key not in index_a:
+                out.append([name, key, "(whole row)", "absent", "present", "row exists only under gold v2"])
+                differences += 1
+                continue
+            for column, before, after in zip(header_a, index_a[key], index_b[key]):
+                if column in GOLD_V2_DIFF_IGNORE:
+                    continue
+                if fmt(before) != fmt(after):
+                    out.append([name, key, column, fmt(before), fmt(after), ""])
+                    differences += 1
+        if not differences:
+            out.append([name, "(all rows)", "(all columns)", "", "", "identical under gold v2"])
+    return GOLD_V2_DIFF_HEADER, out
+
+
+def gold_v2_specs(
+    observations: list[dict],
+    gold: dict[str, str],
+    seed: int,
+    n_boot: int,
+    power_n_sim: int,
+) -> list[tuple[str, tuple[list[str], list[list]], tuple[list[str], list[list]]]]:
+    """The E0, E1 and E5 tables recomputed on gold v2.
+
+    Returns (name, table as recomputed, table as published) per table. The two
+    differ only by `relabel_gold_v2`, and both are returned because the
+    difference listing has to be keyed on the recomputed one: `family` is part
+    of the key for two of these tables and relabelling flattens it to a
+    constant. See `GOLD_V2_DIFF_IGNORE`.
+
+    E2 is absent on purpose: it carries no `category_match` and section 9 says
+    it is untouched by the re-labelling. E4 is absent because gold v2 enters it
+    as a rater in `e4_kappa.csv` itself rather than as a second copy of the
+    table. The judge-score, token and rescore tables do not read a gold label.
+    """
+    regraded = regrade_observations(observations, gold)
+    pair_sets = e1_pair_sets(regraded)
+    specs = [
+        ("per_case_outcomes.csv", table_per_case(regraded)),
+        ("rates_by_run.csv", table_rates(regraded)),
+        ("rates_run_spread.csv", table_run_spread(regraded)),
+        ("per_case_instability.csv", table_case_instability(regraded)),
+        ("rates_by_stratum.csv", table_strata(regraded)),
+        ("rates_bootstrap.csv", table_bootstrap(regraded, seed, n_boot)),
+        ("paired_mcnemar.csv", table_mcnemar(regraded)),
+        ("e1_main.csv", table_e1_main(pair_sets)),
+        ("e1_power.csv", table_e1_power(pair_sets, seed, n_sim=power_n_sim)),
+        ("e5_strata.csv", table_e5_strata(regraded)),
+        ("e5_logit.csv", table_e5_logit(regraded)),
+    ]
+    return [
+        (name, (header, body), (header, relabel_gold_v2(header, body)))
+        for name, (header, body) in specs
+    ]
+
+
+# --------------------------------------------------------------------------
 # main
 # --------------------------------------------------------------------------
 def main(argv: list[str] | None = None) -> int:
@@ -2429,11 +2859,43 @@ def main(argv: list[str] | None = None) -> int:
         ("judge_rescore_stability.csv", (rescore_header, rescore_rows)),
         ("judge_rescore_summary.csv", table_judge_rescore_summary(rescore_rows)),
     ]
+    # The gold v2 sensitivity analysis, when there is a sealed gold v2 to run
+    # it on. Each recomputed table is written beside its pre-registered version
+    # under a `_gold_v2` name; no v1.1 file is opened for writing, which is why
+    # "the published v1.1 numbers did not move" can be checked by hashing them.
+    gold_v2 = load_gold_v2_labels()
+    if gold_v2 is None:
+        if GOLD_V2_PATH.exists():
+            print(f"gold v2: {GOLD_V2_UNSEALED_NOTE}")
+        else:
+            print("gold v2: no experiments/data/gold_v2.json yet; the sensitivity tables are "
+                  "not written (PREREGISTRATION section 9)")
+        v2_specs: list[tuple[str, tuple[list[str], list[list]], tuple[list[str], list[list]]]] = []
+    else:
+        v2_specs = gold_v2_specs(observations, gold_v2, args.seed, args.n_boot, args.power_n_sim)
+
     written: list[str] = []
     for name, (header, body) in specs:
         write_csv(tables_dir / name, header, body)
         written.append(rel_to_repo(tables_dir / name))
         print(f"{name:32s} {len(body):6d} rows")
+
+    if v2_specs:
+        by_v1 = dict(specs)
+        # Keyed on the recomputed table, not on the published one: see
+        # GOLD_V2_DIFF_IGNORE for what keying the published one would cost.
+        diff_pairs = [
+            (name, by_v1[name], recomputed) for name, recomputed, _ in v2_specs if name in by_v1
+        ]
+        for name, _, (header, body) in v2_specs:
+            out_name = name.replace(".csv", f"{GOLD_V2_SUFFIX}.csv")
+            write_csv(tables_dir / out_name, header, body)
+            written.append(rel_to_repo(tables_dir / out_name))
+            print(f"{out_name:32s} {len(body):6d} rows")
+        diff_header, diff_rows = table_gold_v2_diff(diff_pairs)
+        write_csv(tables_dir / "gold_v2_diff.csv", diff_header, diff_rows)
+        written.append(rel_to_repo(tables_dir / "gold_v2_diff.csv"))
+        print(f"{'gold_v2_diff.csv':32s} {len(diff_rows):6d} rows")
 
     figures: list[str] = []
     if not args.no_figures:

@@ -861,6 +861,231 @@ only after A1's category sheet was sealed is a statement: both fall on
 2026-09-19, and the commit sequence supports the order in which the two hashes
 were registered, not the order in which the author worked.
 
+**2026-09-19, the choices the entry above left to the import pull request, and
+what that pull request compared.** The entry above names three decisions as the
+import pull request's to make, and they are made as follows. The author's
+replacement summaries go in a file of their own,
+`experiments/data/summary_replacements_a1.json`, and not into a new
+`golden_dataset.json` field: a summary is the reference every recorded
+`judge_score` was measured against, and a competing version inside the frozen
+instrument invites a later reader to score against the wrong one.
+`e4_kappa.csv` keeps its name, so that the two `human-1 (gold)` rows published
+under it stay findable; the note added to those rows is added to every row that
+uses that rater, since it is the rater's provenance being disclosed and not a
+property of two particular pairings. The gold v2 recomputation is written
+beside the pre-registered tables rather than into them: each recomputed table
+is its own `*_gold_v2.csv` file, `gold_v2_diff.csv` carries the differences row
+by row and column by column, and no v1.1 file is opened for writing, which
+makes "the published v1.1 numbers did not move" checkable by hashing them
+instead of by reading a family column.
+
+Three further facts of the record. The returned files enter the repository
+byte for byte as `experiments/data/a1_category_labels_2026-09-19.csv` and
+`experiments/data/a1_summary_review_2026-09-19.csv`, whose sha256 values are
+the two registered above. `experiments/import_annotator2.py`, named in the
+entries of 2026-09-16 and 2026-09-17, is now
+`experiments/import_annotations.py` and takes the annotator as an argument;
+the file it wrote, `experiments/data/annotator2_labels.json`, is now
+`experiments/data/annotations/<annotator>_labels.json`. And the raters are
+named for their role in every table -- `A1 (author)`, `A2 (outside)`,
+`A3 (outside)` -- so that no table carries a person's name.
+
+What this pull request compared, all of it a quantity the entry above lists in
+advance: A1 against the shipped v1.1 labels, raw agreement 0.800 (56 of 70),
+Cohen's kappa 0.732, 95% bootstrap 0.600 to 0.846; and A1 against each model
+annotator, 0.675 against Haiku 4.5 and 0.675 against Sonnet 5. The summary
+review returns 70 `ok` and 0 `edit`, so its list of edited case ids is empty
+and no replacement summary exists to store. No gold v2 was produced or tried:
+with one sheet back, `experiments/gold_v2.py` declines before the deadline
+because the regime is not chosen yet, and declines at the deadline under
+fallback 2. Its rules were tested on invented sheets instead.
+
+Four situations the entry above does not decide, found while turning it into
+code, each of which makes `gold_v2.py` refuse and name the cases rather than
+choose. With all three sheets in, a case left with fewer than two valid votes:
+the two-vote rule says it covers per-case gaps "and nothing wider". Under
+fallback 1, a case left with only the *other* human's vote: the entry names the
+case left with only A1's. A roster in which A1 has not returned at all: both
+fallbacks are written around A1's sheet being present. And `labeled_at`, which
+the dataset paragraph does not mention: a case whose label a September panel
+decided would keep the `2026-07-20` its record carries, so
+`experiments/apply_gold_v2.py` leaves the field alone and warns on every run
+instead of picking a date. Any of the four takes its own dated line here.
+
+One published table changed for a reason that is not the re-labelling.
+`judge_rescore_stability.csv` and `judge_rescore_summary.csv` reserve columns
+for Fleiss' kappa and Krippendorff's alpha and left them empty with a note
+saying both were unimplemented. Both exist now, so that note had become false;
+it is replaced with the true reason those cells stay empty, which is that both
+are nominal-scale coefficients and the judge's repeated 1-5 scores are ordinal,
+and no ordinal agreement coefficient is specified anywhere in this study. No
+number in either table changed.
+
+**2026-09-19, the four situations the 2026-09-19 entries left undecided.** The
+entry above lists four cases the protocol does not decide, found while turning
+it into code. They are decided here, still before A2's and A3's sheets have
+arrived and therefore still before any comparison those rules could be chosen
+to favour. Two of them get one rule, because they are the same situation seen
+from two sides.
+
+**A case left with fewer than two valid human votes keeps its shipped v1.1
+label and is recorded as `fallback_v1.1`.** That covers the case with all three
+sheets in and one valid vote or none, and it covers fallback 1 with only the
+other human's vote, only A1's -- which the entry above already decided this way
+-- or neither. The reason is the same in every one of them: a single human vote
+is not enough to overturn the shipped label, and treating it as enough would
+let one annotator decide gold on that case, which is the outcome a panel of
+three exists to prevent. Those cases stay individually identifiable by their
+`fallback_v1.1` route, as every other case on that route does, so any reading of
+gold v2 can be redone with them excluded.
+
+**A roster in which A1 has not returned needs no rule, and the tool keeps
+refusing it.** The situation cannot arise: A1 returned on 2026-09-19 and the
+sheet's sha256 is recorded above, in this section, on the day it arrived. Both
+fallbacks are written around A1's sheet being present, and inventing a third
+fallback for a roster that is already ruled out would be a rule with no
+referent. `experiments/gold_v2.py` exits 4 and says what is missing if it ever
+meets one, which is the behaviour that belongs to a situation with no rule
+rather than to a situation with a bad rule.
+
+**`labeled_at` moves on the cases a panel decided and stays where it is on the
+cases that kept their shipped label.** A case routed `majority` or
+`adjudicated` takes the date gold v2 was sealed; a case routed `fallback_v1.1`
+keeps the `2026-07-20` it already carries, because nothing about that label was
+decided again and dating it to September would say a panel had looked at it.
+The seal date is the `--as-of` date of the run that finished gold v2, recorded
+in `gold_v2.json` as `sealed_on`, so re-running on the same inputs and the same
+date reproduces the file. `experiments/apply_gold_v2.py` writes this rather
+than warning about it, and refuses a sealed gold that carries no `sealed_on`.
+
+Two smaller things this entry also records. `--allow-missing-cases` was added
+to `experiments/import_annotations.py`, off by default: without a way to admit
+a sheet that is short a case and record which, the two-vote rule above could
+never apply to anything, because the importer rejects a short sheet whole and
+sends it back for correction. And the note change in
+`judge_rescore_stability.csv` and `judge_rescore_summary.csv` described in the
+entry above touches the `note` column and nothing else -- it was verified by
+re-running the analysis at the commit before the change and after it and
+comparing the two table sets cell by cell, which found the `note` column and no
+other column differing, and 17 of the 20 tables byte-identical.
+
+**2026-09-19, the residue of the 2026-09-17 address removal is described by
+category, not by a count.** The entry of 2026-09-17 removed a third-party
+company's domain from `golden_dataset.json`, listed the files where that
+address necessarily survives, and closed with "Those seven are the whole
+residue". That sentence stops being true the moment a returned sheet enters
+the repository: every annotator worked from the v1 handout, so every returned
+sheet carries `case-007`'s v1 wording, and what is committed for each of them
+carries it too, because the email column is never rewritten.
+
+Which rule gives way is not a close call. The byte-for-byte commit and the
+hash registration are what make "the protocol preceded the comparison"
+auditable by a reader who believes none of the prose, and a sheet edited to
+scrub an address would hash to nothing anyone registered. So the residue is
+described by category from here on: the v1 handout, the copy of each returned
+sheet that this section registers, and the six raw JSONL files. No count is
+written down,
+because the number grows by one each time an annotator returns and a number
+that goes stale silently is worse than no number.
+
+This is the same privacy decision as 2026-09-17 rather than a reversal of it.
+That decision was about the label set the eval runs against and about what a
+reader lands on first; the address was already public in the handout that
+entry chose not to regenerate, for the reason it gives -- a regenerated handout
+would describe a file no annotator ever saw. Nothing here puts the address
+anywhere it was not already. `experiments/import_annotations.py` says which
+files hold it and why, in place of the sentence it used to carry claiming the
+text was not reintroduced.
+
+**The adjudication sheet quotes the handout, not the dataset.** Where the
+author rules on a case, the email text on that sheet is `case-007`'s and every
+other case's text as it stands in `experiments/data/annotator2_sheet.csv`,
+which is what the three annotators read. `golden_dataset.json` has moved since
+the handout, so a sheet built from it would ask the author to rule on wording
+no annotator saw. The difference is one email address in one case, and one
+address is enough for the rule to be worth writing down.
+`experiments/gold_v2.py` reads the handout and refuses if it has no text for a
+case that needs a ruling.
+
+**The summary review's per-case verdicts are published; the reviewer's
+free-text notes are not.** `summary_review_a1.json` carries `ok` or `edit` per
+case, which is no more than the `edit` id list this section already permits,
+since either is derivable from the other. It carries `has_notes` in place of
+the notes column: those are unreviewed working notes in a public repository,
+and the review is permitted to report counts and ids. The returned sheet is
+still committed byte for byte with its notes column intact, because its sha256
+is registered above -- this is a choice not to republish the text in a file
+built for reading, not a claim that it is nowhere.
+
+One correction to the entry above. It says
+`experiments/apply_gold_v2.py` "leaves the field alone and warns on every run
+instead of picking a date", describing `labeled_at`. The entry after it decided
+that rule, and the script now writes the seal date on the `majority` and
+`adjudicated` cases. The earlier sentence records what the program did between
+those two entries and does not describe it now.
+
+**2026-09-19, A2's and A3's sheets are registered under two hashes, and the
+copy that enters the repository has its notes column empty.** The entry above
+settled the same question for the author's summary review. It is sharper for
+A2 and A3, who are two people outside the project: what the instruction sheet
+promises them is anonymity and a category answer, and it does not promise that
+whatever they write in `notes` will be published. The rule for their sheets,
+fixed here before either has arrived.
+
+On receipt, two sha256 values go into this section: the file as received, and a
+copy of it with the `notes` column emptied and nothing else touched. The copy
+is what enters version control, byte for byte, and the original stays with the
+author outside the repository. `experiments/blank_sheet_notes.py` produces the
+copy and prints both hashes, and does nothing else -- it validates nothing,
+reads no label and opens no dataset, so the file that is hashed on arrival has
+not been near anything that could have changed it.
+
+Registering both is what keeps the arrival check honest. One hash of a file
+nobody else holds would make "the repository has the sheet as received" an
+assertion rather than something a reader can test; with both, the author can be
+asked to produce a file matching the first, and anyone can recompute the second
+against what is committed. Neither hash is a claim about the labels.
+
+What the blanking preserves, stated at the precision the tool can back. Every
+value in `case_id`, `email_body` and `your_label` comes through unchanged, cell
+for cell, in the order the rows arrived; the column set must be exactly those
+three plus `notes`, and a sheet carrying a fifth column is rejected rather than
+re-serialised without it. The file is rewritten rather than edited in place, as
+CSV UTF-8 with a BOM, CRLF line endings, minimal quoting, columns in handout
+order -- so the copy is not guaranteed byte-identical to the original even
+where the notes were already empty, and where it was, for A1, that is a
+measured fact about that file. The email column being untouched is what keeps
+the body check in `import_annotations.py`, the `sheet_dataset_version`
+decision and the residue category of the entry above -- every returned sheet
+still carrying `case-007`'s v1 wording -- reading exactly as they did before.
+
+One sentence in the entry above is read differently from here on. It says a
+sheet edited to scrub an address "would hash to nothing anyone registered",
+which was true when one hash per sheet was registered. Under this entry the
+blanked copy's hash is registered too, so the sentence holds for edits nobody
+declared and not for this one: the blanking is declared in advance, applies to
+one named column, and its output is pinned by the second of the two hashes.
+
+A1's sheet is not reopened and its record does not change. A1's `notes` column
+came back empty on all 70 rows, so the blanking step is a no-op on it: run
+against the committed file it reproduces that file byte for byte, and the two
+hashes this entry would require are the same value,
+`774e62bc6c8337b188b87f249b66f1991196c6d616ef4d6d2e1cae1cde02cfbb`, which is
+the one already registered above. That is computed, not assumed.
+
+Two consequences. `experiments/data/annotations/<annotator>_labels.json` now
+records `has_notes` instead of the note text, the same way the summary review's
+verdicts do; on A2's and A3's files it will read `false` throughout, because
+the file it is built from is already the blanked copy. And
+`experiments/data/annotator2_instructions_zh.md` gains a line telling the
+annotator what happens to their notes: only the researcher sees them, only the
+category answers are published, and no name is recorded. A1 did not see that
+line, which is a real difference between what the three annotators were handed
+and is recorded here rather than papered over -- the line is about what becomes
+of a note after the sheet comes back, so it cannot have changed a category
+judgement, and A1 is the author, for whom the question the line answers does
+not arise.
+
 ## 10. E1 in full
 
 Written 2026-09-14, before the first degraded-prompt call. Section 4 fixes
