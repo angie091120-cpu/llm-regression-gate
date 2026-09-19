@@ -330,14 +330,19 @@ gold v2 is their majority, and the protocol is registered before any comparison
   `experiments/data/annotator2_sheet.csv` (v1, sha256 `c7abaf6f...`) and its
   instruction sheet, with no AI assistance and no discussion between them.
   Gold v2 is the per-case majority of the three; a case on which all three
-  differ is ruled on by the author from the email text and the three human
-  labels alone, with no model output in front of them. `expected_summary` and
-  `expected_difficulty` are not re-labelled. The envelope moves to
-  `dataset_version: v2.0`, `labeled_by` carries the decision route rather than
-  a person, and the E0, E1 and E5 tables are recomputed on gold v2 and
+  differ is ruled on by the author from the email text and that case's human
+  labels alone, on a sheet that withholds `golden_dataset.json`'s `draft_*`
+  fields, the dated 2026-07-20 rulings in `notes`, the v1.1
+  `expected_category`, and every model output this study produced.
+  `expected_summary` and `expected_difficulty` are not re-labelled. The
+  envelope moves to `dataset_version: v2.0`, `labeled_by` carries the decision
+  route rather than a person, and the E0, E1 and E5 tables are recomputed on
+  gold v2 and
   published beside their pre-registered v1.1 versions, which stay the
   confirmatory result of section 4 while the gold v2 versions are a sensitivity
-  analysis. The protocol in full --
+  analysis carrying no multiplicity correction. E4 gains rows rather than
+  replacements: the three-human agreement figures are added to its kappa table,
+  whose name the import pull request fixes. The protocol in full --
   annotator constraints, the return deadline, the two fallbacks, the statistics
   and the hash rule -- is `docs/PREREGISTRATION.md` section 9, entry dated
   **2026-09-19**.

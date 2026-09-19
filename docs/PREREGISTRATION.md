@@ -687,8 +687,12 @@ address.
 
 **Hashes are recorded on arrival, before comparison.** Each returned file's
 sha256 goes into this section when the file is received and before it is read
-against anything else. A1's file, received 2026-09-19:
+against anything else. A1's category file, received 2026-09-19:
 `774e62bc6c8337b188b87f249b66f1991196c6d616ef4d6d2e1cae1cde02cfbb`. The
+author's reference-summary review file, received 2026-09-19:
+`48b1d1d3c5becab83c6554920499eeced3a643774e77c6ffcb655d8f4d6a7759`, 20,750
+bytes; at the moment that hash was registered the file's contents had been
+neither read nor validated. The
 labelling files enter the repository in the import pull request; the pull
 request carrying this entry changes documentation only and opens no labelling
 file.
@@ -701,15 +705,20 @@ record shows that a file was replaced and which one it was.
 
 **Gold v2 and the rule that produces it.** Categories only. Per case, the
 majority of A1, A2 and A3. Where all three differ, the author rules on that
-case. The adjudication sheet carries the email text and the three human labels
-and nothing else: it does not carry `golden_dataset.json`'s `draft_*` fields,
+case. The adjudication sheet carries the email text and that case's existing
+human labels -- three of them on the main path, two under the two-vote rule and
+under fallback 1 -- and nothing else: it does not carry
+`golden_dataset.json`'s `draft_*` fields,
 the dated 2026-07-20 rulings in `notes`, the v1.1 `expected_category`, or model
 output from any arm of this study. Every adjudicated case id is listed.
 
-Where a case ends up with only two valid votes -- one sheet arrived without it,
-or its entry failed validation and no correction has come back -- two agreeing
-votes decide it and two differing votes go to the same adjudication rule on the
-same restricted sheet.
+Where all three sheets have arrived and one case is short a valid vote -- that
+sheet omitted the case, or its entry failed validation and no correction came
+back -- two agreeing votes decide it and two differing votes go to the same
+adjudication rule on the same restricted sheet. That rule covers per-case gaps
+and nothing wider. A sheet that never arrives is not a gap but a fallback: once
+fallback 1 is in force, every case is decided by fallback 1's rule and the
+two-vote rule applies to none of them.
 
 Two fallbacks, fixed now so that neither is chosen after a disagreement rate is
 known. **Fallback 1**, if by 2026-09-27 the returns are A1 plus exactly one of
@@ -717,12 +726,24 @@ A2 and A3: the cases those two humans agree on are final, and the cases they
 split on take the shipped v1.1 label as a third vote. Where that third vote
 leaves A1, the other human and v1.1 all different from one another, the author
 rules under the restrictions above and the case is recorded as `adjudicated`.
+Where fallback 1 leaves a case with only A1's vote valid -- the other human
+omitted that case, or its entry failed validation and no correction arrived by
+2026-09-27 -- the case keeps its v1.1 label and is recorded as `fallback_v1.1`.
 Fallback 1 pulls labels of agent-draft origin back into gold on exactly the
 cases where the two humans disagreed; those cases stay individually
 identifiable by their `fallback_v1.1` route, so any reading of gold v2 can be
 redone with them excluded. **Fallback 2**, if only A1 has returned: gold stays
 at v1.1 and A1's sheet is reported as a reliability check and used for nothing
 else.
+
+One disclosure about the fallback 1 adjudication path: its trigger is itself
+informative. Handing the author a case at all says that A1, the other human and
+v1.1 are three different labels, which over four categories narrows v1.1 to the
+two the sheet does not show. The main path carries no such leak -- three humans
+all different is a fact about three human sheets, and no shipped label takes
+part in the trigger. What the adjudication sheet may show is unchanged either
+way; what cannot be withheld on this path is the inference its trigger
+permits.
 
 A sheet that arrives after a fallback has been applied is reported as one more
 reliability check against the gold that exists. It does not reopen gold v2.
@@ -791,10 +812,15 @@ sensitivity analysis runs as written.
 the confirmatory result of section 4. The gold v2 recomputation is a
 sensitivity analysis: reported beside the v1.1 version with the differences
 listed table by table, raising no second confirmatory family, and yielding no
-Holm-adjusted confirmatory claim. Its raw p-values, effect sizes and intervals
-are reported and are labelled exploratory, the way every other
-non-confirmatory row in this study is. Holm stays fixed across exactly the four
-tests of section 4 computed on the v1.1 labels.
+Holm-adjusted confirmatory claim. Every gold v2 row carries its own sensitivity
+family, `sensitivity_gold_v2`, and takes no multiplicity correction of any
+kind: `p_holm` and `p_bh` are left empty and the `note` column says to read
+`p_raw`. That is the form `sensitivity_drop_leaked_case` already ships in
+`e1_main.csv`, and it is reused here rather than invented. The family is
+pooled with none of the v1.1 families, so no published v1.1 `p_holm` or `p_bh`
+changes value. Holm stays fixed across exactly the four tests of section 4
+computed on the v1.1 labels. The gold v2 versions of the E5 strata rows and of
+`passed` follow the same rule.
 
 E5's logistic model keeps the specification the 2026-09-16 entry above records:
 the pooled fit over E0 and the four E1 arms, with the baseline-arm fit still
@@ -815,9 +841,8 @@ carries the decision route for that case instead (`majority`, `adjudicated` or
 humans agree, `fallback_v1.1` where they split and the shipped label breaks the
 tie, and `adjudicated` where the two humans and the shipped label are all
 different and the author ruled. The CI baseline is rebuilt once on v2.0 -- one
-real-API
-`evalkit` run, recorded in `docs/DECISIONS.md` as its own entry the way D-011
-recorded the v1.1 rebuild.
+real-API `evalkit` run, recorded in `docs/DECISIONS.md` as its own entry the
+way D-011 recorded the v1.1 rebuild.
 
 **Ordering.** This entry is written and merged before any returned sheet is
 compared with the shipped labels or with another sheet. The evidence is the git
