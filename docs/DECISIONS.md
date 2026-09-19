@@ -321,3 +321,64 @@ it
   prices D-010 fixed. It is an `evalkit` run, not an `experiments/` runner
   run, so it does not appear in `experiments/results/cost_ledger.json` and
   check C4 of `checks/experiments_acceptance.sh` is unaffected.
+
+## D-012: the 70 category labels are re-labelled blind by three annotators;
+gold v2 is their majority, and the protocol is registered before any comparison
+
+- **Chose:** the same 70 emails are labelled again, blind, by three people --
+  A1 the author, A2 and A3 two people outside the project -- each working from
+  `experiments/data/annotator2_sheet.csv` (v1, sha256 `c7abaf6f...`) and its
+  instruction sheet, with no AI assistance and no discussion between them.
+  Gold v2 is the per-case majority of the three; a case on which all three
+  differ is ruled on by the author from the email text and the three human
+  labels alone, with no model output in front of them. `expected_summary` and
+  `expected_difficulty` are not re-labelled. The envelope moves to
+  `dataset_version: v2.0`, `labeled_by` carries the decision route rather than
+  a person, and the E0, E1 and E5 tables are recomputed on gold v2 and
+  published beside their pre-registered v1.1 versions. The protocol in full --
+  annotator constraints, the return deadline, the two fallbacks, the statistics
+  and the hash rule -- is `docs/PREREGISTRATION.md` section 9, entry dated
+  **2026-09-19**.
+- **Why:** `expected_category` today is an agent draft that the author
+  confirmed on 2026-07-20. 69 of the 70 are identical to `draft_category` and
+  the one change is `case-031`, so the label set is agent-shaped and
+  author-approved, and calling it an independent human annotation overstates
+  it. Two things follow. `e4_kappa.csv`'s human-model rows (0.904658 and
+  0.904632) compare a model against labels a model drafted, and how much of
+  that agreement the shared origin buys is not estimable from this design.
+  And section 8.3's caveat -- high agreement with one annotator can mean a
+  shared blind spot -- understates the case here, because two of the three
+  raters in that table share an origin and not only a blind spot. Three human
+  raters produce a label set no model drafted and a human-human agreement
+  number the study can publish. They also contain the one contamination that
+  cannot be removed: A1 read the 2026-07-20 review sheet two months ago and
+  ruled on its contested groups. A single rater with that history can be
+  checked against nothing; inside a panel of three, A1's agreement with A2 and
+  A3 is a reported number rather than an argument.
+- **Rejected:** keeping v1.1 and annotating the provenance in the
+  documentation -- the cheapest option, and the docs would then keep reporting
+  agreement against labels the same docs have just disclosed are not
+  independent, with E4's headline row still unreadable and no independent
+  labels anywhere in the repository. Also rejected: the author re-labels alone
+  and that becomes gold -- one rater, and the rater who read the review sheet,
+  which trades an agent-shaped label set for a memory-shaped one, leaves
+  annotator variance unestimable (section 8's closing line), and gives a single
+  slip no majority to absorb it.
+- **How "protocol before comparison" is auditable:** the pull request carrying
+  this entry changes two documentation files and nothing else -- it opens no
+  labelling file and imports none -- so the ordering is a property of the git
+  history rather than of anyone's account of it: the commit that fixes the
+  rules is an ancestor of the commit that first brings a labelling file into
+  the repository. The files are pinned by hash. A1's sheet is
+  `774e62bc...`, written into section 9 on the day it arrived and before
+  anything was compared with it, and A2's and A3's hashes go in the same way on
+  arrival; the handout all three worked from is pinned by the sha256 already
+  published in `experiments/README.md`, so "same instrument" is checkable as
+  well as "same rules". A reader who believes none of the prose can still check
+  the ordering: recompute the hash of each labelling file at the import commit
+  and match it against the section 9 entry that precedes that commit.
+- **Consequence, tracked separately:** the CI baseline is rebuilt once after
+  v2.0, one real-API `evalkit` run, and gets its own entry the way D-011
+  recorded the v1.1 rebuild. Nothing here changes `evalkit/**`, the raw data or
+  any published number; the recomputation on gold v2 is an analysis re-run and
+  belongs to the import pull request.

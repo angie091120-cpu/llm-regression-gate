@@ -634,6 +634,92 @@ this document is revised on the strength of these runs; the observation is
 recorded because the opposite -- a stability claim resting on five repeats --
 would be.
 
+**2026-09-19, the 70 category labels are being re-labelled blind by three
+people; this entry fixes the protocol before any returned sheet is compared
+with anything.** Section 2 records the decision step -- "labels decided by one
+human annotator (the author) in July 2026" -- and not the whole provenance. An
+agent drafted every case together with `draft_category`, `draft_summary` and
+`draft_difficulty`; on 2026-07-20 the author worked through a case-by-case
+review sheet, ruled on three groups of contested cases, and approved the
+remaining drafts as they stood. The file carries that shape: 69 of 70
+`expected_category` equal `draft_category`, the exception being `case-031`
+(`account` -> `billing`, unified with `case-052`); every `expected_summary` and
+every `expected_difficulty` equals its draft; and the dated rulings sit in the
+`notes` of the six cases they cover (`case-012`, `case-020`, `case-031`,
+`case-043`, `case-052`, `case-068`). Agent-drafted, author-approved labels are
+not an independent human annotation of these emails. `e4_kappa.csv`'s two
+`human-1 (gold)` rows (0.904658 against Haiku, 0.904632 against Sonnet)
+therefore measure a model against a label set that began as a model's draft --
+a sharper statement than section 8.3's shared blind spot, and not a
+human-model agreement rate. Three people now label the same 70 emails blind, so
+that a label set exists which no model drafted.
+
+**The three annotators.** A1 is the author, who labelled on 2026-09-19 from the
+same handout an outside annotator was already given --
+`experiments/data/annotator2_sheet.csv` at v1, sha256
+`c7abaf6fe77dc204549f31853ef348c1b370240737a0b1a55e4b758ea2a462ba`, with
+`experiments/data/annotator2_instructions_zh.md`. One limit on A1 belongs next
+to the number rather than after it: A1 read the 2026-07-20 review sheet two
+months earlier and ruled on the contested groups, so A1 is blind to the label
+column and not to the dataset. A2 and A3 are two people outside the project
+working from that same sheet and those same instructions, each alone, with no
+AI assistance and no discussion with each other or with A1. No annotator sees
+the shipped labels or any model output. A2 and A3 are expected back by
+2026-09-23.
+
+**Hashes are recorded on arrival, before comparison.** Each returned file's
+sha256 goes into this section when the file is received and before it is read
+against anything else. A1's file, received 2026-09-19:
+`774e62bc6c8337b188b87f249b66f1991196c6d616ef4d6d2e1cae1cde02cfbb`. The
+labelling files enter the repository in the import pull request; the pull
+request carrying this entry changes documentation only and opens no labelling
+file.
+
+**Gold v2 and the rule that produces it.** Categories only. Per case, the
+majority of A1, A2 and A3. Where all three differ, the author rules on that
+case, seeing the email text and the three human labels and no model output of
+any kind, and every adjudicated case id is listed. Two fallbacks, fixed now so
+that neither is chosen after a disagreement rate is known: if only A1 and A2
+have returned by 2026-09-27, the cases those two agree on are final and the
+cases they split on take the shipped v1.1 label as the third vote; if only A1
+has returned, gold stays at v1.1 and A1's sheet is reported as a reliability
+check and used for nothing else.
+
+**What is not re-labelled.** `expected_summary` and `expected_difficulty` stay
+as they are, agent-drafted and author-confirmed. The judge-dependent metrics --
+`passed` and the E2 pairwise arm -- are secondary under section 3 and keep
+scoring against those reference summaries. Re-labelling categories does not
+move them.
+
+**What gets reported.** Agreement: Cohen's kappa for each human pair, Fleiss'
+kappa and Krippendorff's alpha (nominal) across the three, each annotator
+against the shipped v1.1 labels, and each of the two model annotators against
+gold v2 and against each human annotator. Intervals are the case-level
+bootstrap section 6 already fixes, B = 10,000, seed 20260920. Results: the E0,
+E1 and E5 tables are recomputed on gold v2 and published beside their
+pre-registered v1.1 versions, with the differences listed table by table. That
+recomputation re-runs the analysis over the raw files that already exist -- no
+call is re-sent and no raw file changes. No case is dropped for having been
+re-labelled, the confirmatory family of section 4 and the multiplicity rules of
+sections 4 and 10.6 are untouched, and section 10.10's `case-043` leakage
+sensitivity analysis runs as written.
+
+**Dataset version.** A category change is a label change, so the envelope moves
+to `dataset_version: v2.0`. `labeled_by` stops carrying a personal name and
+carries the decision route for that case instead (`majority`, `adjudicated` or
+`fallback_v1.1`). The CI baseline is rebuilt once on v2.0 -- one real-API
+`evalkit` run, recorded in `docs/DECISIONS.md` as its own entry the way D-011
+recorded the v1.1 rebuild.
+
+**Ordering.** This entry is written and merged before any returned sheet is
+compared with the shipped labels or with another sheet. The evidence is the git
+history of this file, the arrival hash of each labelling file recorded above,
+and the handout hash already published in `experiments/README.md`, which pins
+that every annotator worked from one sheet. Sections 1 to 8 and section 10 are
+frozen text and are not edited; this entry is the correction to section 2's
+provenance sentence and to how section 8.3 is read. `docs/DECISIONS.md` D-012
+records the choice and the options it was chosen over.
+
 ## 10. E1 in full
 
 Written 2026-09-14, before the first degraded-prompt call. Section 4 fixes
