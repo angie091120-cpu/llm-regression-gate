@@ -1,0 +1,365 @@
+{
+  "reviewer_id": "A1",
+  "reviewer": "A1 (author)",
+  "reviewed_on": "2026-09-19",
+  "sheet_file": "a1_summary_review_2026-09-19.csv",
+  "sheet_sha256": "48b1d1d3c5becab83c6554920499eeced3a643774e77c6ffcb655d8f4d6a7759",
+  "dataset_version_on_disk": "v1.1",
+  "imported_at_utc": "2026-09-19T14:26:49+00:00",
+  "n": 70,
+  "n_ok": 70,
+  "n_edit": 0,
+  "edit_case_ids": [],
+  "verdicts": [
+    {
+      "case_id": "case-001",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-002",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-003",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-004",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-005",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-006",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-007",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-008",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-009",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-010",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-011",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-012",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-013",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-014",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-015",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-016",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-017",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-018",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-019",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-020",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-021",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-022",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-023",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-024",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-025",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-026",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-027",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-028",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-029",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-030",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-031",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-032",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-033",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-034",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-035",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-036",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-037",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-038",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-039",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-040",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-041",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-042",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-043",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-044",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-045",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-046",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-047",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-048",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-049",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-050",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-051",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-052",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-053",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-054",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-055",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-056",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-057",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-058",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-059",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-060",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-061",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-062",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-063",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-064",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-065",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-066",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-067",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-068",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-069",
+      "verdict": "ok",
+      "notes": ""
+    },
+    {
+      "case_id": "case-070",
+      "verdict": "ok",
+      "notes": ""
+    }
+  ]
+}

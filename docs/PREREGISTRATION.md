@@ -861,6 +861,66 @@ only after A1's category sheet was sealed is a statement: both fall on
 2026-09-19, and the commit sequence supports the order in which the two hashes
 were registered, not the order in which the author worked.
 
+**2026-09-19, the choices the entry above left to the import pull request, and
+what that pull request compared.** The entry above names three decisions as the
+import pull request's to make, and they are made as follows. The author's
+replacement summaries go in a file of their own,
+`experiments/data/summary_replacements_a1.json`, and not into a new
+`golden_dataset.json` field: a summary is the reference every recorded
+`judge_score` was measured against, and a competing version inside the frozen
+instrument invites a later reader to score against the wrong one.
+`e4_kappa.csv` keeps its name, so that the two `human-1 (gold)` rows published
+under it stay findable; the note added to those rows is added to every row that
+uses that rater, since it is the rater's provenance being disclosed and not a
+property of two particular pairings. The gold v2 recomputation is written
+beside the pre-registered tables rather than into them: each recomputed table
+is its own `*_gold_v2.csv` file, `gold_v2_diff.csv` carries the differences row
+by row and column by column, and no v1.1 file is opened for writing, which
+makes "the published v1.1 numbers did not move" checkable by hashing them
+instead of by reading a family column.
+
+Three further facts of the record. The returned files enter the repository
+byte for byte as `experiments/data/a1_category_labels_2026-09-19.csv` and
+`experiments/data/a1_summary_review_2026-09-19.csv`, whose sha256 values are
+the two registered above. `experiments/import_annotator2.py`, named in the
+entries of 2026-09-16 and 2026-09-17, is now
+`experiments/import_annotations.py` and takes the annotator as an argument;
+the file it wrote, `experiments/data/annotator2_labels.json`, is now
+`experiments/data/annotations/<annotator>_labels.json`. And the raters are
+named for their role in every table -- `A1 (author)`, `A2 (outside)`,
+`A3 (outside)` -- so that no table carries a person's name.
+
+What this pull request compared, all of it a quantity the entry above lists in
+advance: A1 against the shipped v1.1 labels, raw agreement 0.800 (56 of 70),
+Cohen's kappa 0.732, 95% bootstrap 0.600 to 0.846; and A1 against each model
+annotator, 0.675 against Haiku 4.5 and 0.675 against Sonnet 5. The summary
+review returns 70 `ok` and 0 `edit`, so its list of edited case ids is empty
+and no replacement summary exists to store. No gold v2 was produced or tried:
+with one sheet back, `experiments/gold_v2.py` declines before the deadline
+because the regime is not chosen yet, and declines at the deadline under
+fallback 2. Its rules were tested on invented sheets instead.
+
+Four situations the entry above does not decide, found while turning it into
+code, each of which makes `gold_v2.py` refuse and name the cases rather than
+choose. With all three sheets in, a case left with fewer than two valid votes:
+the two-vote rule says it covers per-case gaps "and nothing wider". Under
+fallback 1, a case left with only the *other* human's vote: the entry names the
+case left with only A1's. A roster in which A1 has not returned at all: both
+fallbacks are written around A1's sheet being present. And `labeled_at`, which
+the dataset paragraph does not mention: a case whose label a September panel
+decided would keep the `2026-07-20` its record carries, so
+`experiments/apply_gold_v2.py` leaves the field alone and warns on every run
+instead of picking a date. Any of the four takes its own dated line here.
+
+One published table changed for a reason that is not the re-labelling.
+`judge_rescore_stability.csv` and `judge_rescore_summary.csv` reserve columns
+for Fleiss' kappa and Krippendorff's alpha and left them empty with a note
+saying both were unimplemented. Both exist now, so that note had become false;
+it is replaced with the true reason those cells stay empty, which is that both
+are nominal-scale coefficients and the judge's repeated 1-5 scores are ordinal,
+and no ordinal agreement coefficient is specified anywhere in this study. No
+number in either table changed.
+
 ## 10. E1 in full
 
 Written 2026-09-14, before the first degraded-prompt call. Section 4 fixes

@@ -32,16 +32,28 @@ experiments/
   analyze.py       raw JSONL -> CSV tables + PNG figures + MANIFEST.json (no API)
   stats.py         estimators, standard library only, self-checked
   probes.py        four API-behaviour probes quoted in COST_CALIBRATION.md
-  import_annotator2.py
-                   validate and ingest the E4 second annotator sheet (no API,
-                   reads no gold label)
+  import_annotations.py
+                   validate and ingest one E4 annotator's returned sheet, A1,
+                   A2 or A3 (no API, reads no gold label). Was
+                   import_annotator2.py until 2026-09-19
+  import_summary_review.py
+                   validate and ingest the author's ok/edit review of the 70
+                   reference summaries (no API, reads no category label)
+  gold_v2.py       turn the returned sheets into gold v2 by the
+                   PREREGISTRATION section 9 rules, or refuse and say which
+                   rule is missing
+  apply_gold_v2.py write a sealed gold v2 into golden_dataset.json and move it
+                   to v2.0 (dry run unless --write; not run by the import PR)
   prompts/         experiment-only prompts (judge_pairwise_v1.yaml,
                    annotator_model_v1.yaml). Kept out of the repo's prompts/,
                    which is the classifier's version directory; analyze.py
                    hashes these into MANIFEST.json under "experiment_prompts"
   data/            E4 handout (annotator2_sheet.csv,
-                   annotator2_instructions_zh.md) and the returned labels
-                   (annotator2_labels.json), ingested by import_annotator2.py
+                   annotator2_instructions_zh.md), the returned sheets exactly
+                   as received (a1_*.csv, and A2's and A3's when they arrive),
+                   annotations/<id>_labels.json from import_annotations.py,
+                   the summary review, and gold_v2.json once the panel
+                   produces it
   results/
     raw/<exp_id>/<run_id>.jsonl        raw calls, committed
     raw/<exp_id>/<run_id>.meta.json    run provenance, committed
@@ -232,13 +244,17 @@ was not repeated to replace it.
 What E0 produced: `results/tables/rates_by_run.csv`,
 `rates_run_spread.csv`, `per_case_instability.csv`,
 `judge_rescore_stability.csv`, `judge_rescore_summary.csv` and
-`results/figures/noise_floor_vs_gate_thresholds.png`. Fleiss kappa and
-Krippendorff alpha are still `NotImplementedError` items, so the two columns
-reserved for them in the judge tables are empty and carry a note saying why --
-no approximation is written there.
+`results/figures/noise_floor_vs_gate_thresholds.png`. The `fleiss_kappa` and
+`krippendorff_alpha` columns of the two judge tables are still empty, and
+since 2026-09-19 for a different reason than before: both estimators now exist
+(they were built for the three-annotator panel described below), and both are
+nominal-scale coefficients, while these repeats are ordinal 1-5 judge scores.
+No ordinal agreement coefficient is specified anywhere in this study, so the
+cells stay empty and the note in the table says that rather than the older
+"not implemented".
 
-Still to run: nothing that costs an API call. E4's second human annotator is
-the one input this study is still waiting on, due 2026-09-23.
+Still to run: nothing that costs an API call. A2's and A3's sheets are the
+inputs this study is still waiting on, due 2026-09-23.
 
 ## What E1 found
 
@@ -517,14 +533,19 @@ Seed 20260916; sha256 of the sheet as handed out,
 70 rows land on their `golden_dataset.json` index by chance, which is what
 shuffling 70 items does and not a seed that failed to apply.
 
-Ingestion, once the sheet comes back:
+Ingestion, once a sheet comes back. Three people work from this one handout
+(`docs/PREREGISTRATION.md` section 9, entry dated 2026-09-19), so the importer
+takes the annotator as an argument and writes one file per annotator:
 
 ```bash
-python -m experiments.import_annotator2 --sheet ~/Downloads/annotator2_sheet.csv \
-    --annotated-on 2026-09-23
+python -m experiments.import_annotations --annotator A1 \
+    --sheet experiments/data/a1_category_labels_2026-09-19.csv \
+    --annotated-on 2026-09-19
+python -m experiments.import_annotations --annotator A2 \
+    --sheet ~/Downloads/annotator2_sheet.csv --annotated-on 2026-09-23
 ```
 
-`import_annotator2.py` validates the whole file before it writes anything: 70
+`import_annotations.py` validates the whole file before it writes anything: 70
 rows, every case id present exactly once, `your_label` one of the four values,
 and `email_body` matching either `golden_dataset.json` or the text the sheet
 was handed out with. Surrounding whitespace and capitalisation in the label are
@@ -541,20 +562,28 @@ the sheet as sent, reported as a warning and accepted; a `case-007` row
 carrying anything else is still an error. The rejection message names both
 faults it cannot tell apart -- an edited spreadsheet, or a dataset that moved
 without the importer being told -- and `--allow-body-drift` remains the escape
-hatch for the second. No flag is needed for the 2026-09-23 import.
+hatch for the second. It was the only warning A1's import printed on
+2026-09-19, and no flag was needed for it.
+
+One flag is new and is off by default: `--allow-missing-cases` accepts a sheet
+that is short a case and records which, because section 9's two-vote rule is
+written for exactly that -- "that sheet omitted the case, or its entry failed
+validation and no correction came back". Without it a short sheet is rejected
+whole and goes back to its annotator, which is the normal path.
 
 The importer reads `id` and `input_text` from the dataset and nothing else. No
 gold label is printed or compared at ingestion time, so the decision to accept
 or reject a returned sheet cannot be made after seeing how well it agrees.
 Agreement is computed later, by the analysis step.
 
-`experiments/data/annotator2_labels.json` holds `annotator: "human-2
-(non-member)"` (no name is recorded), `annotated_on`, `sheet_seed`,
-`sheet_sha256`, `sheet_dataset_version`, `sheet_dataset_version_basis`,
-`dataset_version_on_disk` and 70 `{case_id, label, notes}` records sorted by
-case id. The version fields are separate on purpose: the labels describe the
-text the annotator read, which is dataset v1, not whatever the dataset says on
-the day of the import.
+`experiments/data/annotations/<annotator>_labels.json` holds `annotator_id`
+(`A1`, `A2` or `A3`), `annotator` (the role, e.g. `A1 (author)` -- no name is
+recorded anywhere), `annotated_on`, `sheet_seed`, `sheet_sha256`,
+`sheet_dataset_version`, `sheet_dataset_version_basis`,
+`dataset_version_on_disk`, `missing_case_ids` and 70 `{case_id, label, notes}`
+records sorted by case id. The version fields are separate on purpose: the
+labels describe the text the annotator read, which is dataset v1, not whatever
+the dataset says on the day of the import.
 
 `sheet_dataset_version` is decided from the file before it is decided from any
 row, because only one case differs between v1 and v1.1 and a v1 sheet with
@@ -568,14 +597,28 @@ not fall back to the version on disk, because that is a guess in exactly the
 case where the guess is wrong. `sheet_dataset_version_basis` records which of
 those four it was.
 
-Status on 2026-09-16: sheet and instructions produced, annotation not started,
-due back 2026-09-23. The kappa estimator and its bootstrap interval are
-implemented and running against the model annotators below; the second human's
-rows appear in the same `e4_kappa.csv` the moment
-`experiments/data/annotator2_labels.json` exists, and that path was exercised
-on a synthetic labels file before this was written. The rank-flip check -- does
-the system's ranking change when the gold labels are swapped for another
-annotator's -- is still a `NotImplementedError` item in the table below.
+Status on 2026-09-19: A1, the author, returned a completed sheet, imported at
+sha256 `774e62bc6c8337b188b87f249b66f1991196c6d616ef4d6d2e1cae1cde02cfbb` and
+committed to `experiments/data/` exactly as received; A2 and A3 are due back
+2026-09-23. The kappa estimator and its bootstrap interval run against A1 and
+the model annotators today, and each further annotator's rows appear in the
+same `e4_kappa.csv` the moment `experiments/data/annotations/<id>_labels.json`
+exists. The three-rater rows -- Fleiss' kappa, Krippendorff's alpha and the
+exact three-way agreement rate -- are written only once all three human sheets
+are in, and are absent rather than approximated until then. The rank-flip check
+-- does the system's ranking change when the gold labels are swapped for
+another annotator's -- is still a `NotImplementedError` item in the table below.
+
+**A1 against the shipped v1.1 labels, the one agreement number this study can
+report before A2 and A3 return:** raw agreement 0.800 (56 of 70), Cohen's kappa
+0.732, 95% bootstrap 0.600 to 0.846 (B = 10,000, seed 20260920). It is one of
+the quantities section 9 lists in advance -- "each annotator against the
+shipped v1.1 labels" -- and it changes no label: gold v2 needs a majority, and
+`experiments/gold_v2.py` refuses to produce one from a single sheet. Read it
+next to the two model rows below, where the same shipped labels score 0.905.
+A1 is also the one annotator with a documented contamination: A1 read the
+2026-07-20 review sheet two months earlier and ruled on its contested groups,
+so A1 is blind to the label column and not to the dataset.
 
 ## What the E4 model annotators agreed with
 
@@ -591,11 +634,31 @@ a label already exists, one call per case. 140 calls, none failed.
 | human-1 (gold) | claude-haiku-4-5 | 70 | 0.929 | 0.905 | 0.809-0.981 |
 | human-1 (gold) | claude-sonnet-5 | 70 | 0.929 | 0.905 | 0.810-0.981 |
 | claude-haiku-4-5 | claude-sonnet-5 | 70 | 0.971 | 0.962 | 0.902-1.000 |
+| human-1 (gold) | A1 (author) | 70 | 0.800 | 0.732 | 0.600-0.846 |
+| A1 (author) | claude-haiku-4-5 | 70 | 0.757 | 0.675 | 0.536-0.805 |
+| A1 (author) | claude-sonnet-5 | 70 | 0.757 | 0.675 | 0.535-0.806 |
 
 Five disagreements out of 70 for each model, and **the two models agree with
-each other (0.962) more than either agrees with the human who wrote the
-labels**. The intervals overlap almost exactly, so the first two rows cannot be
-told apart at this n; the band names carried in the table are Landis & Koch
+each other (0.962) more than either agrees with `human-1 (gold)` -- which is
+not the independent human rater its name suggests.** Section 9's entry of
+2026-09-19 records what that label set is: an agent drafted every case, the
+author confirmed all 70 on 2026-07-20, and 69 of the 70 `expected_category`
+values equal `draft_category`. So the top two rows compare a model against
+labels a model drafted, and how much of the 0.905 that shared origin buys is
+not estimable from this design -- the model identity of the drafting agent is
+recorded nowhere here, so whether it was the same family as either rater is not
+recoverable. Every row using that rater carries a note pointing at the entry.
+
+The bottom three rows are the first measurement that does not have that
+problem. A1 relabelled the same 70 emails blind from the same handout, and
+scores 0.732 against the shipped labels and 0.675 against each model -- lower
+than the models score against each other and lower than either scores against
+the shipped labels. One blind human is not yet the check section 8.3 asks for,
+and A1 is the annotator with the documented contamination; A2 and A3 are what
+turns these three rows into a panel.
+
+The intervals overlap almost exactly among the first two rows, so they cannot
+be told apart at this n; the band names carried in the table are Landis & Koch
 (1977), a reading convention quoted with its source rather than a result. All
 of it is descriptive: `e4_kappa.csv` has no p-value column, because agreement
 with one annotator is an estimate and not a test.
@@ -616,17 +679,67 @@ the classifier itself (13/17 in the baseline arm).
 
 What this arm cannot say is in PREREGISTRATION section 8.3: kappa measures
 agreement, not correctness, and two raters agreeing at 0.9 with one annotator
-can also mean all three share a blind spot. The second human is the check on
-that, and is not in yet.
+can also mean all three share a blind spot. That caveat is harder to apply here
+than it looks, because the annotator in question is itself of model-drafted
+origin. Three people are labelling these 70 emails blind to close that: A1's
+sheet is in and is in the table above, A2's and A3's are due 2026-09-23, and
+gold v2 is their per-case majority.
+
+### How to read the three-rater rows, once they exist
+
+`e4_kappa.csv` gains three rows when all three human sheets are in, all three
+across the panel rather than between a pair:
+
+* **Fleiss' kappa** -- mean within-case agreement corrected by the pooled
+  category proportions. Cases one annotator skipped are dropped, and the count
+  is in `n_excluded`.
+* **Krippendorff's alpha (nominal)** -- the same question with missing values
+  kept: a case one annotator skipped still contributes the pairs that do exist.
+  It is in the table for that difference. Its `po` and `pe` columns are
+  1 - observed disagreement and 1 - expected disagreement, so the `kappa`
+  column still reads `(po - pe) / (1 - pe)`. No Landis & Koch band is quoted
+  for it, because that convention was published for kappa.
+* **Exact three-way agreement rate** -- the share of cases all three wrote the
+  same label on, chance agreement not removed. Its `kappa` column is empty
+  because the row is a raw rate, and the value is in `po`.
+
+All three carry a percentile bootstrap over cases, the same interval as every
+other row in the table, which reflects the sampling of these 70 emails and not
+annotator variance. Both new estimators reproduce a printed worked example in
+`python -m experiments.stats` -- Randolph (2005) for Fleiss, Krippendorff
+(2011) for alpha -- on the same terms as every other estimator here.
+
+### Gold v2, and what would make it
+
+`experiments/gold_v2.py` is section 9's rule set and nothing else: the per-case
+majority of the three, the author ruling on a three-way split from a sheet
+carrying the email and the human labels alone, the two-vote rule for a case one
+sheet is short, and the two fallbacks fixed in advance. Where the entry is
+silent the script refuses and names the cases, because a rule chosen after the
+sheets are open is what registering the protocol was for. Run today, with only
+A1 back, it declines twice over: before 2026-09-27 the regime is not chosen
+yet, and at the deadline with one sheet it is fallback 2, under which gold
+stays at v1.1 and A1's sheet is a reliability check used for nothing else.
+
+When a sealed gold v2 exists, `analyze.py` recomputes the E0, E1 and E5 tables
+on it and writes each beside its pre-registered version as `*_gold_v2.csv`,
+plus `gold_v2_diff.csv` listing what moved, row by row and column by column.
+The v1.1 files are not opened for writing, so "the published numbers did not
+change" is checkable by hashing them. Every gold v2 row carries the family
+`sensitivity_gold_v2`, takes no multiplicity correction, leaves `p_holm` and
+`p_bh` empty and says to read `p_raw`: the pre-registered v1.1 results stay the
+confirmatory result of section 4 and the recomputation is a sensitivity
+analysis. E2 is untouched -- it carries no `category_match`.
 
 ## What is implemented, and what is not
 
 Implemented and self-checked against published worked examples
-(`python -m experiments.stats`, 35/35, standard library only): Wilson
+(`python -m experiments.stats`, 44/44, standard library only): Wilson
 interval, Clopper-Pearson interval, exact binomial test, exact McNemar,
 Fisher exact for an unpaired 2x2, case-level cluster bootstrap, Holm,
 Benjamini-Hochberg, Cohen's kappa, Newcombe method 10 paired risk-difference
-interval, conditional power by case resampling.
+interval, conditional power by case resampling, Fleiss' kappa, Krippendorff's
+alpha (nominal).
 
 Fisher exact arrived with E5 on 2026-09-16, checked against Fisher's own
 lady-tasting-tea table (3, 1, 1, 3): two-sided 34/70 and one-sided 17/70, both
@@ -640,10 +753,14 @@ with case-clustered standard errors, which statsmodels fits. When statsmodels
 is absent, `e5_logit.csv` is written without coefficients and says so in the
 row, the same way a missing matplotlib costs the figures and not the tables.
 
-`--cross-check` adds seven comparisons against scipy. The analysis venv
-`~/.venvs/lrg-exp` has it -- Python 3.14.4 with scipy 1.18.1, numpy 2.5.3,
-statsmodels 0.15.0 and matplotlib 3.11.2, all cp314 wheels -- and the flag
-reports 42/42 there, exit 0. Tail of the 2026-09-16 run:
+`--cross-check` adds seven comparisons against scipy and, since 2026-09-19,
+three against statsmodels' `fleiss_kappa` -- the only second implementation of
+that coefficient on this machine, and a cross-check rather than the validation,
+which is the printed Randolph tables that run with no third party installed.
+The analysis venv `~/.venvs/lrg-exp` has both -- Python 3.14.4 with scipy
+1.18.1, numpy 2.5.3, statsmodels 0.15.0 and matplotlib 3.11.2, all cp314 wheels
+-- and the flag reports 54/54 there, exit 0. Tail of the 2026-09-16 run, whose
+scipy rows are unchanged:
 
 ```
 [PASS] scipy binomtest agrees  -> 0.34375000
@@ -653,14 +770,22 @@ reports 42/42 there, exit 0. Tail of the 2026-09-16 run:
 [PASS] scipy fisher_exact agrees on (4, 4, 60, 2)  -> 0.001036258
 [PASS] scipy fisher_exact agrees on (10, 9, 54, 0)  -> 0.000000952
 [PASS] scipy Wilson agrees  -> 0.490162,0.943318
-
-42/42 checks passed
 ```
 
-The repo's own `.venv` has no scipy, so the same flag there reports 35/36 with
-the scipy row marked FAIL. That is what a wrong interpreter looks
-like, not a property of this machine: the flag refuses to skip a comparison it
-could not make, so an absent cross-check cannot be read as a passing one.
+and the three rows added on 2026-09-19, after which the run ends `54/54 checks
+passed`:
+
+```
+[PASS] statsmodels fleiss_kappa agrees on Randolph table 1  -> 0.333333333
+[PASS] statsmodels fleiss_kappa agrees on Randolph table 2  -> -0.200000000
+[PASS] statsmodels fleiss_kappa agrees on a 4-category table  -> 0.176470588
+```
+
+The repo's own `.venv` has neither scipy nor statsmodels, so the same flag
+there reports 44/46 with both cross-check rows marked FAIL. That is what a
+wrong interpreter looks like, not a property of this machine: the flag refuses
+to skip a comparison it could not make, so an absent cross-check cannot be read
+as a passing one.
 `checks/experiments_acceptance.sh` prints the interpreter it picked and
 `has_scipy=yes/no` on its first line for the same reason.
 
@@ -685,8 +810,6 @@ approximation:
 
 | Item | Needed for | Due |
 |------|-----------|-----|
-| Fleiss kappa | E0 | 2026-09-19 |
-| Krippendorff alpha | E0 / E4 | 2026-09-24 |
 | Firth penalised likelihood | E5's separated baseline-arm model | open |
 | Rank-flip check: does the system ranking change under another annotator's labels | E4 | 2026-09-24 |
 
@@ -696,11 +819,13 @@ row in `e5_logit.csv` says not run and carries no approximate coefficients. It
 is listed with no due date because nothing in the study depends on it: the
 model that is reported is fitted on data where no level is constant.
 
-Closed since the last revision of this file: E2's run (all 560 cells, in two
-batches -- `runner_pairwise.py --resume-failed-from`), and E4's second-annotator
-ingestion and kappa matrix (`import_annotator2.py`, `table_e4_kappa`,
-`table_e4_confusions`), which now report the model raters and take the second
-human's labels as soon as the file exists. Closed on 2026-09-16 with E5: the
+Closed on 2026-09-19: Fleiss' kappa and Krippendorff's alpha, both against a
+printed worked example, for the three-annotator panel of PREREGISTRATION
+section 9. Closed earlier: E2's run (all 560 cells, in two batches --
+`runner_pairwise.py --resume-failed-from`), and E4's annotator ingestion and
+kappa matrix (`import_annotations.py`, `table_e4_kappa`,
+`table_e4_confusions`), which report the model raters and take each human's
+labels as soon as that annotator's file exists. Closed on 2026-09-16 with E5: the
 logistic model with case-clustered standard errors. Closed on 2026-09-15:
 "Newcombe method 10 checked against the paper's printed example", against
 Newcombe (1998) Table III as described above.

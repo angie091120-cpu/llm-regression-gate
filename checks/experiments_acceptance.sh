@@ -23,7 +23,13 @@ set -u
 cd "$(dirname "$0")/.."
 fail=0
 SEED="${EXP_SEED:-20260920}"
-EXPECTED_TESTS="${EXPECTED_TESTS:-46}"
+# 46 until 2026-09-19, when the blind re-labelling import added 37: the two new
+# agreement estimators against their printed examples (6), the two sheet
+# importers and their refusals (10), every branch of the gold v2 decision rule
+# on synthetic sheets (12), and the gold v2 re-grading, family labelling and
+# difference listing (9). C3 asserts the count as well as the result, so a test
+# file that stops being collected fails here instead of passing quietly.
+EXPECTED_TESTS="${EXPECTED_TESTS:-83}"
 
 step() { printf '\n== %s ==\n' "$1"; }
 ok()   { echo "$1 PASS"; }

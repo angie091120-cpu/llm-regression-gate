@@ -1,5 +1,6 @@
-# E4 second-annotator labels land here as annotator2_labels.json (70 cases,
-# category only, annotated without sight of the existing labels).
+# E4 annotation inputs and outputs. Three people label the same 70 emails
+# blind, from one handout; the protocol is the docs/PREREGISTRATION.md section
+# 9 entry dated 2026-09-19.
 #
 # annotator2_sheet.csv is the handout exactly as it was sent: built from dataset
 # v1 and deliberately not regenerated, because a regenerated sheet would make
@@ -10,3 +11,30 @@
 # here; why the residue is kept rather than scrubbed, and what moved instead, is
 # the docs/PREREGISTRATION.md section 9 entry headed "one email address in
 # golden_dataset.json belonged to a real company; the dataset moves to v1.1".
+# annotator2_instructions_zh.md is the instruction sheet all three worked from.
+#
+# Returned files are committed byte for byte, under names that carry the
+# annotator id and the date and no person's name. Each one's sha256 was
+# recorded in section 9 on the day it arrived and before it was read against
+# anything, so the ordering is checkable by hashing the file at the import
+# commit and matching it to the entry that precedes that commit:
+#
+#   a1_category_labels_2026-09-19.csv  774e62bc...02cfbb   70 category labels
+#   a1_summary_review_2026-09-19.csv   48b1d1d3...6a7759   70 ok/edit verdicts
+#
+# Derived, written by the importers and regenerable from the CSVs above:
+#
+#   annotations/<id>_labels.json    import_annotations.py --annotator A1|A2|A3
+#   summary_review_a1.json          import_summary_review.py: counts and the
+#                                   ids marked edit, which is all section 9
+#                                   lets that review report
+#   summary_replacements_a1.json    the proposed replacement summaries, held
+#                                   apart from golden_dataset.json on purpose:
+#                                   every recorded judge_score was measured
+#                                   against the summaries as shipped, and
+#                                   overwriting expected_summary takes its own
+#                                   dated entry and a judge re-run
+#
+# gold_v2.json and adjudication_queue.csv appear when gold_v2.py has three
+# sheets to work from. Neither exists yet, and gold_v2.py refuses to invent
+# one from a single sheet.

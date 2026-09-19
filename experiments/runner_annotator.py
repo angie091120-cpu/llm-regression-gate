@@ -8,13 +8,15 @@ judge, no summary, no few-shot examples. Everything the three share -- the
 .env loader, the price guard, the raw-row contract, the cost cap, the ledger --
 is imported from `runner.py` rather than copied.
 
-What E4 compares (docs/PREREGISTRATION.md sections 2 and 6): the gold labels in
-`golden_dataset.json`, decided by one human in July 2026, against a second
-human annotator (`experiments/data/annotator2_labels.json`, handled by
-`import_annotator2.py`) and against these model annotations. The three raters
-are given the same thing -- the email text, the four category definitions and
-the tie-break rule -- so that the kappa between any two of them is about the
-labelling task and not about who saw more.
+What E4 compares (docs/PREREGISTRATION.md sections 2 and 6, and the section 9
+entry dated 2026-09-19): the shipped v1.1 labels in `golden_dataset.json` --
+agent-drafted and author-confirmed in July 2026, which that entry records and
+this file no longer describes as one human's decision -- against the three
+blind human annotators (`experiments/data/annotations/*_labels.json`, handled
+by `import_annotations.py`), against gold v2 once they produce it, and against
+these model annotations. Every rater is given the same thing -- the email text,
+the four category definitions and the tie-break rule -- so that the kappa
+between any two of them is about the labelling task and not about who saw more.
 
     export PRICE_CLAUDE_SONNET_5_INPUT=2.00 PRICE_CLAUDE_SONNET_5_OUTPUT=10.00
 
