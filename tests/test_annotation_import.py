@@ -191,6 +191,43 @@ def test_blanking_a_sheet_with_no_notes_reproduces_it_byte_for_byte(tmp_path):
     assert out.read_bytes() == sheet.read_bytes()
 
 
+def test_blanking_refuses_a_sheet_carrying_a_fifth_column(tmp_path):
+    """Re-serialising would drop it, and a tool whose whole contract is "one
+    column changes" cannot be the thing that quietly removes another."""
+    sheet = write_csv(
+        tmp_path / "extra.csv",
+        ["case_id", "email_body", "your_label", "notes", "confidence"],
+        [["case-000", "email body 0", "billing", "", "high"]],
+    )
+    out = tmp_path / "copy.csv"
+    assert blank_sheet_notes.main(["--sheet", str(sheet), "--out", str(out)]) == 1
+    assert not out.exists()
+
+
+def test_blanking_refuses_a_sheet_whose_columns_are_reordered(tmp_path):
+    """The copy is written in handout order, so accepting a reordered sheet
+    would move columns as well as empty one."""
+    sheet = write_csv(
+        tmp_path / "reordered.csv",
+        ["case_id", "your_label", "email_body", "notes"],
+        [["case-000", "billing", "email body 0", ""]],
+    )
+    out = tmp_path / "copy.csv"
+    assert blank_sheet_notes.main(["--sheet", str(sheet), "--out", str(out)]) == 1
+    assert not out.exists()
+
+
+def test_blanking_refuses_a_sheet_missing_a_column(tmp_path):
+    sheet = write_csv(
+        tmp_path / "short.csv",
+        ["case_id", "email_body", "your_label"],
+        [["case-000", "email body 0", "billing"]],
+    )
+    out = tmp_path / "copy.csv"
+    assert blank_sheet_notes.main(["--sheet", str(sheet), "--out", str(out)]) == 1
+    assert not out.exists()
+
+
 def test_blanking_refuses_to_overwrite_without_force(tmp_path):
     sheet = category_sheet(tmp_path, ["billing", "technical", "account", "general"])
     out = tmp_path / "copy.csv"

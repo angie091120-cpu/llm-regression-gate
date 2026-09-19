@@ -589,7 +589,10 @@ section 9's dataset paragraph fixes), `annotated_on`, `sheet_seed`, `sheet_sha25
 `dataset_version_on_disk`, `missing_case_ids` and 70
 `{case_id, label, has_notes}` records sorted by case id -- whether the
 annotator wrote a note, not what it said, for the reason the next paragraph
-gives. The version fields are separate on purpose: the
+gives. On A2's and A3's files `has_notes` is `false` on every row whatever they
+wrote, because the file it is computed from is the notes-blanked copy; it
+carries information only on A1's, whose original is what is committed. The
+version fields are separate on purpose: the
 labels describe the text the annotator read, which is dataset v1, not whatever
 the dataset says on the day of the import.
 

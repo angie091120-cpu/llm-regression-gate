@@ -13,8 +13,10 @@
 # golden_dataset.json belonged to a real company; the dataset moves to v1.1".
 # annotator2_instructions_zh.md is the instruction sheet all three worked from.
 #
-# Returned files are committed byte for byte, under names that carry the
-# annotator id and the date and no person's name. Each one's sha256 was
+# Returned files are committed byte for byte -- A1's as received, A2's and
+# A3's as their notes-blanked copies, per the rule further down -- under names
+# that carry the annotator id and the date and no person's name. Each one's
+# sha256 was
 # recorded in section 9 on the day it arrived and before it was read against
 # anything, so the ordering is checkable by hashing the file at the import
 # commit and matching it to the entry that precedes that commit:

@@ -17,14 +17,27 @@ It does that and nothing else. It does not validate the sheet, does not read
 `golden_dataset.json`, and prints no label -- ingestion is
 `import_annotations.py`, and it runs after this, on the copy.
 
-`case_id`, `email_body` and `your_label` come through byte for byte in content,
-and the file is written the way the handout was written (utf-8-sig, CRLF, the
-four columns in order), which is the same shape `import_annotations.py`
-reconstructs when it checks a returned sheet against the handout. So the copy
-still passes the provenance check, and the residue category the section 9
-entries describe -- one byte-identical copy of every returned sheet -- is
-unchanged in what it contains: the sheet still carries `case-007`'s v1 wording,
-because the email column is untouched.
+What "nothing else touched" means here, exactly. Every value in `case_id`,
+`email_body` and `your_label` comes through unchanged, cell for cell, in the
+order the rows arrived. The file itself is re-serialised rather than edited in
+place: CSV UTF-8 with a BOM, CRLF line endings, minimal quoting, the four
+columns in handout order. So a sheet whose spreadsheet quoted a field that did
+not need quoting comes back with that field unquoted, and the copy is not
+guaranteed byte-identical to the original even where the notes were already
+empty -- that it was, for A1, is a measured fact about A1's file and not a
+property of this tool.
+
+The column set has to be exactly `case_id`, `email_body`, `your_label`,
+`notes`, in that order. A sheet carrying a fifth column is rejected and the
+columns are printed. Re-serialising would drop that column silently, and a
+tool whose whole contract is "one column changes" cannot be the thing that
+quietly removes another.
+
+Because the three other columns are preserved, the copy still reduces to the
+handout when `import_annotations.py` blanks the answer columns and rehashes, so
+it passes the provenance check; and the residue category the section 9 entries
+describe is unchanged in what it contains -- the sheet still carries
+`case-007`'s v1 wording, because the email column is untouched.
 """
 from __future__ import annotations
 
@@ -70,9 +83,16 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     fieldnames, rows = read_sheet(args.sheet)
-    missing = [name for name in REQUIRED_COLUMNS if name not in fieldnames]
-    if missing:
-        print(f"ERROR: {args.sheet} is missing column(s): {', '.join(missing)}", file=sys.stderr)
+    if fieldnames != list(REQUIRED_COLUMNS):
+        print(
+            f"ERROR: {args.sheet} does not have the handout's columns.\n"
+            f"  expected: {', '.join(REQUIRED_COLUMNS)}\n"
+            f"  found   : {', '.join(fieldnames) or 'nothing'}\n"
+            f"This step re-serialises the file, so any column outside that list would be "
+            f"dropped and any reordering would be silently applied. Fix the sheet, or hash "
+            f"and file it by hand and say so in PREREGISTRATION section 9",
+            file=sys.stderr,
+        )
         return 1
 
     original = args.sheet.read_bytes()

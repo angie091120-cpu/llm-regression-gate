@@ -38,7 +38,7 @@ def put(annotation_dir, annotator, labels):
         "sheet_sha256": "0" * 64,
         "missing_case_ids": [f"case-{i:03d}" for i in range(N_CASES) if i not in labels],
         "labels": [
-            {"case_id": f"case-{i:03d}", "label": label, "notes": ""}
+            {"case_id": f"case-{i:03d}", "label": label, "has_notes": False}
             for i, label in sorted(labels.items())
         ],
     }

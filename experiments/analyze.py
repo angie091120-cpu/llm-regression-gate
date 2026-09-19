@@ -198,8 +198,9 @@ E2_DEDUP_NOTE = (
 # docs/PREREGISTRATION.md section 9 (2026-09-19) discloses is an agent draft
 # the author confirmed rather than an independent human annotation; every row
 # that rater takes part in picks up a note pointing at the entry rather than a
-# new name, so the numbers published under it stay findable. That was the two
-# model rows when the entry was written and is five rows once A1 is in.
+# new name, so the numbers published under it stay findable. How many rows that
+# is depends on who has returned, which is why the condition is written as a
+# property of the pairing rather than as a count.
 E4_EXP_ID = "e4_annot"
 E4_TIER = "annotator"
 E4_CATEGORIES = ("billing", "technical", "account", "general")

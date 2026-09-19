@@ -66,7 +66,7 @@ def put(annotation_dir, annotator, labels):
     """labels: {case index: category}. A case left out is a case that
     annotator did not label."""
     records = [
-        {"case_id": f"case-{i:03d}", "label": label, "notes": ""}
+        {"case_id": f"case-{i:03d}", "label": label, "has_notes": False}
         for i, label in sorted(labels.items())
     ]
     payload = {
@@ -206,7 +206,18 @@ def test_the_adjudication_sheet_quotes_the_handout_and_not_the_dataset(
     assert "email body 0" not in queue.read_text(encoding="utf-8")
 
 
-def test_a_case_the_handout_has_no_text_for_is_refused(
+def split_panel(annotation_dir):
+    """A1, A2 and A3 all differing on case-000 and case-002, so both need a
+    ruling and both need an email body on the sheet."""
+    put(annotation_dir, "A1", {0: "billing", 1: "technical", 2: "billing",
+                               3: "general", 4: "account", 5: "technical"})
+    put(annotation_dir, "A2", {0: "technical", 1: "technical", 2: "technical",
+                               3: "general", 4: "account", 5: "technical"})
+    put(annotation_dir, "A3", {0: "account", 1: "technical", 2: "account",
+                               3: "general", 4: "billing", 5: "technical"})
+
+
+def test_a_case_the_handout_has_no_row_for_is_refused(
     dataset, annotation_dir, tmp_path, monkeypatch
 ):
     short = tmp_path / "short_handout.csv"
@@ -216,13 +227,49 @@ def test_a_case_the_handout_has_no_text_for_is_refused(
         encoding="utf-8",
     )
     monkeypatch.setattr(gold_v2, "HANDOUT_SHEET", short)
-    put(annotation_dir, "A1", {0: "billing", 1: "technical", 2: "billing",
-                               3: "general", 4: "account", 5: "technical"})
-    put(annotation_dir, "A2", {0: "technical", 1: "technical", 2: "technical",
-                               3: "general", 4: "account", 5: "technical"})
-    put(annotation_dir, "A3", {0: "account", 1: "technical", 2: "account",
-                               3: "general", 4: "billing", 5: "technical"})
+    split_panel(annotation_dir)
     with pytest.raises(SystemExit, match="handout has no email text"):
+        run(annotation_dir, tmp_path, "2026-09-24")
+
+
+def test_a_case_whose_handout_body_is_blank_counts_as_having_no_text(
+    dataset, annotation_dir, tmp_path, monkeypatch
+):
+    """A blank email on an adjudication row is a row that cannot be ruled on,
+    which is the same fault as a row that is not there."""
+    blank = tmp_path / "blank_body_handout.csv"
+    blank.write_text(
+        "case_id,email_body\ncase-000,\n"
+        + "".join(f"case-{i:03d},handout body {i}\n" for i in range(1, len(SHIPPED))),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(gold_v2, "HANDOUT_SHEET", blank)
+    split_panel(annotation_dir)
+    with pytest.raises(SystemExit, match="handout has no email text"):
+        run(annotation_dir, tmp_path, "2026-09-24")
+
+
+def test_a_handout_without_an_email_body_column_is_refused(
+    dataset, annotation_dir, tmp_path, monkeypatch
+):
+    wrong = tmp_path / "wrong_columns.csv"
+    wrong.write_text(
+        "case_id,body\n"
+        + "".join(f"case-{i:03d},handout body {i}\n" for i in range(len(SHIPPED))),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(gold_v2, "HANDOUT_SHEET", wrong)
+    split_panel(annotation_dir)
+    with pytest.raises(SystemExit, match="missing column"):
+        run(annotation_dir, tmp_path, "2026-09-24")
+
+
+def test_a_missing_handout_file_is_a_message_and_not_a_traceback(
+    dataset, annotation_dir, tmp_path, monkeypatch
+):
+    monkeypatch.setattr(gold_v2, "HANDOUT_SHEET", tmp_path / "nowhere.csv")
+    split_panel(annotation_dir)
+    with pytest.raises(SystemExit, match="the handout is not at"):
         run(annotation_dir, tmp_path, "2026-09-24")
 
 

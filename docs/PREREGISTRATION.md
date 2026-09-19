@@ -975,16 +975,16 @@ company's domain from `golden_dataset.json`, listed the files where that
 address necessarily survives, and closed with "Those seven are the whole
 residue". That sentence stops being true the moment a returned sheet enters
 the repository: every annotator worked from the v1 handout, so every returned
-sheet carries `case-007`'s v1 wording, and each one is committed byte for byte
-because its registered sha256 has to stay checkable against this section. A1's
-sheet made it eight. A2's and A3's will make it ten.
+sheet carries `case-007`'s v1 wording, and what is committed for each of them
+carries it too, because the email column is never rewritten.
 
 Which rule gives way is not a close call. The byte-for-byte commit and the
 hash registration are what make "the protocol preceded the comparison"
 auditable by a reader who believes none of the prose, and a sheet edited to
 scrub an address would hash to nothing anyone registered. So the residue is
-described by category from here on: the v1 handout, one byte-identical copy of
-every returned sheet, and the six raw JSONL files. No count is written down,
+described by category from here on: the v1 handout, the copy of each returned
+sheet that this section registers, and the six raw JSONL files. No count is
+written down,
 because the number grows by one each time an annotator returns and a number
 that goes stale silently is worse than no number.
 
@@ -1044,12 +1044,27 @@ Registering both is what keeps the arrival check honest. One hash of a file
 nobody else holds would make "the repository has the sheet as received" an
 assertion rather than something a reader can test; with both, the author can be
 asked to produce a file matching the first, and anyone can recompute the second
-against what is committed. Neither hash is a claim about the labels. The
-blanking touches one column: `case_id`, `email_body` and `your_label` come
-through unchanged, so the body check in `import_annotations.py`, the
-`sheet_dataset_version` decision and the residue category of the entry above --
-one byte-identical copy of every returned sheet, still carrying `case-007`'s
-v1 wording -- all read exactly as they did before.
+against what is committed. Neither hash is a claim about the labels.
+
+What the blanking preserves, stated at the precision the tool can back. Every
+value in `case_id`, `email_body` and `your_label` comes through unchanged, cell
+for cell, in the order the rows arrived; the column set must be exactly those
+three plus `notes`, and a sheet carrying a fifth column is rejected rather than
+re-serialised without it. The file is rewritten rather than edited in place, as
+CSV UTF-8 with a BOM, CRLF line endings, minimal quoting, columns in handout
+order -- so the copy is not guaranteed byte-identical to the original even
+where the notes were already empty, and where it was, for A1, that is a
+measured fact about that file. The email column being untouched is what keeps
+the body check in `import_annotations.py`, the `sheet_dataset_version`
+decision and the residue category of the entry above -- every returned sheet
+still carrying `case-007`'s v1 wording -- reading exactly as they did before.
+
+One sentence in the entry above is read differently from here on. It says a
+sheet edited to scrub an address "would hash to nothing anyone registered",
+which was true when one hash per sheet was registered. Under this entry the
+blanked copy's hash is registered too, so the sentence holds for edits nobody
+declared and not for this one: the blanking is declared in advance, applies to
+one named column, and its output is pinned by the second of the two hashes.
 
 A1's sheet is not reopened and its record does not change. A1's `notes` column
 came back empty on all 70 rows, so the blanking step is a no-op on it: run

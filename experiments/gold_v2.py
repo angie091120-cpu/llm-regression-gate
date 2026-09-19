@@ -146,14 +146,37 @@ def load_handout_texts(path: Path | None = None) -> dict[str, str]:
     annotator ever saw. An adjudication sheet quoting the dataset would ask the
     author to rule on a case the three humans labelled from different text.
     The difference is one email address, and one address is enough.
+
+    A row whose `email_body` is empty is left out, so it reaches the caller as
+    a case the handout has no text for rather than as a case with nothing to
+    read. The two are the same fault from the author's side of the sheet: an
+    adjudication row with a blank email is a row that cannot be ruled on.
     """
-    text = (path or HANDOUT_SHEET).read_text(encoding="utf-8-sig")
+    path = path or HANDOUT_SHEET
+    try:
+        text = path.read_text(encoding="utf-8-sig")
+    except FileNotFoundError:
+        raise SystemExit(
+            f"ERROR: the handout is not at {path}. The adjudication sheet quotes the text the "
+            f"annotators read, so there is nothing to build it from"
+        )
+    except UnicodeDecodeError as exc:
+        raise SystemExit(f"ERROR: {path} is not UTF-8 ({exc})")
     reader = csv.DictReader(text.splitlines(True))
-    return {
-        (row.get("case_id") or "").strip(BLANKS): row.get("email_body") or ""
-        for row in reader
-        if (row.get("case_id") or "").strip(BLANKS)
-    }
+    fieldnames = list(reader.fieldnames or [])
+    missing = [name for name in ("case_id", "email_body") if name not in fieldnames]
+    if missing:
+        raise SystemExit(
+            f"ERROR: {path} is missing column(s): {', '.join(missing)} "
+            f"(found: {', '.join(fieldnames) or 'nothing'})"
+        )
+    texts: dict[str, str] = {}
+    for row in reader:
+        case_id = (row.get("case_id") or "").strip(BLANKS)
+        body = row.get("email_body") or ""
+        if case_id and body.strip(BLANKS):
+            texts[case_id] = body
+    return texts
 
 
 def decide_regime(present: list[str], as_of: date) -> tuple[str, str]:
@@ -261,11 +284,12 @@ def write_adjudication_queue(
     """The restricted sheet. Columns: the case, its email, one column per human
     who labelled it. Nothing else -- see the module docstring and section 9."""
     pending = [d for d in decisions if d["needs_ruling"]]
-    absent = sorted(d["case_id"] for d in pending if d["case_id"] not in texts)
+    absent = sorted(d["case_id"] for d in pending if not texts.get(d["case_id"]))
     if absent:
         raise SystemExit(
             f"ERROR: the handout has no email text for {len(absent)} case(s) that need a "
-            f"ruling: {', '.join(absent)}. The sheet must quote what the annotators read"
+            f"ruling: {', '.join(absent)}. The sheet must quote what the annotators read, and "
+            f"a blank email is a row that cannot be ruled on"
         )
     header = [*QUEUE_HEADER_FIXED, *(f"label_{a}" for a in annotators_present)]
     path.parent.mkdir(parents=True, exist_ok=True)

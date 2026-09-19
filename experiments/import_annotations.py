@@ -88,12 +88,15 @@ EXPECTED_ROWS = 70
 # text of case-007 carries the third-party address `golden_dataset.json` took
 # out at v1.1. That address is not removed from the repository -- it is in the
 # handout, which is published unmodified because a regenerated handout would
-# describe a file no annotator saw, and in every returned sheet, which enters
-# byte for byte so that its registered sha256 stays checkable. Which files
-# hold it, and why that is the same privacy decision rather than a reversal of
-# it, is the PREREGISTRATION section 9 entry headed "the residue of the
-# 2026-09-17 address removal is described by category". A returned row matching
-# one of these hashes is the handout, not an edit.
+# describe a file no annotator saw, and in every returned sheet, because the
+# email column is never rewritten. What enters version control differs by
+# annotator: A1's sheet is the file as received, byte for byte; A2's and A3's
+# are the notes-blanked copies `blank_sheet_notes.py` makes, byte for byte,
+# with the originals held by the author. Both are hash-registered. Which files
+# hold the address, and why that is the same privacy decision rather than a
+# reversal of it, is the PREREGISTRATION section 9 entry headed "the residue of
+# the 2026-09-17 address removal is described by category". A returned row
+# matching one of these hashes is the handout, not an edit.
 SHEET_DATASET_VERSION = "v1"
 HANDOUT_BODY_SHA256 = {
     "case-007": "8b20b51d6f57bb239a4d0a2ade6e148028a7a5dddc95da9f5fa936e43b20a79d",
