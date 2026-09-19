@@ -364,6 +364,26 @@ gold v2 is their majority, and the protocol is registered before any comparison
   which trades an agent-shaped label set for a memory-shaped one, leaves
   annotator variance unestimable (section 8's closing line), and gives a single
   slip no majority to absorb it.
+- **The reference summaries are reviewed case by case; they are not rewritten
+  in place:** from 2026-09-19 the author marks each of the 70
+  `expected_summary` values `ok` or `edit` against four criteria -- faithful to
+  the email, covers the main request, neutral tone, language matching the
+  email's -- on a sheet carrying the email and the summary and no category
+  label, begun only after A1's category sheet was sealed and hashed so that
+  neither round can revise the other. What the review may do is fixed in the
+  same section 9 entry before its counts are read: it reports the `ok` and
+  `edit` totals and the ids marked `edit`, and it moves no recorded
+  judge-dependent number. `passed`, the E0 judge-isolation arm and E2 keep
+  scoring against the summaries as shipped, and no call is re-sent. Rewrites
+  land in a new field or a separate file at the import pull request and do not
+  overwrite `expected_summary`; overwriting it takes its own dated entry and a
+  re-run of the judge. **Rejected:** editing `expected_summary` in place as the
+  edits are found -- it would move the reference that every recorded judge score
+  was measured against, and a score whose reference changed afterwards can be
+  read as neither a pass nor a regression. Also rejected: skipping the review
+  because the summaries are secondary -- the judge tier scores against them on
+  every call and E2 compares them pairwise, so an unchecked reference is not a
+  small gap.
 - **How "protocol before comparison" is auditable:** the pull request carrying
   this entry changes two documentation files and nothing else -- it opens no
   labelling file and imports none -- so the ordering is a property of the git

@@ -685,11 +685,40 @@ cases they split on take the shipped v1.1 label as the third vote; if only A1
 has returned, gold stays at v1.1 and A1's sheet is reported as a reliability
 check and used for nothing else.
 
-**What is not re-labelled.** `expected_summary` and `expected_difficulty` stay
-as they are, agent-drafted and author-confirmed. The judge-dependent metrics --
+**What is not re-labelled.** `expected_difficulty` stays as it is,
+agent-drafted and author-confirmed. `expected_summary` is not rewritten either,
+and it is reviewed case by case in the second pass described next, whose result
+is reported under the limits fixed there. The judge-dependent metrics --
 `passed` and the E2 pairwise arm -- are secondary under section 3 and keep
-scoring against those reference summaries. Re-labelling categories does not
-move them.
+scoring against the reference summaries as they stand. Re-labelling categories
+does not move them.
+
+**A second pass over the reference summaries, and what it may be used for.**
+From 2026-09-19 the author reviews all 70 `expected_summary` values one case at
+a time, marking each `ok` or `edit` and writing out a replacement wherever the
+mark is `edit`. A summary passes on four criteria: it is faithful to the email
+and adds no fact the email does not carry; it covers the main request; its tone
+is neutral; and its language matches the email's, which means Chinese for the
+code-switched cases. The review sheet carries the full email text and the
+current reference summary, and no category label of any kind. This pass starts
+only after A1's category sheet is sealed and its sha256 recorded above, and the
+two rounds do not feed back into each other: nothing seen while reviewing
+summaries may change a category label already submitted, and the category sheet
+is not consulted while reviewing summaries. The review file's sha256 goes into
+this section when it arrives and before its contents are read.
+
+What the review may be used for, fixed here before its counts are known: this
+study reports how many cases are marked `ok`, how many are marked `edit`, and
+the ids of the cases marked `edit`. Every judge-dependent result already
+recorded -- `passed` in E0 and E1, the E0 judge-isolation arm, and all of E2 --
+stands unrecomputed, stays relative to the reference summaries as shipped, and
+triggers no fresh API call. Those scores were produced against the summaries
+that exist, and scoring them again against rewritten ones is a different
+measurement rather than a correction to this one. The author's replacements are
+stored in a new dataset field or in a file of their own -- which of the two is a
+choice for the import pull request -- and do not overwrite `expected_summary`.
+Overwriting it, and re-running the judge against the result, takes a further
+dated entry in this section and is reported as the new measurement it would be.
 
 **What gets reported.** Agreement: Cohen's kappa for each human pair, Fleiss'
 kappa and Krippendorff's alpha (nominal) across the three, each annotator
