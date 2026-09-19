@@ -129,15 +129,29 @@ def test_two_valid_votes_agreeing_decide_and_two_differing_go_to_the_author(
     assert decided["case-001"] == (None, "adjudicated")      # two differing
 
 
-def test_fewer_than_two_valid_votes_is_a_protocol_gap_and_writes_nothing(
+def test_fewer_than_two_valid_votes_keeps_the_shipped_label(
     dataset, annotation_dir, tmp_path
 ):
-    put(annotation_dir, "A1", {i: SHIPPED[i] for i in range(len(SHIPPED))})
+    """Ruled 2026-09-19: one human vote does not move a shipped label, and
+    letting it through would let a single annotator decide gold on that case."""
+    put(annotation_dir, "A1", {0: "technical", **{i: SHIPPED[i] for i in range(1, len(SHIPPED))}})
+    put(annotation_dir, "A2", {i: SHIPPED[i] for i in range(1, len(SHIPPED))})
+    put(annotation_dir, "A3", {i: SHIPPED[i] for i in range(1, len(SHIPPED))})
+    code, out, queue = run(annotation_dir, tmp_path, "2026-09-24")
+    assert code == 0
+    # case-000 has one valid vote, and A1 wrote something other than the
+    # shipped label on it: the shipped label wins anyway.
+    assert routes(out)["case-000"] == (SHIPPED[0], "fallback_v1.1")
+    assert "case-000" not in queue.read_text(encoding="utf-8")
+
+
+def test_no_valid_vote_at_all_keeps_the_shipped_label(dataset, annotation_dir, tmp_path):
+    put(annotation_dir, "A1", {i: SHIPPED[i] for i in range(1, len(SHIPPED))})
     put(annotation_dir, "A2", {i: SHIPPED[i] for i in range(1, len(SHIPPED))})
     put(annotation_dir, "A3", {i: SHIPPED[i] for i in range(1, len(SHIPPED))})
     code, out, _ = run(annotation_dir, tmp_path, "2026-09-24")
-    assert code == 4
-    assert not out.exists()
+    assert code == 0
+    assert routes(out)["case-000"] == (SHIPPED[0], "fallback_v1.1")
 
 
 # -- the adjudication sheet -------------------------------------------------
@@ -219,16 +233,16 @@ def test_fallback_1_keeps_the_shipped_label_where_only_a1_voted(
     assert routes(out)["case-000"] == (SHIPPED[0], "fallback_v1.1")
 
 
-def test_fallback_1_with_only_the_other_humans_vote_is_a_protocol_gap(
+def test_fallback_1_with_only_the_other_humans_vote_also_keeps_the_shipped_label(
     dataset, annotation_dir, tmp_path
 ):
-    """Section 9 names the case where fallback 1 leaves only A1's vote and no
-    other, so the mirror image is not decided anywhere."""
+    """Section 9 named only the case where fallback 1 leaves A1's vote alone.
+    The mirror image was ruled on 2026-09-19 and gets the same answer."""
     put(annotation_dir, "A1", {i: "billing" for i in range(1, len(SHIPPED))})
     put(annotation_dir, "A2", {i: "billing" for i in range(len(SHIPPED))})
     code, out, _ = run(annotation_dir, tmp_path, "2026-09-27")
-    assert code == 4
-    assert not out.exists()
+    assert code == 0
+    assert routes(out)["case-000"] == (SHIPPED[0], "fallback_v1.1")
 
 
 # -- fallback 2, waiting, and late arrivals ---------------------------------
@@ -264,9 +278,37 @@ def test_a_sheet_arriving_after_a_fallback_does_not_reopen_gold_v2(
     assert out.read_text(encoding="utf-8") == before
 
 
-def test_a_roster_without_a1_is_a_protocol_gap(dataset, annotation_dir, tmp_path):
+def test_a_roster_without_a1_is_the_one_remaining_protocol_gap(
+    dataset, annotation_dir, tmp_path
+):
+    """It cannot happen -- A1 returned on 2026-09-19 and the sheet hash is in
+    section 9 -- and the script refuses rather than guessing at it anyway."""
     put(annotation_dir, "A2", {i: "billing" for i in range(len(SHIPPED))})
     put(annotation_dir, "A3", {i: "billing" for i in range(len(SHIPPED))})
     code, out, _ = run(annotation_dir, tmp_path, "2026-09-27")
     assert code == 4
     assert not out.exists()
+
+
+def test_a_sealed_gold_records_the_date_it_was_sealed_on(
+    dataset, annotation_dir, tmp_path
+):
+    put(annotation_dir, "A1", {i: "billing" for i in range(len(SHIPPED))})
+    put(annotation_dir, "A2", {i: "billing" for i in range(len(SHIPPED))})
+    put(annotation_dir, "A3", {i: "billing" for i in range(len(SHIPPED))})
+    code, out, _ = run(annotation_dir, tmp_path, "2026-09-24")
+    assert code == 0
+    payload = json.loads(out.read_text(encoding="utf-8"))
+    assert payload["sealed"] is True
+    assert payload["sealed_on"] == "2026-09-24"
+
+
+def test_an_unsealed_gold_has_no_seal_date(dataset, annotation_dir, tmp_path):
+    put(annotation_dir, "A1", {0: "billing", **{i: "billing" for i in range(1, len(SHIPPED))}})
+    put(annotation_dir, "A2", {0: "technical", **{i: "billing" for i in range(1, len(SHIPPED))}})
+    put(annotation_dir, "A3", {0: "account", **{i: "billing" for i in range(1, len(SHIPPED))}})
+    code, out, _ = run(annotation_dir, tmp_path, "2026-09-24")
+    assert code == 0
+    payload = json.loads(out.read_text(encoding="utf-8"))
+    assert payload["sealed"] is False
+    assert payload["sealed_on"] is None

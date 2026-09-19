@@ -9,18 +9,19 @@ refuses to write an unsealed gold.
     python -m experiments.apply_gold_v2                 # dry run, prints the diff
     python -m experiments.apply_gold_v2 --write         # writes the dataset
 
-What moves, from section 9's "Dataset version" paragraph, and nothing else:
+What moves, from section 9's "Dataset version" paragraph and the rulings entry
+of 2026-09-19, and nothing else:
 
     expected_category   the gold v2 label
     labeled_by          the decision route: majority, adjudicated, fallback_v1.1
+    labeled_at          the date gold v2 was sealed, on the cases the panel
+                        decided (`majority`, `adjudicated`); unchanged on the
+                        cases that kept their shipped label (`fallback_v1.1`),
+                        because nothing about those labels was decided again
     dataset_version     v1.1 -> v2.0
 
 `expected_summary`, `expected_difficulty`, every `draft_*` field, `notes`,
-`label_status` and `input_text` are left exactly as they are. `labeled_at` is
-also left as it is, and that is a gap rather than a decision: section 9 lists
-the three fields above and does not say what a case's `labeled_at` should read
-once a September panel has decided a label the entry dated 2026-07-20 records.
-This prints that as a warning every run rather than picking a date.
+`label_status` and `input_text` are left exactly as they are.
 
 Two consequences this script does not carry out, both recorded in section 9:
 `tests/test_golden_dataset.py` asserts the version and moves with it, and the
@@ -40,12 +41,11 @@ from experiments.import_annotations import DATASET, VALID_LABELS
 
 NEW_DATASET_VERSION = "v2.0"
 EXPECTED_FROM_VERSION = "v1.1"
-LABELED_AT_WARNING = (
-    "labeled_at is left at its current value on every case. Section 9's dataset paragraph "
-    "names expected_category, labeled_by and dataset_version and says nothing about the date "
-    "a case was labelled, so this script does not invent one. If the dates should move, that "
-    "takes its own dated line in section 9"
-)
+# Ruled 2026-09-19: the two routes where a panel decided the label take the
+# date gold v2 was sealed; the route that kept the shipped label keeps the
+# shipped date, because no one decided that label again.
+ROUTES_TAKING_THE_SEAL_DATE = ("majority", "adjudicated")
+ROUTE_KEEPING_ITS_DATE = "fallback_v1.1"
 
 
 def load_gold(path: Path) -> dict:
@@ -77,6 +77,16 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 1
 
+    sealed_on = gold.get("sealed_on")
+    if not sealed_on:
+        print(
+            f"REFUSED: {args.gold} says it is sealed but carries no sealed_on date. "
+            f"labeled_at on every majority and adjudicated case is that date, so there is "
+            f"nothing to write it from",
+            file=sys.stderr,
+        )
+        return 1
+
     labels = {entry["case_id"]: entry for entry in gold["labels"]}
     dataset = json.loads(args.dataset.read_text(encoding="utf-8"))
     on_disk = dataset.get("dataset_version")
@@ -103,6 +113,9 @@ def main(argv: list[str] | None = None) -> int:
     for case_id, entry in sorted(labels.items()):
         if entry.get("label") not in VALID_LABELS:
             problems.append(f"{case_id}: gold v2 label {entry.get('label')!r} is not a category")
+        route = entry.get("labeled_by")
+        if route not in (*ROUTES_TAKING_THE_SEAL_DATE, ROUTE_KEEPING_ITS_DATE):
+            problems.append(f"{case_id}: decision route {route!r} is not one this step knows")
     if problems:
         print(f"REFUSED: {len(problems)} problem(s).", file=sys.stderr)
         for problem in problems:
@@ -110,21 +123,26 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     changed: list[tuple[str, str, str]] = []
+    redated = 0
     for case in cases:
         entry = labels[case["id"]]
         if case["expected_category"] != entry["label"]:
             changed.append((case["id"], case["expected_category"], entry["label"]))
         case["expected_category"] = entry["label"]
         case["labeled_by"] = entry["labeled_by"]
+        if entry["labeled_by"] in ROUTES_TAKING_THE_SEAL_DATE:
+            case["labeled_at"] = sealed_on
+            redated += 1
     dataset["dataset_version"] = NEW_DATASET_VERSION
 
     print(f"gold v2 regime: {gold['regime']} ({gold['regime_basis']})")
-    print(f"routes: " + ", ".join(f"{route}={n}" for route, n in sorted(Counter(
+    print("routes: " + ", ".join(f"{route}={n}" for route, n in sorted(Counter(
         entry["labeled_by"] for entry in labels.values()).items())))
     print(f"{len(changed)} of {len(cases)} expected_category values change:")
     for case_id, before, after in changed:
         print(f"  {case_id}: {before} -> {after}")
-    print(f"WARNING: {LABELED_AT_WARNING}", file=sys.stderr)
+    print(f"labeled_at -> {sealed_on} on {redated} case(s) the panel decided; "
+          f"{len(cases) - redated} kept the shipped label and its original date")
 
     if not args.write:
         print(f"\nDry run. Nothing written. Re-run with --write to move {args.dataset.name} "

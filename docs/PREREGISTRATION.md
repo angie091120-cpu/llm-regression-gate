@@ -921,6 +921,54 @@ are nominal-scale coefficients and the judge's repeated 1-5 scores are ordinal,
 and no ordinal agreement coefficient is specified anywhere in this study. No
 number in either table changed.
 
+**2026-09-19, the four situations the 2026-09-19 entries left undecided.** The
+entry above lists four cases the protocol does not decide, found while turning
+it into code. They are decided here, still before A2's and A3's sheets have
+arrived and therefore still before any comparison those rules could be chosen
+to favour. Two of them get one rule, because they are the same situation seen
+from two sides.
+
+**A case left with fewer than two valid human votes keeps its shipped v1.1
+label and is recorded as `fallback_v1.1`.** That covers the case with all three
+sheets in and one valid vote or none, and it covers fallback 1 with only the
+other human's vote, only A1's -- which the entry above already decided this way
+-- or neither. The reason is the same in every one of them: a single human vote
+is not enough to overturn the shipped label, and treating it as enough would
+let one annotator decide gold on that case, which is the outcome a panel of
+three exists to prevent. Those cases stay individually identifiable by their
+`fallback_v1.1` route, as every other case on that route does, so any reading of
+gold v2 can be redone with them excluded.
+
+**A roster in which A1 has not returned needs no rule, and the tool keeps
+refusing it.** The situation cannot arise: A1 returned on 2026-09-19 and the
+sheet's sha256 is recorded above, in this section, on the day it arrived. Both
+fallbacks are written around A1's sheet being present, and inventing a third
+fallback for a roster that is already ruled out would be a rule with no
+referent. `experiments/gold_v2.py` exits 4 and says what is missing if it ever
+meets one, which is the behaviour that belongs to a situation with no rule
+rather than to a situation with a bad rule.
+
+**`labeled_at` moves on the cases a panel decided and stays where it is on the
+cases that kept their shipped label.** A case routed `majority` or
+`adjudicated` takes the date gold v2 was sealed; a case routed `fallback_v1.1`
+keeps the `2026-07-20` it already carries, because nothing about that label was
+decided again and dating it to September would say a panel had looked at it.
+The seal date is the `--as-of` date of the run that finished gold v2, recorded
+in `gold_v2.json` as `sealed_on`, so re-running on the same inputs and the same
+date reproduces the file. `experiments/apply_gold_v2.py` writes this rather
+than warning about it, and refuses a sealed gold that carries no `sealed_on`.
+
+Two smaller things this entry also records. `--allow-missing-cases` was added
+to `experiments/import_annotations.py`, off by default: without a way to admit
+a sheet that is short a case and record which, the two-vote rule above could
+never apply to anything, because the importer rejects a short sheet whole and
+sends it back for correction. And the note change in
+`judge_rescore_stability.csv` and `judge_rescore_summary.csv` described in the
+entry above touches the `note` column and nothing else -- it was verified by
+re-running the analysis at the commit before the change and after it and
+comparing the two table sets cell by cell, which found the `note` column and no
+other column differing, and 17 of the 20 tables byte-identical.
+
 ## 10. E1 in full
 
 Written 2026-09-14, before the first degraded-prompt call. Section 4 fixes

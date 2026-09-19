@@ -15,7 +15,7 @@ Exit codes, because "wrote nothing" has two very different meanings here:
     0  gold v2 written (sealed if no case is waiting on a ruling)
     1  bad input -- a file that will not parse, a ruling for a case not queued
     3  no gold v2 by rule: fallback 2, or the deadline has not passed yet
-    4  a situation section 9 does not cover; the case ids are printed
+    4  a situation section 9 does not cover; what is missing is printed
 
 What it reads: `experiments/data/annotations/*_labels.json`, written by
 `import_annotations.py`, and `golden_dataset.json`. What it never puts in front
@@ -29,20 +29,30 @@ The rules, in the order they are applied:
   all three different goes to the author (`adjudicated`). Two valid votes --
   that sheet omitted the case, or its entry failed validation and no
   correction came back -- two agreeing decide it, two differing go to the same
-  author on the same restricted sheet. Fewer than two valid votes is wider
-  than the rule covers, and is a `ProtocolGap`.
+  author on the same restricted sheet. Fewer than two valid votes: the case
+  keeps its v1.1 label (`fallback_v1.1`).
 * Fallback 1, in force if by the deadline the returns are A1 plus exactly one
   of A2 and A3. Where those two humans agree the case is final (`majority`);
   where they split, the shipped v1.1 label is a third vote and breaks the tie
   (`fallback_v1.1`); where A1, the other human and v1.1 are all different the
-  author rules (`adjudicated`). A case left with only A1's vote keeps its v1.1
-  label (`fallback_v1.1`). A case left with only the *other* human's vote is
-  not a case section 9 names, and is a `ProtocolGap`.
+  author rules (`adjudicated`). A case left with fewer than two valid human
+  votes -- only A1's, only the other human's, or neither -- keeps its v1.1
+  label (`fallback_v1.1`).
 * Fallback 2, if by the deadline only A1 has returned: gold stays at v1.1 and
   A1's sheet is a reliability check used for nothing else. Nothing is written.
 * A sheet that arrives after a fallback has been applied does not reopen gold
   v2. If the output file already records a fallback and more annotators are
   present now, this refuses to overwrite it.
+
+The two "fewer than two valid votes" rules were added to section 9 on
+2026-09-19 in the entry headed "the four situations the 2026-09-19 entries left
+undecided", before any sheet but A1's had arrived. One rule covers both: a
+single human vote is not enough to move a shipped label, and letting it
+through would let one annotator decide gold on that case, which is what a
+panel of three exists to prevent. The one refusal left is a roster in which A1
+has not returned, which cannot arise -- A1 returned on 2026-09-19 and the sheet
+hash is in section 9 -- and which the script keeps refusing rather than
+guessing at.
 """
 from __future__ import annotations
 
@@ -81,7 +91,14 @@ RULING_COLUMNS = ("case_id", "ruling")
 
 
 class ProtocolGap(Exception):
-    """A case the section 9 entry does not decide. Never resolved in code."""
+    """Something the section 9 entries do not decide. Never resolved in code."""
+
+
+def _refuse(gap: ProtocolGap) -> int:
+    print(f"PROTOCOL GAP: {gap}", file=sys.stderr)
+    print("Nothing written. This takes a dated line in PREREGISTRATION section 9, not a "
+          "decision here.", file=sys.stderr)
+    return 4
 
 
 def load_annotations(annotation_dir: Path) -> dict[str, dict]:
@@ -155,6 +172,8 @@ def decide_case(
     voters = sorted(votes)
     values = [votes[a] for a in voters]
 
+    del case_id, voters  # named for the signature's sake; no branch below needs them
+
     if regime == REGIME_MAIN:
         if len(values) == 3:
             counts = Counter(values)
@@ -166,10 +185,8 @@ def decide_case(
             if values[0] == values[1]:
                 return values[0], ROUTE_MAJORITY, False
             return None, ROUTE_ADJUDICATED, True
-        raise ProtocolGap(
-            f"{case_id}: {len(values)} valid vote(s) with all three sheets in. Section 9's "
-            f"two-vote rule 'covers per-case gaps and nothing wider'"
-        )
+        # Fewer than two valid votes. Ruled 2026-09-19: keep the v1.1 label.
+        return shipped_label, ROUTE_FALLBACK, False
 
     # Fallback 1.
     if len(values) == 2:
@@ -178,35 +195,33 @@ def decide_case(
         if shipped_label in values:
             return shipped_label, ROUTE_FALLBACK, False
         return None, ROUTE_ADJUDICATED, True
-    if voters == ["A1"]:
-        return shipped_label, ROUTE_FALLBACK, False
-    raise ProtocolGap(
-        f"{case_id}: under fallback 1 the only valid vote is {voters[0] if voters else 'none'}. "
-        f"Section 9 names the case where 'fallback 1 leaves a case with only A1's vote valid' "
-        f"and no other"
-    )
+    # Only A1's vote (section 9's original rule), only the other human's, or
+    # neither. Same answer for all three since the 2026-09-19 rulings entry:
+    # one human vote does not move a shipped label.
+    return shipped_label, ROUTE_FALLBACK, False
 
 
 def build_decisions(
     annotations: dict[str, dict],
     regime: str,
     shipped: dict[str, str],
-) -> tuple[list[dict], list[str]]:
-    """Returns (per-case decisions, ProtocolGap messages)."""
+) -> list[dict]:
+    """One decision per case, in case id order.
+
+    Every per-case situation has a rule since the 2026-09-19 rulings entry, so
+    nothing here raises `ProtocolGap` today. The exception is still caught
+    around this call in `main`, so that a rule gap introduced later exits 4
+    with a message rather than as a traceback.
+    """
     per_annotator = {annotator: labels_by_case(payload) for annotator, payload in annotations.items()}
     decisions: list[dict] = []
-    gaps: list[str] = []
     for case_id in sorted(shipped):
         votes = {
             annotator: labels[case_id]
             for annotator, labels in per_annotator.items()
             if case_id in labels
         }
-        try:
-            label, route, needs_ruling = decide_case(case_id, votes, regime, shipped[case_id])
-        except ProtocolGap as gap:
-            gaps.append(str(gap))
-            continue
+        label, route, needs_ruling = decide_case(case_id, votes, regime, shipped[case_id])
         decisions.append({
             "case_id": case_id,
             "label": label,
@@ -214,7 +229,7 @@ def build_decisions(
             "votes": dict(sorted(votes.items())),
             "needs_ruling": needs_ruling,
         })
-    return decisions, gaps
+    return decisions
 
 
 def write_adjudication_queue(
@@ -328,10 +343,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         regime, why = decide_regime(present, as_of)
     except ProtocolGap as gap:
-        print(f"PROTOCOL GAP: {gap}", file=sys.stderr)
-        print("Nothing written. This takes a dated line in PREREGISTRATION section 9, not a "
-              "decision here.", file=sys.stderr)
-        return 4
+        return _refuse(gap)
 
     if not regime:
         print(f"NOT YET: {why}")
@@ -346,13 +358,10 @@ def main(argv: list[str] | None = None) -> int:
 
     refuse_reopen(args.out, present)
     shipped, texts = load_shipped()
-    decisions, gaps = build_decisions(annotations, regime, shipped)
-    if gaps:
-        print(f"PROTOCOL GAP: {len(gaps)} case(s) section 9 does not decide. Nothing written.",
-              file=sys.stderr)
-        for gap in gaps:
-            print(f"  - {gap}", file=sys.stderr)
-        return 4
+    try:
+        decisions = build_decisions(annotations, regime, shipped)
+    except ProtocolGap as gap:
+        return _refuse(gap)
 
     pending = write_adjudication_queue(args.queue_out, decisions, texts, present)
     queued = {d["case_id"] for d in decisions if d["needs_ruling"]}
@@ -385,6 +394,12 @@ def main(argv: list[str] | None = None) -> int:
         "adjudicated_case_ids": sorted(d["case_id"] for d in decisions if d["needs_ruling"]),
         "route_counts": dict(sorted(Counter(d["labeled_by"] for d in decisions).items())),
         "sealed": not unresolved,
+        # The date gold v2 was finished, which is the run's --as-of and not a
+        # wall clock, so re-running on the same inputs and the same date
+        # reproduces the file. `apply_gold_v2.py` writes it into `labeled_at`
+        # on the cases a panel decided; the cases that kept their shipped label
+        # keep their original date.
+        "sealed_on": as_of.isoformat() if not unresolved else None,
         "labels": decisions,
     }
     args.out.parent.mkdir(parents=True, exist_ok=True)

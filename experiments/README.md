@@ -714,8 +714,10 @@ annotator variance. Both new estimators reproduce a printed worked example in
 `experiments/gold_v2.py` is section 9's rule set and nothing else: the per-case
 majority of the three, the author ruling on a three-way split from a sheet
 carrying the email and the human labels alone, the two-vote rule for a case one
-sheet is short, and the two fallbacks fixed in advance. Where the entry is
-silent the script refuses and names the cases, because a rule chosen after the
+sheet is short, the shipped label kept on a case left with fewer than two valid
+human votes, and the two fallbacks fixed in advance. One refusal is left -- a
+roster in which A1 has not returned, which cannot arise -- and the script exits
+4 and says what is missing rather than guessing, because a rule chosen after the
 sheets are open is what registering the protocol was for. Run today, with only
 A1 back, it declines twice over: before 2026-09-27 the regime is not chosen
 yet, and at the deadline with one sheet it is fallback 2, under which gold

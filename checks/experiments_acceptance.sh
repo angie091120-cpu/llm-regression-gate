@@ -23,13 +23,14 @@ set -u
 cd "$(dirname "$0")/.."
 fail=0
 SEED="${EXP_SEED:-20260920}"
-# 46 until 2026-09-19, when the blind re-labelling import added 37: the two new
+# 46 until 2026-09-19, when the blind re-labelling import added 47: the two new
 # agreement estimators against their printed examples (6), the two sheet
 # importers and their refusals (10), every branch of the gold v2 decision rule
-# on synthetic sheets (12), and the gold v2 re-grading, family labelling and
-# difference listing (9). C3 asserts the count as well as the result, so a test
-# file that stops being collected fails here instead of passing quietly.
-EXPECTED_TESTS="${EXPECTED_TESTS:-83}"
+# on synthetic sheets (15), the gold v2 re-grading, family labelling and
+# difference listing (9), and the dataset write-out including the labeled_at
+# rule (7). C3 asserts the count as well as the result, so a test file that
+# stops being collected fails here instead of passing quietly.
+EXPECTED_TESTS="${EXPECTED_TESTS:-93}"
 
 step() { printf '\n== %s ==\n' "$1"; }
 ok()   { echo "$1 PASS"; }
