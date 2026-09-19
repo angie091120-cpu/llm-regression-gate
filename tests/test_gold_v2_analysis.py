@@ -11,6 +11,8 @@ from __future__ import annotations
 
 import json
 
+import pytest
+
 from experiments import analyze
 
 
@@ -131,6 +133,54 @@ def test_the_difference_table_says_so_when_a_table_did_not_move():
     _, rows = analyze.table_gold_v2_diff([("rates_by_run.csv", (header, rows_in), (header, list(rows_in)))])
     assert len(rows) == 1
     assert rows[0][5] == "identical under gold v2"
+
+
+E1_MAIN_HEADER = [
+    "metric", "baseline_version", "candidate_version", "n", "p_raw", "p_holm", "p_bh",
+    "rd", "family", "method", "note",
+]
+
+
+def e1_row(metric, version, family, p_raw, rd, p_holm="", p_bh=""):
+    return [metric, "v1", version, 70, p_raw, p_holm, p_bh, rd, family, "mcnemar_exact", ""]
+
+
+def test_the_difference_table_keys_a_family_column_table_before_it_is_relabelled():
+    """`family` is part of the key for e1_main.csv and e5_strata.csv. Keyed
+    after `relabel_gold_v2` has flattened it to one constant, no gold v2 row
+    would ever match its v1.1 counterpart -- and e1_main's confirmatory and
+    leak-sensitivity rows would collapse onto the same key."""
+    v1 = [
+        e1_row("category_match", "v2a", "confirmatory_holm", 0.04, -0.10, p_holm="0.16"),
+        e1_row("category_match", "v2a", "sensitivity_drop_leaked_case", 0.20, -0.05),
+    ]
+    v2 = [
+        e1_row("category_match", "v2a", "confirmatory_holm", 0.01, -0.14, p_holm="0.04"),
+        e1_row("category_match", "v2a", "sensitivity_drop_leaked_case", 0.20, -0.05),
+    ]
+    _, rows = analyze.table_gold_v2_diff([("e1_main.csv", (E1_MAIN_HEADER, v1), (E1_MAIN_HEADER, v2))])
+    # The two rows are told apart, and only the confirmatory one moved.
+    assert not any(row[2] == "(whole row)" for row in rows)
+    keys = {row[1] for row in rows}
+    assert len(keys) == 1 and "family=confirmatory_holm" in keys.pop()
+    moved = {(row[2], row[3], row[4]) for row in rows}
+    assert ("p_raw", "0.040000", "0.010000") in moved
+    assert ("rd", "-0.100000", "-0.140000") in moved
+    # p_holm is excluded: the published gold v2 table leaves it empty by rule.
+    assert all(row[2] != "p_holm" for row in rows)
+
+
+def test_the_difference_table_refuses_to_diff_a_table_whose_key_repeats():
+    """A repeated key means a dict would keep the last row and drop the rest,
+    and the listing would be quietly wrong about a table it says it compared."""
+    duplicated = [
+        e1_row("category_match", "v2a", "confirmatory_holm", 0.04, -0.10),
+        e1_row("category_match", "v2a", "confirmatory_holm", 0.20, -0.05),
+    ]
+    with pytest.raises(SystemExit, match="does not identify a row uniquely"):
+        analyze.table_gold_v2_diff([
+            ("e1_main.csv", (E1_MAIN_HEADER, duplicated), (E1_MAIN_HEADER, duplicated))
+        ])
 
 
 def test_the_difference_table_reports_a_row_that_exists_in_only_one_version():

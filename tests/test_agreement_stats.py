@@ -49,6 +49,14 @@ def test_fleiss_reproduces_randolph_table_2_and_is_not_the_free_marginal_value()
     assert result["kappa"] != pytest.approx(example["free_marginal_both_tables"], abs=0.02)
 
 
+def test_fleiss_is_undefined_when_every_item_is_one_category_and_says_so():
+    """Expected agreement is then 1 and kappa is 0/0. It matters in a bootstrap
+    over a small panel, where a resample can land every case in one category:
+    the estimator raises instead of returning a number the caller would print."""
+    with pytest.raises(ValueError, match="expected agreement is 1.0"):
+        fleiss_kappa([["a", "a", "a"], ["a", "a", "a"]])
+
+
 def test_fleiss_refuses_an_unequal_number_of_raters():
     """Several generalisations exist for unequal n and this study has validated
     none of them, so the caller drops the incomplete items and says how many."""

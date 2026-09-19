@@ -577,8 +577,10 @@ or reject a returned sheet cannot be made after seeing how well it agrees.
 Agreement is computed later, by the analysis step.
 
 `experiments/data/annotations/<annotator>_labels.json` holds `annotator_id`
-(`A1`, `A2` or `A3`), `annotator` (the role, e.g. `A1 (author)` -- no name is
-recorded anywhere), `annotated_on`, `sheet_seed`, `sheet_sha256`,
+(`A1`, `A2` or `A3`), `annotator` (the role, e.g. `A1 (author)` -- this file
+records no person's name, and neither does any results table; `labeled_by` in
+`golden_dataset.json` still carries one, and stops at the move to v2.0, which
+section 9's dataset paragraph fixes), `annotated_on`, `sheet_seed`, `sheet_sha256`,
 `sheet_dataset_version`, `sheet_dataset_version_basis`,
 `dataset_version_on_disk`, `missing_case_ids` and 70 `{case_id, label, notes}`
 records sorted by case id. The version fields are separate on purpose: the

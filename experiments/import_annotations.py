@@ -76,10 +76,16 @@ EXPECTED_ROWS = 70
 
 # The dataset version `experiments/data/annotator2_sheet.csv` was built from,
 # and the sha256 of every email text that has moved since. Hashes rather than
-# the strings themselves: the v1 text of case-007 is the third-party address
-# this repository took out (PREREGISTRATION section 9) and it is not
-# reintroduced here. A returned row matching one of these is the handout, not
-# an edit.
+# the strings themselves, so that this module does not add another copy: the v1
+# text of case-007 carries the third-party address `golden_dataset.json` took
+# out at v1.1. That address is not removed from the repository -- it is in the
+# handout, which is published unmodified because a regenerated handout would
+# describe a file no annotator saw, and in every returned sheet, which enters
+# byte for byte so that its registered sha256 stays checkable. Which files
+# hold it, and why that is the same privacy decision rather than a reversal of
+# it, is the PREREGISTRATION section 9 entry headed "the residue of the
+# 2026-09-17 address removal is described by category". A returned row matching
+# one of these hashes is the handout, not an edit.
 SHEET_DATASET_VERSION = "v1"
 HANDOUT_BODY_SHA256 = {
     "case-007": "8b20b51d6f57bb239a4d0a2ade6e148028a7a5dddc95da9f5fa936e43b20a79d",

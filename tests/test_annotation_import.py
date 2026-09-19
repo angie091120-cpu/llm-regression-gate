@@ -174,8 +174,11 @@ def test_summary_review_reports_counts_and_the_edited_ids(dataset, tmp_path):
     assert (payload["n_ok"], payload["n_edit"]) == (3, 1)
     assert payload["edit_case_ids"] == ["case-001"]
     # The replacement text is held apart from the verdicts, and apart from the
-    # dataset: section 9 forbids overwriting expected_summary here.
+    # dataset: section 9 forbids overwriting expected_summary here. The
+    # reviewer's free-text notes stay out of the committed JSON too -- only
+    # whether a case carries one.
     assert "replacement" not in json.dumps(payload["verdicts"])
+    assert set(payload["verdicts"][0]) == {"case_id", "verdict", "has_notes"}
     stored = json.loads(replacements.read_text(encoding="utf-8"))
     assert stored["replacements"] == [{"case_id": "case-001", "replacement": "a better summary"}]
     assert json.loads(dataset.read_text(encoding="utf-8"))["cases"][1]["expected_summary"] == "summary 1"

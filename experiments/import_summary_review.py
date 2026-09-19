@@ -27,6 +27,12 @@ the dataset's own version bump exists for the category re-labelling. Writing
 further dated entry in section 9 and is a new measurement rather than a
 correction to this one.
 
+The reviewer's free-text `notes` column stays out of the committed JSON, which
+records only whether a case carries one. The returned sheet itself is committed
+byte for byte, because its sha256 is registered and has to stay checkable, so
+this is not a claim that the text is nowhere -- it is a choice not to publish
+unreviewed working notes a second time in a file built for reading.
+
 Validation is fail-whole, like the category importer: every problem is
 reported, nothing is written, exit code 1. A row whose `reference_summary` does
 not match the dataset is fatal -- a verdict on an edited summary is a verdict
@@ -234,10 +240,18 @@ def main(argv: list[str] | None = None) -> int:
         "n_ok": sum(1 for record in records if record["verdict"] == "ok"),
         "n_edit": len(edits),
         "edit_case_ids": edits,
-        # Per-case verdicts, no replacement text: the counts and the edit ids
-        # are what section 9 permits this review to report.
+        # Per-case verdicts, and neither the replacement text nor the
+        # reviewer's free-text notes. The verdicts carry no more than the
+        # `edit` id list section 9 permits, since one is derivable from the
+        # other. The notes column is different: it is unreviewed prose written
+        # for the reviewer's own use, in a repository that is public, so only
+        # whether a case carries one is recorded here.
         "verdicts": [
-            {"case_id": record["case_id"], "verdict": record["verdict"], "notes": record["notes"]}
+            {
+                "case_id": record["case_id"],
+                "verdict": record["verdict"],
+                "has_notes": bool(record["notes"]),
+            }
             for record in sorted(records, key=lambda r: r["case_id"])
         ],
     }

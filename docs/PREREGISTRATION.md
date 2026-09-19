@@ -969,6 +969,61 @@ re-running the analysis at the commit before the change and after it and
 comparing the two table sets cell by cell, which found the `note` column and no
 other column differing, and 17 of the 20 tables byte-identical.
 
+**2026-09-19, the residue of the 2026-09-17 address removal is described by
+category, not by a count.** The entry of 2026-09-17 removed a third-party
+company's domain from `golden_dataset.json`, listed the files where that
+address necessarily survives, and closed with "Those seven are the whole
+residue". That sentence stops being true the moment a returned sheet enters
+the repository: every annotator worked from the v1 handout, so every returned
+sheet carries `case-007`'s v1 wording, and each one is committed byte for byte
+because its registered sha256 has to stay checkable against this section. A1's
+sheet made it eight. A2's and A3's will make it ten.
+
+Which rule gives way is not a close call. The byte-for-byte commit and the
+hash registration are what make "the protocol preceded the comparison"
+auditable by a reader who believes none of the prose, and a sheet edited to
+scrub an address would hash to nothing anyone registered. So the residue is
+described by category from here on: the v1 handout, one byte-identical copy of
+every returned sheet, and the six raw JSONL files. No count is written down,
+because the number grows by one each time an annotator returns and a number
+that goes stale silently is worse than no number.
+
+This is the same privacy decision as 2026-09-17 rather than a reversal of it.
+That decision was about the label set the eval runs against and about what a
+reader lands on first; the address was already public in the handout that
+entry chose not to regenerate, for the reason it gives -- a regenerated handout
+would describe a file no annotator ever saw. Nothing here puts the address
+anywhere it was not already. `experiments/import_annotations.py` says which
+files hold it and why, in place of the sentence it used to carry claiming the
+text was not reintroduced.
+
+**The adjudication sheet quotes the handout, not the dataset.** Where the
+author rules on a case, the email text on that sheet is `case-007`'s and every
+other case's text as it stands in `experiments/data/annotator2_sheet.csv`,
+which is what the three annotators read. `golden_dataset.json` has moved since
+the handout, so a sheet built from it would ask the author to rule on wording
+no annotator saw. The difference is one email address in one case, and one
+address is enough for the rule to be worth writing down.
+`experiments/gold_v2.py` reads the handout and refuses if it has no text for a
+case that needs a ruling.
+
+**The summary review's per-case verdicts are published; the reviewer's
+free-text notes are not.** `summary_review_a1.json` carries `ok` or `edit` per
+case, which is no more than the `edit` id list this section already permits,
+since either is derivable from the other. It carries `has_notes` in place of
+the notes column: those are unreviewed working notes in a public repository,
+and the review is permitted to report counts and ids. The returned sheet is
+still committed byte for byte with its notes column intact, because its sha256
+is registered above -- this is a choice not to republish the text in a file
+built for reading, not a claim that it is nowhere.
+
+One correction to the entry above. It says
+`experiments/apply_gold_v2.py` "leaves the field alone and warns on every run
+instead of picking a date", describing `labeled_at`. The entry after it decided
+that rule, and the script now writes the seal date on the `majority` and
+`adjudicated` cases. The earlier sentence records what the program did between
+those two entries and does not describe it now.
+
 ## 10. E1 in full
 
 Written 2026-09-14, before the first degraded-prompt call. Section 4 fixes

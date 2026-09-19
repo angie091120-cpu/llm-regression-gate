@@ -41,6 +41,17 @@ def dataset(tmp_path, monkeypatch):
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
     monkeypatch.setattr(gold_v2, "DATASET", path)
     monkeypatch.setattr(import_annotations, "DATASET", path)
+
+    # The handout the annotators read, deliberately worded differently from the
+    # dataset so a sheet quoting the wrong source is visible. In the real study
+    # the difference is one email address in case-007.
+    handout = tmp_path / "handout.csv"
+    handout.write_text(
+        "case_id,email_body\n"
+        + "".join(f"case-{i:03d},handout body {i}\n" for i in range(len(SHIPPED))),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(gold_v2, "HANDOUT_SHEET", handout)
     return path
 
 
@@ -174,6 +185,45 @@ def test_the_adjudication_sheet_carries_the_email_and_the_human_labels_and_nothi
     # from no second place: nothing outside those five columns exists.
     assert rows[0]["label_A1"] == "billing"
     assert "draft" not in queue.read_text(encoding="utf-8")
+
+
+def test_the_adjudication_sheet_quotes_the_handout_and_not_the_dataset(
+    dataset, annotation_dir, tmp_path
+):
+    """The author rules on what the three annotators read. The handout was
+    built at dataset v1 and case-007's email changed at v1.1, so quoting the
+    dataset would show a wording no annotator saw."""
+    put(annotation_dir, "A1", {0: "billing", 1: "technical", 2: "billing",
+                               3: "general", 4: "account", 5: "technical"})
+    put(annotation_dir, "A2", {0: "technical", 1: "technical", 2: "technical",
+                               3: "general", 4: "account", 5: "technical"})
+    put(annotation_dir, "A3", {0: "account", 1: "technical", 2: "account",
+                               3: "general", 4: "billing", 5: "technical"})
+    code, _, queue = run(annotation_dir, tmp_path, "2026-09-24")
+    assert code == 0
+    rows = list(csv.DictReader(queue.read_text(encoding="utf-8").splitlines(True)))
+    assert rows[0]["email_body"] == "handout body 0"
+    assert "email body 0" not in queue.read_text(encoding="utf-8")
+
+
+def test_a_case_the_handout_has_no_text_for_is_refused(
+    dataset, annotation_dir, tmp_path, monkeypatch
+):
+    short = tmp_path / "short_handout.csv"
+    short.write_text(
+        "case_id,email_body\n"
+        + "".join(f"case-{i:03d},handout body {i}\n" for i in range(1, len(SHIPPED))),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(gold_v2, "HANDOUT_SHEET", short)
+    put(annotation_dir, "A1", {0: "billing", 1: "technical", 2: "billing",
+                               3: "general", 4: "account", 5: "technical"})
+    put(annotation_dir, "A2", {0: "technical", 1: "technical", 2: "technical",
+                               3: "general", 4: "account", 5: "technical"})
+    put(annotation_dir, "A3", {0: "account", 1: "technical", 2: "account",
+                               3: "general", 4: "billing", 5: "technical"})
+    with pytest.raises(SystemExit, match="handout has no email text"):
+        run(annotation_dir, tmp_path, "2026-09-24")
 
 
 def test_rulings_seal_the_gold_and_a_ruling_for_an_unqueued_case_is_refused(

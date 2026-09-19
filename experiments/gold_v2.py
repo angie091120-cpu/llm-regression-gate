@@ -18,10 +18,14 @@ Exit codes, because "wrote nothing" has two very different meanings here:
     4  a situation section 9 does not cover; what is missing is printed
 
 What it reads: `experiments/data/annotations/*_labels.json`, written by
-`import_annotations.py`, and `golden_dataset.json`. What it never puts in front
-of the author: the adjudication sheet carries the email text and that case's
-human labels, and not `draft_category`, not the 2026-07-20 rulings in `notes`,
-not the shipped v1.1 label, and no model output from any arm of this study.
+`import_annotations.py`; `golden_dataset.json`, for the shipped label fallback
+1 uses as a third vote; and `experiments/data/annotator2_sheet.csv`, for the
+email text. The email comes from the handout and not from the dataset because
+the handout is what the annotators read, and the two differ on `case-007`.
+What it never puts in front of the author: the adjudication sheet carries the
+email text and that case's human labels, and not `draft_category`, not the
+2026-07-20 rulings in `notes`, not the shipped v1.1 label, and no model output
+from any arm of this study.
 
 The rules, in the order they are applied:
 
@@ -77,6 +81,7 @@ from experiments.import_annotations import (
 DATA_DIR = REPO_ROOT / "experiments" / "data"
 DEFAULT_OUT = DATA_DIR / "gold_v2.json"
 DEFAULT_QUEUE = DATA_DIR / "adjudication_queue.csv"
+HANDOUT_SHEET = DATA_DIR / "annotator2_sheet.csv"
 # Section 9: "if by 2026-09-27 the returns are A1 plus exactly one of A2 and A3".
 RETURN_DEADLINE = date(2026, 9, 27)
 ROSTER = ("A1", "A2", "A3")
@@ -122,18 +127,33 @@ def labels_by_case(payload: dict) -> dict[str, str]:
     return {record["case_id"]: record["label"] for record in payload["labels"]}
 
 
-def load_shipped() -> tuple[dict[str, str], dict[str, str]]:
-    """(case id -> v1.1 expected_category, case id -> input_text).
+def load_shipped() -> dict[str, str]:
+    """case id -> the v1.1 `expected_category`.
 
     The shipped label is read for one purpose only: fallback 1's third vote.
     It never reaches the adjudication sheet.
     """
     with DATASET.open(encoding="utf-8") as handle:
         cases = json.load(handle)["cases"]
-    return (
-        {case["id"]: case["expected_category"] for case in cases},
-        {case["id"]: case["input_text"] for case in cases},
-    )
+    return {case["id"]: case["expected_category"] for case in cases}
+
+
+def load_handout_texts(path: Path | None = None) -> dict[str, str]:
+    """case id -> the email text as the annotators read it, from the handout.
+
+    Not from `golden_dataset.json`. The handout was built at dataset v1 and
+    `case-007`'s email changed at v1.1, so the dataset now holds a wording no
+    annotator ever saw. An adjudication sheet quoting the dataset would ask the
+    author to rule on a case the three humans labelled from different text.
+    The difference is one email address, and one address is enough.
+    """
+    text = (path or HANDOUT_SHEET).read_text(encoding="utf-8-sig")
+    reader = csv.DictReader(text.splitlines(True))
+    return {
+        (row.get("case_id") or "").strip(BLANKS): row.get("email_body") or ""
+        for row in reader
+        if (row.get("case_id") or "").strip(BLANKS)
+    }
 
 
 def decide_regime(present: list[str], as_of: date) -> tuple[str, str]:
@@ -241,6 +261,12 @@ def write_adjudication_queue(
     """The restricted sheet. Columns: the case, its email, one column per human
     who labelled it. Nothing else -- see the module docstring and section 9."""
     pending = [d for d in decisions if d["needs_ruling"]]
+    absent = sorted(d["case_id"] for d in pending if d["case_id"] not in texts)
+    if absent:
+        raise SystemExit(
+            f"ERROR: the handout has no email text for {len(absent)} case(s) that need a "
+            f"ruling: {', '.join(absent)}. The sheet must quote what the annotators read"
+        )
     header = [*QUEUE_HEADER_FIXED, *(f"label_{a}" for a in annotators_present)]
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8", newline="\n") as handle:
@@ -357,7 +383,8 @@ def main(argv: list[str] | None = None) -> int:
         return 3
 
     refuse_reopen(args.out, present)
-    shipped, texts = load_shipped()
+    shipped = load_shipped()
+    texts = load_handout_texts()
     try:
         decisions = build_decisions(annotations, regime, shipped)
     except ProtocolGap as gap:

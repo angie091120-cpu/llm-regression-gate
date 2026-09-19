@@ -196,9 +196,10 @@ E2_DEDUP_NOTE = (
 #
 # `human-1 (gold)` keeps its name. It is the v1.1 label set, which
 # docs/PREREGISTRATION.md section 9 (2026-09-19) discloses is an agent draft
-# the author confirmed rather than an independent human annotation; the two
-# rows carrying that name pick up a note pointing at the entry rather than a
-# new name, so the numbers published under it stay findable.
+# the author confirmed rather than an independent human annotation; every row
+# that rater takes part in picks up a note pointing at the entry rather than a
+# new name, so the numbers published under it stay findable. That was the two
+# model rows when the entry was written and is five rows once A1 is in.
 E4_EXP_ID = "e4_annot"
 E4_TIER = "annotator"
 E4_CATEGORIES = ("billing", "technical", "account", "general")
@@ -207,11 +208,19 @@ E4_ANNOTATION_DIR = ANNOTATION_DIR
 E4_GOLD_V2_RATER = "gold v2 (panel)"
 E4_PANEL_RATER_B = "(3 human raters)"
 E4_FAMILY = "descriptive"
+# Two clauses, because they are true of different rows. The provenance is true
+# of every pairing that rater takes part in. The second sentence is true only
+# where the other rater is a model: a human annotator measured against these
+# labels is not "a model against labels a model drafted", and putting that
+# sentence on A1's row would describe A1 as a model.
 E4_GOLD_PROVENANCE_NOTE = (
     "human-1 (gold) is the shipped v1.1 label set, agent-drafted and author-confirmed on "
-    "2026-07-20, not an independent human annotation; this row therefore measures a model "
-    "against labels a model drafted, and how much of the agreement that shared origin buys is "
-    "not estimable from this design (docs/PREREGISTRATION.md section 9, entry dated 2026-09-19)"
+    "2026-07-20, not an independent human annotation (docs/PREREGISTRATION.md section 9, "
+    "entry dated 2026-09-19)"
+)
+E4_GOLD_VS_MODEL_NOTE = (
+    "this row therefore measures a model against labels a model drafted, and how much of the "
+    "agreement that shared origin buys is not estimable from this design"
 )
 E4_PANEL_NOTE = (
     "across the three human annotators of docs/PREREGISTRATION.md section 9; interval is the "
@@ -290,10 +299,19 @@ GOLD_V2_DIFF_KEYS = {
     "e5_strata.csv": ("exp_id", "prompt_version", "metric", "stratum_kind", "stratum", "family"),
     "e5_logit.csv": ("model_id", "term", "data"),
 }
-# Columns whose value is expected to differ on every gold v2 row because the
-# recomputation itself sets them, so listing them would bury the differences
-# that are about the labels.
-GOLD_V2_DIFF_IGNORE = ("family", "note", "p_holm", "p_bh", "p_value_holm")
+# The diff runs on the recomputed tables *before* `relabel_gold_v2` touches
+# them, which is the only order that works. Relabelling rewrites `family` to
+# one constant value, and `family` is part of the key for `e1_main.csv` and
+# `e5_strata.csv`: keyed after relabelling, no gold v2 row would ever match its
+# v1.1 counterpart, and worse, `e1_main.csv`'s confirmatory and
+# leak-sensitivity rows would collapse onto the same key and two of them would
+# vanish into a dict overwrite without a word.
+#
+# Columns excluded from the comparison: `note` is prose, and the adjusted
+# p-value columns are left empty by rule in every published gold v2 table, so a
+# difference in one of them would describe a number that does not appear in the
+# file it claims to be about.
+GOLD_V2_DIFF_IGNORE = ("note", "p_holm", "p_bh", "p_value_holm")
 GOLD_V2_DIFF_HEADER = [
     "table", "row_key", "column", "v1_1_value", "gold_v2_value", "note",
 ]
@@ -2004,6 +2022,9 @@ def table_e4_kappa(rows: list[dict], dataset_path: Path, seed: int, n_boot: int)
                 note += f"; {rater} has {failures[rater]} failed call(s), excluded from the pairing"
         if E4_GOLD_RATER in (rater_a, rater_b):
             note += "; " + E4_GOLD_PROVENANCE_NOTE
+            other = rater_b if rater_a == E4_GOLD_RATER else rater_a
+            if other.startswith("model:"):
+                note += "; " + E4_GOLD_VS_MODEL_NOTE
         out.append([
             E4_FAMILY, rater_a, rater_b, len(shared), excluded,
             result["po"], result["pe"], result["kappa"],
@@ -2650,10 +2671,40 @@ def _diff_key(header: list[str], row: list, key_columns: Sequence[str]) -> str:
     return "|".join(f"{name}={fmt(row[index[name]])}" for name in key_columns if name in index)
 
 
+def _diff_index(
+    name: str, side: str, header: list[str], rows: list[list], key_columns: Sequence[str]
+) -> dict[str, list]:
+    """key -> row, refusing to build an index that loses rows.
+
+    A key that repeats means the declared key columns do not identify a row in
+    this table, and a dict would keep the last one and drop the rest without
+    saying so -- the difference listing would then be quietly wrong about a
+    table it claims to have compared.
+    """
+    index: dict[str, list] = {}
+    duplicates: list[str] = []
+    for row in rows:
+        key = _diff_key(header, row, key_columns)
+        if key in index:
+            duplicates.append(key)
+            continue
+        index[key] = row
+    if duplicates:
+        raise SystemExit(
+            f"gold v2 diff: GOLD_V2_DIFF_KEYS[{name!r}] does not identify a row uniquely in the "
+            f"{side} table -- {len(duplicates)} duplicate key(s), first: {duplicates[0]}. "
+            f"Fix the key columns; do not let the diff drop rows"
+        )
+    return index
+
+
 def table_gold_v2_diff(
     pairs: list[tuple[str, tuple[list[str], list[list]], tuple[list[str], list[list]]]],
 ) -> tuple[list[str], list[list]]:
     """The table-by-table list of what moved between the v1.1 and gold v2 runs.
+
+    Takes the gold v2 tables as recomputed, before `relabel_gold_v2` flattens
+    their `family` column -- two of these tables are keyed on `family`.
 
     One row per (table, row, column) that differs, plus one row for any key
     present in only one of the two versions. A table that comes out identical
@@ -2670,8 +2721,8 @@ def table_gold_v2_diff(
         if header_a != header_b:
             out.append([name, "", "", "", "", "headers differ between the two runs; not diffed"])
             continue
-        index_a = {_diff_key(header_a, row, key_columns): row for row in rows_a}
-        index_b = {_diff_key(header_b, row, key_columns): row for row in rows_b}
+        index_a = _diff_index(name, "v1.1", header_a, rows_a, key_columns)
+        index_b = _diff_index(name, "gold v2", header_b, rows_b, key_columns)
         differences = 0
         for key in sorted(set(index_a) | set(index_b)):
             if key not in index_b:
@@ -2699,8 +2750,14 @@ def gold_v2_specs(
     seed: int,
     n_boot: int,
     power_n_sim: int,
-) -> list[tuple[str, tuple[list[str], list[list]]]]:
+) -> list[tuple[str, tuple[list[str], list[list]], tuple[list[str], list[list]]]]:
     """The E0, E1 and E5 tables recomputed on gold v2.
+
+    Returns (name, table as recomputed, table as published) per table. The two
+    differ only by `relabel_gold_v2`, and both are returned because the
+    difference listing has to be keyed on the recomputed one: `family` is part
+    of the key for two of these tables and relabelling flattens it to a
+    constant. See `GOLD_V2_DIFF_IGNORE`.
 
     E2 is absent on purpose: it carries no `category_match` and section 9 says
     it is untouched by the re-labelling. E4 is absent because gold v2 enters it
@@ -2722,7 +2779,10 @@ def gold_v2_specs(
         ("e5_strata.csv", table_e5_strata(regraded)),
         ("e5_logit.csv", table_e5_logit(regraded)),
     ]
-    return [(name, (header, relabel_gold_v2(header, body))) for name, (header, body) in specs]
+    return [
+        (name, (header, body), (header, relabel_gold_v2(header, body)))
+        for name, (header, body) in specs
+    ]
 
 
 # --------------------------------------------------------------------------
@@ -2809,7 +2869,7 @@ def main(argv: list[str] | None = None) -> int:
         else:
             print("gold v2: no experiments/data/gold_v2.json yet; the sensitivity tables are "
                   "not written (PREREGISTRATION section 9)")
-        v2_specs: list[tuple[str, tuple[list[str], list[list]]]] = []
+        v2_specs: list[tuple[str, tuple[list[str], list[list]], tuple[list[str], list[list]]]] = []
     else:
         v2_specs = gold_v2_specs(observations, gold_v2, args.seed, args.n_boot, args.power_n_sim)
 
@@ -2821,10 +2881,12 @@ def main(argv: list[str] | None = None) -> int:
 
     if v2_specs:
         by_v1 = dict(specs)
+        # Keyed on the recomputed table, not on the published one: see
+        # GOLD_V2_DIFF_IGNORE for what keying the published one would cost.
         diff_pairs = [
-            (name, by_v1[name], spec) for name, spec in v2_specs if name in by_v1
+            (name, by_v1[name], recomputed) for name, recomputed, _ in v2_specs if name in by_v1
         ]
-        for name, (header, body) in v2_specs:
+        for name, _, (header, body) in v2_specs:
             out_name = name.replace(".csv", f"{GOLD_V2_SUFFIX}.csv")
             write_csv(tables_dir / out_name, header, body)
             written.append(rel_to_repo(tables_dir / out_name))
