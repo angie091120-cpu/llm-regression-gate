@@ -18,9 +18,9 @@ Most teams ship prompt changes blind: edit a string, deploy, hope. This project 
 
   - ~~an `ANTHROPIC_API_KEY` repository secret is provisioned~~ — done 2026-09-14; before that, `eval-gate.yml` failed loud on every run with an explicit "ANTHROPIC_API_KEY secret not configured" error rather than passing silently;
   - ~~a committed `eval_reports/baseline.json` exists~~ — done 2026-09-14 (SPEC.md §5, [docs/DECISIONS.md D-009](docs/DECISIONS.md)); runs now diff against it instead of re-bootstrapping;
-  - the repository's branch protection lists this check as required — a repository-owner setting, not configured yet.
+  - the repository's branch protection lists this check as required — still not the case, and now a deliberate choice rather than a pending step; the paragraph below says why.
 
-  The secret and the baseline are both in place, and the scorecard comment is no longer hypothetical: [PR #4](https://github.com/angie091120-cpu/llm-regression-gate/pull/4) gets one from `eval-gate.yml` on every push, each after a real-API run of `prompts/v1` against the dataset on that commit. Runs on dataset v1 came back 64/70 with a delta of 0; runs on dataset v1.1 against that v1 baseline came back 63/70. Only one of them was a local run with a per-case report, and it names what moved — `case-056`, a W-9 request the classifier answered `billing` in every earlier observation and `general` there, with the judge scoring it 5 either way. It is not `case-007`, the case the v1.1 privacy fix edited; that one answers `account` and passes in both. The baseline is now rebuilt on v1.1 (D-011), so the gate is again diffing prompts rather than prompts plus a dataset edit. The gate posts a fresh scorecard on every push, so read the newest comment rather than any figure or count quoted here. Branch protection is the one prerequisite left, so a critical regression here turns the check red without blocking the merge.
+  The secret and the baseline are both in place, and the scorecard comment is no longer hypothetical: [PR #4](https://github.com/angie091120-cpu/llm-regression-gate/pull/4) gets one from `eval-gate.yml` on every push, each after a real-API run of `prompts/v1` against the dataset on that commit. Runs on dataset v1 came back 64/70 with a delta of 0; runs on dataset v1.1 against that v1 baseline came back 63/70. Only one of them was a local run with a per-case report, and it names what moved — `case-056`, a W-9 request the classifier answered `billing` in every earlier observation and `general` there, with the judge scoring it 5 either way. It is not `case-007`, the case the v1.1 privacy fix edited; that one answers `account` and passes in both. The baseline is now rebuilt on v1.1 (D-011), so the gate is again diffing prompts rather than prompts plus a dataset edit. The gate posts a fresh scorecard on every push, so read the newest comment rather than any figure or count quoted here. `main` has been protected since 2026-09-19: strict mode (a branch must be up to date before merging), force pushes and branch deletion refused, and two required status checks — `pytest` and `gitleaks`, both jobs of `test.yml`, which runs on every push and pull request. The `eval` job is deliberately not one of them: `eval-gate.yml` is filtered on `paths: prompts/**`, and a required check that a pull request never triggers sits at Expected forever, which would leave every pull request touching no prompt unmergeable. A critical regression therefore turns the `eval` check red on a pull request that edits `prompts/**` and does not by itself block the merge.
 
 ## Setup
 
@@ -51,12 +51,14 @@ it in locally, or export the variables directly. Key ones:
 Full list in [`.env.example`](.env.example).
 
 **Golden dataset status:** `golden_dataset.json` ships with all 70 cases at
-`label_status: confirmed` -- every `expected_category`/`expected_summary`/
-`expected_difficulty` was written by a human reviewer, not the agent-drafted
-`draft_category`/`draft_summary`/`draft_difficulty` fields. `evalkit.run_eval`
-only ever evaluates `label_status: confirmed` cases and warns loudly about
-(and refuses to run against) anything that reverts to draft or is missing an
-expected label (SPEC.md §3). The cases are fictional: every company, person,
+`label_status: confirmed`. The labels are human-verified as SPEC.md §3 defines
+it: drafted text and suggested labels may be machine-generated, the
+`expected_category`/`expected_summary`/`expected_difficulty` fields are written
+only after human review, and `label_status: confirmed` is required before a
+case enters evaluation. `evalkit.run_eval` only ever evaluates
+`label_status: confirmed` cases and warns loudly about (and refuses to run
+against) anything that reverts to draft or is missing an expected label
+(SPEC.md §3). The cases are fictional: every company, person,
 domain and email address in them is invented, and any resemblance to a real
 one is coincidence. v1.1 (2026-09-17) is the only change to the file since it
 was frozen -- `case-007`'s email address moved to a domain reserved for
