@@ -8,4 +8,5 @@
 # when it moved to v1.1 on 2026-09-17 -- an invented account holder at a domain
 # that turned out to belong to a real company. The address is not reprinted
 # here; why the residue is kept rather than scrubbed, and what moved instead, is
-# docs/PREREGISTRATION.md section 9, entry of 2026-09-17.
+# the docs/PREREGISTRATION.md section 9 entry headed "one email address in
+# golden_dataset.json belonged to a real company; the dataset moves to v1.1".
