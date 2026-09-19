@@ -335,7 +335,9 @@ gold v2 is their majority, and the protocol is registered before any comparison
   `expected_difficulty` are not re-labelled. The envelope moves to
   `dataset_version: v2.0`, `labeled_by` carries the decision route rather than
   a person, and the E0, E1 and E5 tables are recomputed on gold v2 and
-  published beside their pre-registered v1.1 versions. The protocol in full --
+  published beside their pre-registered v1.1 versions, which stay the
+  confirmatory result of section 4 while the gold v2 versions are a sensitivity
+  analysis. The protocol in full --
   annotator constraints, the return deadline, the two fallbacks, the statistics
   and the hash rule -- is `docs/PREREGISTRATION.md` section 9, entry dated
   **2026-09-19**.
@@ -347,8 +349,13 @@ gold v2 is their majority, and the protocol is registered before any comparison
   0.904632) compare a model against labels a model drafted, and how much of
   that agreement the shared origin buys is not estimable from this design.
   And section 8.3's caveat -- high agreement with one annotator can mean a
-  shared blind spot -- understates the case here, because two of the three
-  raters in that table share an origin and not only a blind spot. Three human
+  shared blind spot -- is harder to apply here than it looks, because the gold
+  rater in that table is itself of model-drafted origin. How far that origin is
+  shared with the two model annotators cannot be stated: the model identity of
+  the drafting agent is recorded nowhere in this repository, so whether it was
+  the same family as Haiku 4.5 or Sonnet 5, or a different one, is not
+  recoverable. That unknown is a limit on reading those two rows, and it is not
+  removable after the fact. Three human
   raters produce a label set no model drafted and a human-human agreement
   number the study can publish. They also contain the one contamination that
   cannot be removed: A1 read the 2026-07-20 review sheet two months ago and

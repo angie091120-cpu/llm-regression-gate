@@ -639,20 +639,30 @@ people; this entry fixes the protocol before any returned sheet is compared
 with anything.** Section 2 records the decision step -- "labels decided by one
 human annotator (the author) in July 2026" -- and not the whole provenance. An
 agent drafted every case together with `draft_category`, `draft_summary` and
-`draft_difficulty`; on 2026-07-20 the author worked through a case-by-case
-review sheet, ruled on three groups of contested cases, and approved the
-remaining drafts as they stood. The file carries that shape: 69 of 70
-`expected_category` equal `draft_category`, the exception being `case-031`
-(`account` -> `billing`, unified with `case-052`); every `expected_summary` and
-every `expected_difficulty` equals its draft; and the dated rulings sit in the
-`notes` of the six cases they cover (`case-012`, `case-020`, `case-031`,
-`case-043`, `case-052`, `case-068`). Agent-drafted, author-approved labels are
-not an independent human annotation of these emails. `e4_kappa.csv`'s two
+`draft_difficulty`, and the author confirmed all 70 on 2026-07-20. What this
+repository records of that step: every case carries `labeled_at` 2026-07-20 and
+`label_status: confirmed`; 69 of 70 `expected_category` equal `draft_category`,
+the exception being `case-031` (`account` -> `billing`, unified with
+`case-052`); every `expected_summary` and every `expected_difficulty` equals its
+draft; and six cases carry a dated 2026-07-20 ruling in `notes` (`case-012`,
+`case-020`, `case-031`, `case-043`, `case-052`, `case-068`), in three pairs. The
+case-by-case review sheet those rulings were made on is held privately by the
+author and is not published here, so what it contained, and how much of it A1
+had read, are statements in this document and not artifacts a reader can open.
+What is auditable about that sheet is its hash, committed here before any
+returned sheet is read: sha256
+`3fac2e1393ea3cee61577f4c192a27e5f44f5afae2217926f80f268b6a38e451`, 26,925
+bytes. Agent-drafted, author-confirmed labels are not an independent human
+annotation of these emails. `e4_kappa.csv`'s two
 `human-1 (gold)` rows (0.904658 against Haiku, 0.904632 against Sonnet)
 therefore measure a model against a label set that began as a model's draft --
 a sharper statement than section 8.3's shared blind spot, and not a
-human-model agreement rate. Three people now label the same 70 emails blind, so
-that a label set exists which no model drafted.
+human-model agreement rate. How far that origin is shared with the two model
+annotators cannot be stated either way: the model identity of the drafting agent
+is recorded nowhere in this repository, so whether it was the same family as
+Haiku 4.5 or Sonnet 5, or a different one, is not recoverable, and that unknown
+is itself a limit on reading those two rows. Three people now label the same 70
+emails blind, so that a label set exists which no model drafted.
 
 **The three annotators.** A1 is the author, who labelled on 2026-09-19 from the
 same handout an outside annotator was already given --
@@ -663,9 +673,17 @@ to the number rather than after it: A1 read the 2026-07-20 review sheet two
 months earlier and ruled on the contested groups, so A1 is blind to the label
 column and not to the dataset. A2 and A3 are two people outside the project
 working from that same sheet and those same instructions, each alone, with no
-AI assistance and no discussion with each other or with A1. No annotator sees
-the shipped labels or any model output. A2 and A3 are expected back by
-2026-09-23.
+AI assistance and no discussion with each other or with A1. That last pair is an
+undertaking A2 and A3 give, not a property of anything in the record: no field
+of a returned sheet distinguishes a label written unaided from one that was not,
+and this document does not claim otherwise. No annotator sees the shipped labels
+or any model output. A2 and A3 are expected back by 2026-09-23.
+
+All three work from the sheet as it stood at dataset v1, which differs from v1.1
+in one string -- `case-007`'s email address, changed for the privacy reason the
+2026-09-17 entry above gives. Gold v2's label for `case-007` is therefore a
+label on the v1 wording of that email, and the two wordings differ by one
+address.
 
 **Hashes are recorded on arrival, before comparison.** Each returned file's
 sha256 goes into this section when the file is received and before it is read
@@ -675,23 +693,49 @@ labelling files enter the repository in the import pull request; the pull
 request carrying this entry changes documentation only and opens no labelling
 file.
 
+A sheet that fails validation -- a case missing, a category outside the four, a
+file that will not parse -- goes back to its annotator for correction and is not
+repaired here. The corrected file's sha256 is recorded as its own dated line in
+this section, and the hash of the version that failed stays above it, so the
+record shows that a file was replaced and which one it was.
+
 **Gold v2 and the rule that produces it.** Categories only. Per case, the
 majority of A1, A2 and A3. Where all three differ, the author rules on that
-case, seeing the email text and the three human labels and no model output of
-any kind, and every adjudicated case id is listed. Two fallbacks, fixed now so
-that neither is chosen after a disagreement rate is known: if only A1 and A2
-have returned by 2026-09-27, the cases those two agree on are final and the
-cases they split on take the shipped v1.1 label as the third vote; if only A1
-has returned, gold stays at v1.1 and A1's sheet is reported as a reliability
-check and used for nothing else.
+case. The adjudication sheet carries the email text and the three human labels
+and nothing else: it does not carry `golden_dataset.json`'s `draft_*` fields,
+the dated 2026-07-20 rulings in `notes`, the v1.1 `expected_category`, or model
+output from any arm of this study. Every adjudicated case id is listed.
+
+Where a case ends up with only two valid votes -- one sheet arrived without it,
+or its entry failed validation and no correction has come back -- two agreeing
+votes decide it and two differing votes go to the same adjudication rule on the
+same restricted sheet.
+
+Two fallbacks, fixed now so that neither is chosen after a disagreement rate is
+known. **Fallback 1**, if by 2026-09-27 the returns are A1 plus exactly one of
+A2 and A3: the cases those two humans agree on are final, and the cases they
+split on take the shipped v1.1 label as a third vote. Where that third vote
+leaves A1, the other human and v1.1 all different from one another, the author
+rules under the restrictions above and the case is recorded as `adjudicated`.
+Fallback 1 pulls labels of agent-draft origin back into gold on exactly the
+cases where the two humans disagreed; those cases stay individually
+identifiable by their `fallback_v1.1` route, so any reading of gold v2 can be
+redone with them excluded. **Fallback 2**, if only A1 has returned: gold stays
+at v1.1 and A1's sheet is reported as a reliability check and used for nothing
+else.
+
+A sheet that arrives after a fallback has been applied is reported as one more
+reliability check against the gold that exists. It does not reopen gold v2.
+Revising a finished label set on the strength of a late arrival is the kind of
+choice this section exists to take off the table.
 
 **What is not re-labelled.** `expected_difficulty` stays as it is,
 agent-drafted and author-confirmed. `expected_summary` is not rewritten either,
 and it is reviewed case by case in the second pass described next, whose result
-is reported under the limits fixed there. The judge-dependent metrics --
-`passed` and the E2 pairwise arm -- are secondary under section 3 and keep
-scoring against the reference summaries as they stand. Re-labelling categories
-does not move them.
+is reported under the limits fixed there. `passed` is the secondary metric of
+section 3 and the E2 pairwise arm is an exploratory analysis under section 4;
+both keep scoring against the reference summaries as they stand, and
+re-labelling categories does not change the text they score against.
 
 **A second pass over the reference summaries, and what it may be used for.**
 From 2026-09-19 the author reviews all 70 `expected_summary` values one case at
@@ -709,12 +753,22 @@ this section when it arrives and before its contents are read.
 
 What the review may be used for, fixed here before its counts are known: this
 study reports how many cases are marked `ok`, how many are marked `edit`, and
-the ids of the cases marked `edit`. Every judge-dependent result already
-recorded -- `passed` in E0 and E1, the E0 judge-isolation arm, and all of E2 --
-stands unrecomputed, stays relative to the reference summaries as shipped, and
-triggers no fresh API call. Those scores were produced against the summaries
-that exist, and scoring them again against rewritten ones is a different
-measurement rather than a correction to this one. The author's replacements are
+the ids of the cases marked `edit`. No judge score is obtained again on account
+of this review: every `judge_score` already in the raw files stands as written,
+the E0 judge-isolation arm and E2 are not recomputed at all, and no API call is
+sent. Those scores were produced against the summaries that exist, and scoring
+them again against rewritten ones is a different measurement rather than a
+correction to this one.
+
+One quantity does move under gold v2, and it moves for the category
+re-labelling and not for this review. `passed` is `category_match` AND
+`judge_score >= 3` (section 3), so a case whose gold category changes can change
+its `passed` value. That recomputation is arithmetic over judge scores already
+recorded -- the same numbers, recombined with the new `category_match` -- and it
+obtains no new score and sends no call. E2 carries no `category_match` and is
+untouched by it.
+
+The author's replacements are
 stored in a new dataset field or in a file of their own -- which of the two is a
 choice for the import pull request -- and do not overwrite `expected_summary`.
 Overwriting it, and re-running the judge against the result, takes a further
@@ -733,10 +787,35 @@ re-labelled, the confirmatory family of section 4 and the multiplicity rules of
 sections 4 and 10.6 are untouched, and section 10.10's `case-043` leakage
 sensitivity analysis runs as written.
 
+**Which of the two sets is confirmatory.** The pre-registered v1.1 results stay
+the confirmatory result of section 4. The gold v2 recomputation is a
+sensitivity analysis: reported beside the v1.1 version with the differences
+listed table by table, raising no second confirmatory family, and yielding no
+Holm-adjusted confirmatory claim. Its raw p-values, effect sizes and intervals
+are reported and are labelled exploratory, the way every other
+non-confirmatory row in this study is. Holm stays fixed across exactly the four
+tests of section 4 computed on the v1.1 labels.
+
+E5's logistic model keeps the specification the 2026-09-16 entry above records:
+the pooled fit over E0 and the four E1 arms, with the baseline-arm fit still
+marked `fitted = no` for the separation documented there. If a re-labelled case
+breaks one of the constant-outcome levels and the baseline arm becomes
+estimable under gold v2, that fit is reported as an addition, marked
+exploratory, and does not replace the pooled specification.
+
+The import pull request adds a `note` to `e4_kappa.csv`'s two `human-1 (gold)`
+rows pointing back at this entry, so the provenance of that rater travels in
+the table beside the number. The pull request carrying this entry changes no
+results table.
+
 **Dataset version.** A category change is a label change, so the envelope moves
 to `dataset_version: v2.0`. `labeled_by` stops carrying a personal name and
 carries the decision route for that case instead (`majority`, `adjudicated` or
-`fallback_v1.1`). The CI baseline is rebuilt once on v2.0 -- one real-API
+`fallback_v1.1`). Under fallback 1 those routes read: `majority` where the two
+humans agree, `fallback_v1.1` where they split and the shipped label breaks the
+tie, and `adjudicated` where the two humans and the shipped label are all
+different and the author ruled. The CI baseline is rebuilt once on v2.0 -- one
+real-API
 `evalkit` run, recorded in `docs/DECISIONS.md` as its own entry the way D-011
 recorded the v1.1 rebuild.
 
@@ -746,8 +825,17 @@ history of this file, the arrival hash of each labelling file recorded above,
 and the handout hash already published in `experiments/README.md`, which pins
 that every annotator worked from one sheet. Sections 1 to 8 and section 10 are
 frozen text and are not edited; this entry is the correction to section 2's
-provenance sentence and to how section 8.3 is read. `docs/DECISIONS.md` D-012
+provenance sentence, to how section 8.3 is read, and to section 8's closing
+line -- "E4 has one second annotator, so annotator variance is not estimable"
+stops holding once three people have labelled these 70 emails, and the
+three-rater agreement numbers are where it stops. `docs/DECISIONS.md` D-012
 records the choice and the options it was chosen over.
+
+Not every ordering in this entry is equally auditable. That the entry precedes
+any comparison is a property of the git history. That the summary review began
+only after A1's category sheet was sealed is a statement: both fall on
+2026-09-19, and the commit sequence supports the order in which the two hashes
+were registered, not the order in which the author worked.
 
 ## 10. E1 in full
 
