@@ -1086,6 +1086,36 @@ of a note after the sheet comes back, so it cannot have changed a category
 judgement, and A1 is the author, for whom the question the line answers does
 not arise.
 
+**2026-09-20, A2's first return arrives, is registered under two hashes, and
+goes back for correction.** The file, received 2026-09-20, was read by
+`experiments/blank_sheet_notes.py`: 70 rows, 0 of them carrying a note. The two
+hashes the entry above requires are the file as received, sha256
+`a2ada03399dd1b612c16c6e6d9309b1ae449b8c4a7ca5a9b3b5de8fc459428fc`, and the
+notes-blanked copy, sha256
+`17f63a157a5bab3da003d67c19e39c1f4c8cac82c1a9382d06915c0710ad5bf9`. They differ
+although no note was blanked, which is the re-serialisation that entry
+describes and not a changed cell.
+
+`experiments/import_annotations.py --annotator A2` was then run on the blanked
+copy, with its output written to a path outside this repository: no file in the
+repository was written, and no label was compared against anything. It rejected
+the file whole -- 16 problems, nothing written. Fourteen cells carry two
+categories at once, one carries a category followed by a question mark, and one
+is a misspelling; each of the sixteen is a `your_label` the importer cannot
+match to one of the four categories. Four further cells differ from a valid
+label only in capitalisation or surrounding whitespace, which the importer
+normalises and reports as a warning rather than an error, and `case-007`'s row
+came back with the v1 handout wording, which is the named exemption described
+above.
+
+Under the rule fixed above, the sheet goes back to its annotator for correction
+and not one cell is repaired here. The failed version is not committed and was
+not imported; its two hashes stay in this record, and the corrected version's
+own two hashes go in as their own dated line when it arrives. As of this entry
+no label of A2's has been read against v1.1, against A1, or against any model
+output, so the rejection is a statement about the format of one file and about
+nothing else.
+
 ## 10. E1 in full
 
 Written 2026-09-14, before the first degraded-prompt call. Section 4 fixes
