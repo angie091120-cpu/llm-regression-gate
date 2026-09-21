@@ -1116,6 +1116,55 @@ no label of A2's has been read against v1.1, against A1, or against any model
 output, so the rejection is a statement about the format of one file and about
 nothing else.
 
+**2026-09-21, A2's corrected return arrives, is registered under two hashes,
+and is accepted.** The file, received 2026-09-21, was read by
+`experiments/blank_sheet_notes.py`: 70 rows, 0 of them carrying a note. The
+two hashes the two-hash rule requires are the file as received, sha256
+`da2c24122d2e5c82f14ec29712275c3a7b1e1e9d26afe2271f279cbde3cc5e21`, 14,573
+bytes, and the notes-blanked copy, sha256
+`dec604a0c9ecdd9fda81cc63c51687b9fc147833f2e12da6cf5bb9bcc0899846`. They
+differ for the same reason as the entry above: re-serialisation, not a
+changed cell. Both hashes were computed before the file was compared against
+anything.
+
+`experiments/import_annotations.py --annotator A2` was then run on the
+blanked copy, with its output written to a path outside this repository: no
+file in the repository was written, and no label was compared against
+another label. It accepted the file whole -- 70 labels, exit code 0 -- with
+two warnings: `case-007`'s row still carries the v1 handout wording, the
+named exemption described above, and ten further rows differ from a valid
+label only in capitalisation or surrounding whitespace, which the importer
+normalises.
+
+Separately, the corrected file was compared cell by cell against A2's own
+first return -- both files belong to A2, and the comparison involves no
+other annotator's labels. The 70 case ids and their order match.
+`email_body` differs in 0 cells and `notes` differs in 0 cells. `your_label`
+differs in 17 cells: the 16 cells the first return's rejection named, plus 1
+of the first return's 4 normalisation-only cells, whose category is
+unchanged by normalisation on either side. No other cell changed.
+
+Of the 16 corrected cells, described here by count rather than by category:
+14 cells had carried two categories at once, and of those, 13 were corrected
+to one of the two originally written and 1 was corrected to a category that
+was neither of the two originally written. The 1 cell that had carried a
+category with a trailing question mark kept its original category and
+dropped the question mark. The 1 misspelled cell was corrected to the same
+word, spelled correctly.
+
+The case id of the cell corrected to a category that was neither of the two
+originally written is withheld until gold v2 exists, under the rule that
+when all three annotators disagree the author decides, and the author
+should not know in advance which case this annotator revised a judgement
+on. It is added to this record once gold v2 exists.
+
+No cell was corrected by this project; every correction in this file
+originates with the annotator. The corrected labelling file itself is not
+part of this pull request -- it enters the repository with the import pull
+request -- and no labelling file is opened, added or changed here. As of
+this entry, A2's labels have not been read against A1, against v1.1,
+against gold v2, or against any model output, and A3 has not yet returned.
+
 ## 10. E1 in full
 
 Written 2026-09-14, before the first degraded-prompt call. Section 4 fixes
