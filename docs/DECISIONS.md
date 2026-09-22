@@ -453,6 +453,11 @@ gold v2 is their majority, and the protocol is registered before any comparison
   `experiments/results/tables/e4_kappa.csv` gains 14 rows and changes none,
   `MANIFEST.json` is regenerated, and the recomputation lands in eleven
   `*_gold_v2.csv` tables plus `gold_v2_diff.csv`. That is section 9's
+  After the two copies were committed, the `sheet_file` field of
+  `a2_labels.json` and `a3_labels.json` was set to the committed file names
+  (`a2_category_labels_2026-09-21.csv`, `a3_category_labels_2026-09-22.csv`);
+  the bytes those names point to are the ones `sheet_sha256` already pinned,
+  and no other field of either file changed.
   beside-not-into rule, and it keeps "the published v1.1 numbers did not
   move" checkable by hashing the files rather than by reading a family
   column.

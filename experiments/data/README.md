@@ -23,6 +23,8 @@
 #
 #   a1_category_labels_2026-09-19.csv  774e62bc...02cfbb   70 category labels
 #   a1_summary_review_2026-09-19.csv   48b1d1d3...6a7759   70 ok/edit verdicts
+#   a2_category_labels_2026-09-21.csv  dec604a0...899846   70 category labels (A2, corrected return, notes blanked)
+#   a3_category_labels_2026-09-22.csv  f4819757...8901f2   70 category labels (A3, notes blanked)
 #
 # A2's and A3's sheets arrive under two hashes each: the file as received, and
 # the copy with the notes column emptied, which is the one committed here. The

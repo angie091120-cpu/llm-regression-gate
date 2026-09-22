@@ -4,7 +4,7 @@
   "annotator_role": "outside the project",
   "annotated_on": "2026-09-22",
   "sheet_seed": 20260916,
-  "sheet_file": "a3_returned_2026-09-22_r1_notes_blanked.csv",
+  "sheet_file": "a3_category_labels_2026-09-22.csv",
   "sheet_sha256": "f4819757e87e775f04799d8536f9d029cd52e60e32ab5ca80336c9647a8901f2",
   "sheet_dataset_version": "v1",
   "sheet_dataset_version_basis": "identical to the handout once your_label and notes are blanked",
