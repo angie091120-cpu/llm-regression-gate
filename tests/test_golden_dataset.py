@@ -21,7 +21,7 @@ def dataset() -> dict:
 
 
 def test_dataset_file_has_expected_envelope(dataset):
-    assert dataset["dataset_version"] == "v1.1"
+    assert dataset["dataset_version"] == "v2.0"
     assert isinstance(dataset["cases"], list)
 
 

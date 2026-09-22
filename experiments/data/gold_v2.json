@@ -1,0 +1,814 @@
+{
+  "gold_version": "v2",
+  "regime": "main",
+  "regime_basis": "all three sheets have arrived",
+  "as_of": "2026-09-22",
+  "return_deadline": "2026-09-27",
+  "annotators_present": [
+    "A1",
+    "A2",
+    "A3"
+  ],
+  "annotator_display_names": {
+    "A1": "A1 (author)",
+    "A2": "A2 (outside)",
+    "A3": "A3 (outside)"
+  },
+  "annotator_sheet_sha256": {
+    "A1": "774e62bc6c8337b188b87f249b66f1991196c6d616ef4d6d2e1cae1cde02cfbb",
+    "A2": "dec604a0c9ecdd9fda81cc63c51687b9fc147833f2e12da6cf5bb9bcc0899846",
+    "A3": "f4819757e87e775f04799d8536f9d029cd52e60e32ab5ca80336c9647a8901f2"
+  },
+  "annotator_sheet_dataset_version": {
+    "A1": "v1",
+    "A2": "v1",
+    "A3": "v1"
+  },
+  "dataset_version_on_disk": "v1.1",
+  "protocol": "docs/PREREGISTRATION.md section 9, entry dated 2026-09-19",
+  "built_at_utc": "2026-09-22T15:24:59+00:00",
+  "n": 70,
+  "n_adjudicated_pending": 0,
+  "adjudication_pending_case_ids": [],
+  "adjudicated_case_ids": [
+    "case-027"
+  ],
+  "route_counts": {
+    "adjudicated": 1,
+    "majority": 69
+  },
+  "sealed": true,
+  "sealed_on": "2026-09-22",
+  "labels": [
+    {
+      "case_id": "case-001",
+      "label": "billing",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "billing",
+        "A2": "billing",
+        "A3": "billing"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-002",
+      "label": "technical",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "technical",
+        "A2": "technical",
+        "A3": "technical"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-003",
+      "label": "account",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "account",
+        "A2": "account",
+        "A3": "account"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-004",
+      "label": "general",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "general",
+        "A2": "general",
+        "A3": "general"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-005",
+      "label": "billing",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "billing",
+        "A2": "billing",
+        "A3": "billing"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-006",
+      "label": "technical",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "technical",
+        "A2": "technical",
+        "A3": "technical"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-007",
+      "label": "account",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "account",
+        "A2": "account",
+        "A3": "account"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-008",
+      "label": "general",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "general",
+        "A2": "general",
+        "A3": "general"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-009",
+      "label": "billing",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "billing",
+        "A2": "billing",
+        "A3": "billing"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-010",
+      "label": "technical",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "technical",
+        "A2": "technical",
+        "A3": "technical"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-011",
+      "label": "account",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "account",
+        "A2": "account",
+        "A3": "account"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-012",
+      "label": "general",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "general",
+        "A2": "technical",
+        "A3": "general"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-013",
+      "label": "billing",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "billing",
+        "A2": "billing",
+        "A3": "billing"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-014",
+      "label": "technical",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "technical",
+        "A2": "technical",
+        "A3": "technical"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-015",
+      "label": "technical",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "technical",
+        "A2": "technical",
+        "A3": "account"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-016",
+      "label": "general",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "general",
+        "A2": "general",
+        "A3": "general"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-017",
+      "label": "billing",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "billing",
+        "A2": "billing",
+        "A3": "billing"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-018",
+      "label": "technical",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "technical",
+        "A2": "technical",
+        "A3": "account"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-019",
+      "label": "account",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "account",
+        "A2": "account",
+        "A3": "technical"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-020",
+      "label": "billing",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "billing",
+        "A2": "billing",
+        "A3": "billing"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-021",
+      "label": "general",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "general",
+        "A2": "general",
+        "A3": "general"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-022",
+      "label": "technical",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "technical",
+        "A2": "technical",
+        "A3": "technical"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-023",
+      "label": "account",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "account",
+        "A2": "account",
+        "A3": "account"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-024",
+      "label": "general",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "technical",
+        "A2": "general",
+        "A3": "general"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-025",
+      "label": "billing",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "billing",
+        "A2": "general",
+        "A3": "billing"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-026",
+      "label": "technical",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "technical",
+        "A2": "technical",
+        "A3": "technical"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-027",
+      "label": "account",
+      "labeled_by": "adjudicated",
+      "votes": {
+        "A1": "general",
+        "A2": "technical",
+        "A3": "account"
+      },
+      "needs_ruling": true
+    },
+    {
+      "case_id": "case-028",
+      "label": "general",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "general",
+        "A2": "general",
+        "A3": "general"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-029",
+      "label": "billing",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "billing",
+        "A2": "billing",
+        "A3": "billing"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-030",
+      "label": "technical",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "technical",
+        "A2": "technical",
+        "A3": "technical"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-031",
+      "label": "billing",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "technical",
+        "A2": "billing",
+        "A3": "billing"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-032",
+      "label": "general",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "general",
+        "A2": "general",
+        "A3": "general"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-033",
+      "label": "billing",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "billing",
+        "A2": "general",
+        "A3": "billing"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-034",
+      "label": "technical",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "technical",
+        "A2": "technical",
+        "A3": "general"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-035",
+      "label": "account",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "account",
+        "A2": "account",
+        "A3": "account"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-036",
+      "label": "billing",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "billing",
+        "A2": "billing",
+        "A3": "billing"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-037",
+      "label": "technical",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "technical",
+        "A2": "general",
+        "A3": "technical"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-038",
+      "label": "account",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "account",
+        "A2": "account",
+        "A3": "account"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-039",
+      "label": "general",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "general",
+        "A2": "general",
+        "A3": "general"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-040",
+      "label": "billing",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "billing",
+        "A2": "billing",
+        "A3": "billing"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-041",
+      "label": "technical",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "technical",
+        "A2": "technical",
+        "A3": "technical"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-042",
+      "label": "account",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "account",
+        "A2": "account",
+        "A3": "account"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-043",
+      "label": "general",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "general",
+        "A2": "general",
+        "A3": "general"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-044",
+      "label": "billing",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "billing",
+        "A2": "billing",
+        "A3": "general"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-045",
+      "label": "technical",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "technical",
+        "A2": "technical",
+        "A3": "technical"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-046",
+      "label": "account",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "technical",
+        "A2": "account",
+        "A3": "account"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-047",
+      "label": "general",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "technical",
+        "A2": "general",
+        "A3": "general"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-048",
+      "label": "billing",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "billing",
+        "A2": "billing",
+        "A3": "billing"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-049",
+      "label": "technical",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "general",
+        "A2": "technical",
+        "A3": "technical"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-050",
+      "label": "account",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "account",
+        "A2": "account",
+        "A3": "account"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-051",
+      "label": "billing",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "billing",
+        "A2": "general",
+        "A3": "billing"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-052",
+      "label": "billing",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "billing",
+        "A2": "billing",
+        "A3": "billing"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-053",
+      "label": "technical",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "general",
+        "A2": "technical",
+        "A3": "technical"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-054",
+      "label": "technical",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "technical",
+        "A2": "technical",
+        "A3": "account"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-055",
+      "label": "general",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "general",
+        "A2": "general",
+        "A3": "general"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-056",
+      "label": "billing",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "billing",
+        "A2": "billing",
+        "A3": "billing"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-057",
+      "label": "technical",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "technical",
+        "A2": "technical",
+        "A3": "technical"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-058",
+      "label": "account",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "account",
+        "A2": "account",
+        "A3": "account"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-059",
+      "label": "general",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "general",
+        "A2": "general",
+        "A3": "technical"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-060",
+      "label": "billing",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "technical",
+        "A2": "billing",
+        "A3": "billing"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-061",
+      "label": "technical",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "technical",
+        "A2": "technical",
+        "A3": "technical"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-062",
+      "label": "account",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "account",
+        "A2": "account",
+        "A3": "technical"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-063",
+      "label": "general",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "general",
+        "A2": "general",
+        "A3": "general"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-064",
+      "label": "billing",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "billing",
+        "A2": "billing",
+        "A3": "billing"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-065",
+      "label": "technical",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "technical",
+        "A2": "technical",
+        "A3": "technical"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-066",
+      "label": "account",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "account",
+        "A2": "account",
+        "A3": "account"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-067",
+      "label": "general",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "general",
+        "A2": "general",
+        "A3": "billing"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-068",
+      "label": "billing",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "billing",
+        "A2": "billing",
+        "A3": "billing"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-069",
+      "label": "technical",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "technical",
+        "A2": "technical",
+        "A3": "account"
+      },
+      "needs_ruling": false
+    },
+    {
+      "case_id": "case-070",
+      "label": "general",
+      "labeled_by": "majority",
+      "votes": {
+        "A1": "billing",
+        "A2": "general",
+        "A3": "general"
+      },
+      "needs_ruling": false
+    }
+  ]
+}

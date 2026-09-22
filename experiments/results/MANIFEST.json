@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-09-19T15:36:21.828492Z",
+  "generated_at_utc": "2026-09-22T15:31:18.470550Z",
   "analysis": {
     "seed": 20260920,
     "n_boot": 10000,
@@ -351,7 +351,19 @@
       "experiments/results/tables/tokens_latency_by_tier.csv",
       "experiments/results/tables/judge_score_distribution.csv",
       "experiments/results/tables/judge_rescore_stability.csv",
-      "experiments/results/tables/judge_rescore_summary.csv"
+      "experiments/results/tables/judge_rescore_summary.csv",
+      "experiments/results/tables/per_case_outcomes_gold_v2.csv",
+      "experiments/results/tables/rates_by_run_gold_v2.csv",
+      "experiments/results/tables/rates_run_spread_gold_v2.csv",
+      "experiments/results/tables/per_case_instability_gold_v2.csv",
+      "experiments/results/tables/rates_by_stratum_gold_v2.csv",
+      "experiments/results/tables/rates_bootstrap_gold_v2.csv",
+      "experiments/results/tables/paired_mcnemar_gold_v2.csv",
+      "experiments/results/tables/e1_main_gold_v2.csv",
+      "experiments/results/tables/e1_power_gold_v2.csv",
+      "experiments/results/tables/e5_strata_gold_v2.csv",
+      "experiments/results/tables/e5_logit_gold_v2.csv",
+      "experiments/results/tables/gold_v2_diff.csv"
     ],
     "figures": [
       "experiments/results/figures/primary_metric_by_run.png",
