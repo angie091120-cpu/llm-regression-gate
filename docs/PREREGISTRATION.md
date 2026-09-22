@@ -1165,6 +1165,38 @@ request -- and no labelling file is opened, added or changed here. As of
 this entry, A2's labels have not been read against A1, against v1.1,
 against gold v2, or against any model output, and A3 has not yet returned.
 
+**2026-09-22, A3's return arrives, is registered under two hashes, and is
+accepted.** The file, received 2026-09-22, is A3's first return, and it came
+back on the same blank sheet the outside annotators were handed, the
+contents of `experiments/data/annotator2_sheet.csv`. It was read by
+`experiments/blank_sheet_notes.py`: 70 rows, 0 of them carrying a note. The
+two hashes the two-hash rule requires are the file as received, sha256
+`ce918dac02f04e1e059485798eca431fd00447afeaa95e98061ff9791e73722c`, 14,555
+bytes, and the notes-blanked copy, sha256
+`f4819757e87e775f04799d8536f9d029cd52e60e32ab5ca80336c9647a8901f2`, 14,560
+bytes. They differ for the same reason as the two entries above:
+re-serialisation, not a changed cell. Both hashes were computed before the
+file was compared against anything.
+
+`experiments/import_annotations.py --annotator A3` was then run on the
+blanked copy, with its output written to a path outside this repository: no
+file in the repository was written, and no label was compared against
+another label. It accepted the file whole -- 70 labels, exit code 0 -- with
+exactly one warning: `case-007`'s row still carries the v1 handout wording,
+the named exemption described above. There was no second warning; not one
+row differed from a valid label in capitalisation or in surrounding
+whitespace.
+
+The 70 case ids and their order match the sheet as handed out, with no id
+repeated and none missing. No cell was corrected by this project, the file
+was not sent back, and there is no second version of it.
+
+As of this entry, A3's labels have not been read against A1, against A2,
+against v1.1, against gold v2, or against any model output. All three
+annotators -- A1, A2's corrected return, and A3 -- have now returned; the
+import and gold v2 are the work of a later pull request, and this one
+changes documentation only and opens no labelling file.
+
 ## 10. E1 in full
 
 Written 2026-09-14, before the first degraded-prompt call. Section 4 fixes
