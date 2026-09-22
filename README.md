@@ -4,7 +4,7 @@ CI-style regression testing for LLM prompt changes — every prompt edit is eval
 
 > Spec'd, directed, and reviewed by me; implemented with an AI engineering team I orchestrate.
 
-**Status:** MVP built — 46 tests pass (fully mocked, no API key needed) and the acceptance script in [`checks/acceptance.sh`](checks/acceptance.sh) runs the machine-checkable criteria from SPEC.md §7. The regression baseline (`eval_reports/baseline.json`) is a real-API run of `prompts/v1` over all 70 confirmed cases: rebuilt on dataset v1.1 from the run of 2026-09-16 19:10 UTC (2026-09-17 03:10 +08:00), pass rate 0.9 (63/70). The 2026-09-14 run it replaced, on dataset v1 and 64/70, is kept as `eval_reports/baseline-2026-09-14-dataset-v1.json` and read by nothing — [docs/DECISIONS.md D-011](docs/DECISIONS.md) says why and which single case the two differ on. See *CI gate* below.
+**Status:** MVP built — 46 tests pass (fully mocked, no API key needed) and the acceptance script in [`checks/acceptance.sh`](checks/acceptance.sh) runs the machine-checkable criteria from SPEC.md §7. The regression baseline (`eval_reports/baseline.json`) is a real-API run of `prompts/v1` over all 70 confirmed cases: rebuilt on dataset v2.0 from the run of 2026-09-22 16:24 UTC (2026-09-23 00:24 +08:00), pass rate 0.8714 (61/70). The two runs it replaced are kept and read by nothing — `eval_reports/baseline-2026-09-17-dataset-v1.1.json` (dataset v1.1, 63/70) and `eval_reports/baseline-2026-09-14-dataset-v1.json` (dataset v1, 64/70). [docs/DECISIONS.md D-014](docs/DECISIONS.md) says why the baseline follows the dataset version and which six cases changed verdict between the two newest; D-011 does the same for the rebuild before it. See *CI gate* below.
 
 ## Why
 

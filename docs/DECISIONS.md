@@ -493,3 +493,73 @@ gold v2 is their majority, and the protocol is registered before any comparison
   these numbers existed. Holding the import until the baseline rebuild is done
   -- it would put a real-API run and a data import in one pull request and one
   entry, and the rebuild needs the dataset this pull request ships.
+
+## D-014: the CI baseline is rebuilt on dataset v2.0; the v1.1 one is kept
+beside it
+
+- **Chose:** `eval_reports/baseline.json` is now the real-API run of
+  `prompts/v1` over dataset **v2.0** made at 2026-09-22 16:24 UTC
+  (2026-09-23 00:24 +08:00) -- 61/70, pass rate 0.8714, 70 cases, $0.414243,
+  `git_commit` 056c6ac, measured against dataset sha256
+  `4a11cde4dc50b4ab84f0eda3fbb160fc3bf0404dc733bcee3927d8af5f3f2d7a`. The run
+  it replaces is kept, unchanged and unread by any workflow, as
+  `eval_reports/baseline-2026-09-17-dataset-v1.1.json` (63/70, pass rate 0.9,
+  dataset v1.1, the run D-011 recorded).
+  `.github/workflows/eval-gate.yml` names `eval_reports/baseline.json` and no
+  other path, so the renamed file is inert, the same arrangement D-011 made
+  for the v1 one.
+- **Why:** D-011's reason, a second time. A diff across two dataset versions
+  measures the dataset as much as the prompt, and `golden_dataset.json` moved
+  to `dataset_version: v2.0` in pull request #11 (D-013), where five of the 70
+  `expected_category` values changed. Left on the v1.1 reference, every gate
+  run from here would report a delta that is mostly the relabelling. The
+  baseline follows the dataset version so that the gate keeps comparing
+  prompts. Nothing in this pull request touches `evalkit/**`, `prompts/**`,
+  `golden_dataset.json` or `experiments/results/**`.
+- **Six cases changed verdict, and five of them changed no prediction.**
+  Passed to not passed: `case-015`, `case-021`, `case-051`, `case-054`. Not
+  passed to passed: `case-020`, `case-056`. On five of the six the classifier
+  returned the same predicted category as in the v1.1 baseline and what moved
+  is the case's `expected_category`; those five -- `case-015`, `case-020`,
+  `case-021`, `case-051`, `case-054` -- are exactly the five D-013 lists as
+  relabelled by the panel. The sixth is `case-056`, whose `expected_category`
+  did not move and whose prediction did: it is the boundary case D-011 named
+  as one a later run could answer either way, and this run answered it the
+  other way, so it arrives as an improvement. That is a draw changing, not a
+  prompt changing.
+- **`judge_score` moved on 14 cases and carried one verdict with it.**
+  `case-051` went 5 -> 4 and crossed the threshold of 3 together with its
+  category match; the other 13 moved on one side of the threshold and changed
+  no verdict. D-011's point holds here: a pass rate that moves by a few cases
+  is not a measure of how much moved.
+- **The diff against the old baseline is for reading, not for gating.**
+  `evalkit.diff` of the new report against
+  `eval_reports/baseline-2026-09-17-dataset-v1.1.json` reports `severity: ok`,
+  an overall delta of -0.0286, 4 regressions and 2 improvements, and
+  `per_category_delta` technical -0.0944, general -0.0147, billing +0.0053,
+  account 0. No workflow computes that diff -- the gate compares a pull
+  request's run against `eval_reports/baseline.json`, which is now the v2.0
+  run -- and it is not evidence that the classifier or `prompts/v1` got worse,
+  because neither moved between the two runs and the label set did.
+- **The baseline file still records no dataset identifier.** The gap D-011
+  wrote down is unchanged: the report schema carries `prompt_version`,
+  `model`, `generated_at`, `git_commit`, `pass_threshold`, `pass_rate`,
+  `per_category_accuracy`, `cumulative_cost_usd` and `cases`, and no dataset
+  name, version or hash, so which dataset a baseline was measured on is
+  recoverable from `git_commit` and from entries like this one. The reason it
+  is still not closed is the same narrow one: writing a new key into the
+  report means editing `evalkit/run_eval.py`, and this pull request states
+  that package is untouched.
+- **Rejected:** keeping the v1.1 baseline and explaining the relabelling in
+  prose (every future gate number would carry it, which is the situation D-011
+  was written to end); deleting the v1.1 baseline (it is the only record of
+  the gate's v1.1 behaviour, and D-011's case-by-case comparison points at
+  it); re-running until the pass rate comes back to 0.9 (fitting the reference
+  to the answer, which `docs/PREREGISTRATION.md` section 5 forbids upstream
+  and D-011 forbade here); rebuilding inside pull request #11 (it would put a
+  real-API run and a data import in one entry, and D-013 turned it down for
+  that reason).
+- **Cost:** $0.414243 for the run, on the same $2/$10 Sonnet and $1/$5 Haiku
+  prices D-010 fixed. It is an `evalkit` run, not an `experiments/` runner
+  run, so it does not appear in `experiments/results/cost_ledger.json` and
+  check C4 of `checks/experiments_acceptance.sh` is unaffected.
