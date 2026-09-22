@@ -413,3 +413,83 @@ gold v2 is their majority, and the protocol is registered before any comparison
   recorded the v1.1 rebuild. Nothing here changes `evalkit/**`, the raw data or
   any published number; the recomputation on gold v2 is an analysis re-run and
   belongs to the import pull request.
+
+## D-013: the three sheets are in, gold v2 is sealed, the dataset moves to v2.0, and the gold v2 tables are published beside the v1.1 ones
+
+- **Chose:** this pull request imports the two outside returns, builds and
+  seals gold v2, publishes the recomputed tables beside the pre-registered
+  ones, and moves `golden_dataset.json` to `dataset_version: v2.0`.
+  `experiments/data/annotations/a2_labels.json` and `a3_labels.json` are
+  written by `experiments/import_annotations.py` from the notes-blanked copies
+  whose sha256 values `docs/PREREGISTRATION.md` section 9 registered on
+  arrival: A2's corrected return, `dec604a0...`, annotated 2026-09-21, and
+  A3's first return, `f4819757...`, annotated 2026-09-22. Each hash was fixed
+  in a documentation-only pull request that precedes this one (#9 and #10), so
+  the commit that registers a hash is an ancestor of the commit that imports
+  the file it pins. The two notes-blanked copies themselves enter version
+  control in this pull request's second commit, as
+  `experiments/data/a2_category_labels_2026-09-21.csv` and
+  `experiments/data/a3_category_labels_2026-09-22.csv`, byte for byte and
+  under those same two hashes, and section 9 gains a 2026-09-22 entry that
+  records the two files, repeats their hashes and releases the case id the
+  2026-09-21 entry held back.
+- **Gold v2 is the `main` regime, and it is sealed.**
+  `experiments/data/gold_v2.json` is the output of `experiments/gold_v2.py
+  --as-of 2026-09-22` with all three sheets present: 70 labels, 69 of them the
+  majority of the three annotators and one, `case-027`, ruled on by the author
+  after the three disagreed. No case took the `fallback_v1.1` route and
+  `n_adjudicated_pending` is 0. The ruling was made from the email text in the
+  handout and that case's three human labels and nothing else, on a queue
+  `--queue-out` wrote outside the repository and `--rulings` read back in; the
+  queue file is not committed. The file carries `sealed: true` and
+  `sealed_on: 2026-09-22`.
+- **The analysis ran before the dataset moved, and that order is the point.**
+  `python -m experiments.analyze --seed 20260920` was run while
+  `golden_dataset.json` was still v1.1, and `experiments/apply_gold_v2.py
+  --write` moved the envelope to v2.0 afterwards. `analyze.py` reads the label
+  set for its main tables from the dataset on disk, so the reverse order would
+  have rewritten the pre-registered confirmatory tables with gold v2 numbers
+  under their registered filenames. Run this way, no v1.1 table moved a byte:
+  `experiments/results/tables/e4_kappa.csv` gains 14 rows and changes none,
+  `MANIFEST.json` is regenerated, and the recomputation lands in eleven
+  `*_gold_v2.csv` tables plus `gold_v2_diff.csv`. That is section 9's
+  After the two copies were committed, the `sheet_file` field of
+  `a2_labels.json` and `a3_labels.json` was set to the committed file names
+  (`a2_category_labels_2026-09-21.csv`, `a3_category_labels_2026-09-22.csv`);
+  the bytes those names point to are the ones `sheet_sha256` already pinned,
+  and no other field of either file changed.
+  beside-not-into rule, and it keeps "the published v1.1 numbers did not
+  move" checkable by hashing the files rather than by reading a family
+  column.
+- **What moved inside the dataset.** `dataset_version` v1.1 -> v2.0; five of
+  the 70 `expected_category` values changed (`case-015`, `case-020`,
+  `case-021`, `case-051`, `case-054`); `labeled_by` no longer carries a
+  person and records the decision route instead, `majority` on 69 cases and
+  `adjudicated` on one; `labeled_at` reads 2026-09-22 on all 70, the seal date
+  section 9 gives to `majority` and `adjudicated` cases, no case having kept a
+  fallback label. `tests/test_golden_dataset.py` asserts the new version,
+  which is the one edit `apply_gold_v2.py` announces it requires. `pytest -q`
+  is 114 passed and `bash checks/experiments_acceptance.sh` reports C1 through
+  C7 PASS.
+- **Consequence, tracked separately:** anyone who re-runs
+  `experiments.analyze` from this commit gets main tables that disagree with
+  the ones committed here, because the dataset on disk is now v2.0 while the
+  committed main tables were computed on v1.1. Both sets are what they say
+  they are; what is missing is a way to reproduce the first without checking
+  out an older dataset. The fix -- pinning the v1.1 labels in a file of their
+  own, for example `experiments/data/golden_dataset_v1.1.json`, and having the
+  confirmatory tables read that -- belongs to the next pull request, and this
+  one does not touch `experiments/analyze.py`.
+- **Also tracked separately:** the CI baseline, `eval_reports/baseline.json`,
+  is rebuilt once on v2.0 as a single real-API `evalkit` run and gets its own
+  entry, the way D-011 recorded the v1.1 rebuild. It is not done here, and
+  nothing in this pull request touches `eval_reports/**`, `prompts/**` or
+  `evalkit/**`.
+- **Rejected:** moving the dataset to v2.0 first and analysing afterwards --
+  the pre-registered tables would come back carrying gold v2 numbers under
+  their registered names, and the sentence above about v1.1 not moving would
+  stop being true. Writing the gold v2 numbers into the v1.1 tables rather
+  than beside them -- the same loss, ruled out in section 9 before any of
+  these numbers existed. Holding the import until the baseline rebuild is done
+  -- it would put a real-API run and a data import in one pull request and one
+  entry, and the rebuild needs the dataset this pull request ships.

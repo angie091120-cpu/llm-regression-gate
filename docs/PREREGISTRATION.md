@@ -1197,6 +1197,34 @@ annotators -- A1, A2's corrected return, and A3 -- have now returned; the
 import and gold v2 are the work of a later pull request, and this one
 changes documentation only and opens no labelling file.
 
+**2026-09-22, gold v2 is sealed, the case id held back on 2026-09-21 is
+released, and the two notes-blanked copies enter version control.** Gold v2
+was built and sealed on 2026-09-22 with all three sheets present. It is the
+`main` regime, and of its 70 cases 69 took the majority of the three
+annotators and 1 was adjudicated by the author.
+
+The entry dated 2026-09-21 held one case id back until gold v2 existed: the
+one cell A2 corrected to a category that was neither of the two originally
+written. That case is `case-003`. Gold v2 exists as of this entry, so the
+id is released here, as that entry undertook it would be. The decision path
+the case took in gold v2 is the one `experiments/data/gold_v2.json` records
+for `case-003` under `labeled_by`, which is `majority`. The path is named
+here and the category value is not; the file carries the value for a reader
+who wants it.
+
+The two notes-blanked copies enter version control in this pull request,
+under the rule fixed above that the copy is what enters version control,
+byte for byte, and under names that follow
+`experiments/data/a1_category_labels_2026-09-19.csv`. They are
+`experiments/data/a2_category_labels_2026-09-21.csv`, sha256
+`dec604a0c9ecdd9fda81cc63c51687b9fc147833f2e12da6cf5bb9bcc0899846`, and
+`experiments/data/a3_category_labels_2026-09-22.csv`, sha256
+`f4819757e87e775f04799d8536f9d029cd52e60e32ab5ca80336c9647a8901f2`.
+Neither value differs by a character from the hash this section registered
+for that file on the day it arrived, in the entries dated 2026-09-21 and
+2026-09-22 above, and `sha256sum` on the two committed paths recomputes
+both.
+
 ## 10. E1 in full
 
 Written 2026-09-14, before the first degraded-prompt call. Section 4 fixes

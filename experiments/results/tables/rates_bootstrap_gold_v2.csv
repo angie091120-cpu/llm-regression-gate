@@ -1,0 +1,13 @@
+exp_id,run_id,prompt_version,metric,n_cases,n_observations,estimate,ci_low,ci_high,method,seed,n_boot
+e0_noise,e0_noise_20260914T115913Z,v1,category_match,70,350,0.871429,0.785714,0.942857,case_cluster_bootstrap_percentile,20260920,10000
+e0_noise,e0_noise_20260914T115913Z,v1,passed,70,350,0.871429,0.785714,0.942857,case_cluster_bootstrap_percentile,20260920,10000
+e1_v2a,e1_v2a_20260915T153333Z,v2a,category_match,70,210,0.871429,0.790476,0.942857,case_cluster_bootstrap_percentile,20260920,10000
+e1_v2a,e1_v2a_20260915T153333Z,v2a,passed,70,210,0.866667,0.785714,0.938095,case_cluster_bootstrap_percentile,20260920,10000
+e1_v2b,e1_v2b_20260915T153711Z,v2b,category_match,70,210,0.895238,0.819048,0.957143,case_cluster_bootstrap_percentile,20260920,10000
+e1_v2b,e1_v2b_20260915T153711Z,v2b,passed,70,210,0.890476,0.814286,0.957143,case_cluster_bootstrap_percentile,20260920,10000
+e1_v2c,e1_v2c_20260915T154039Z,v2c,category_match,70,210,0.790476,0.695238,0.880952,case_cluster_bootstrap_percentile,20260920,10000
+e1_v2c,e1_v2c_20260915T154039Z,v2c,passed,70,210,0.790476,0.695238,0.880952,case_cluster_bootstrap_percentile,20260920,10000
+e1_v2d,e1_v2d_20260915T154407Z,v2d,category_match,70,210,0.876190,0.795238,0.947619,case_cluster_bootstrap_percentile,20260920,10000
+e1_v2d,e1_v2d_20260915T154407Z,v2d,passed,70,210,0.876190,0.795238,0.947619,case_cluster_bootstrap_percentile,20260920,10000
+smoke,smoke_2026-09-14,v1,category_match,10,10,0.900000,0.700000,1.000000,case_cluster_bootstrap_percentile,20260920,10000
+smoke,smoke_2026-09-14,v1,passed,10,10,0.900000,0.700000,1.000000,case_cluster_bootstrap_percentile,20260920,10000

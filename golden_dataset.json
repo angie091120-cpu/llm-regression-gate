@@ -1,5 +1,5 @@
 {
-  "dataset_version": "v1.1",
+  "dataset_version": "v2.0",
   "cases": [
     {
       "id": "case-001",
@@ -13,8 +13,8 @@
       "expected_difficulty": "easy",
       "notes": "標準 billing 情境：發票抬頭／統編變更請求，資訊完整、無歧義。",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-002",
@@ -28,8 +28,8 @@
       "expected_difficulty": "easy",
       "notes": "標準 technical 情境：文件連結失效阻擋整合進度。",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-003",
@@ -43,8 +43,8 @@
       "expected_difficulty": "ambiguous",
       "notes": "跨 account／billing 的模糊案例：登入問題根因可能是帳號設定，也可能是方案人數上限，客戶自己也不確定。",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-004",
@@ -58,8 +58,8 @@
       "expected_difficulty": "easy",
       "notes": "標準 general 情境：服務管道詢問，非故障通報。",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-005",
@@ -73,8 +73,8 @@
       "expected_difficulty": "easy",
       "notes": "標準 billing 情境：方案週期切換與費用銜接問題。",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-006",
@@ -88,8 +88,8 @@
       "expected_difficulty": "ambiguous",
       "notes": "數字對不上可能是真的 bug，也可能是統計口徑差異（例如匯出排除了草稿工單），連客戶自己都不確定，判斷上有難度。",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-007",
@@ -103,8 +103,8 @@
       "expected_difficulty": "easy",
       "notes": "標準 account 情境：密碼重設請求。",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-008",
@@ -118,8 +118,8 @@
       "expected_difficulty": "easy",
       "notes": "標準 general 情境：功能／在地化規劃詢問。",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-009",
@@ -133,8 +133,8 @@
       "expected_difficulty": "ambiguous",
       "notes": "根因是 billing（扣款失敗），但客戶當下最急迫的痛點是帳號存取權被鎖，跨 billing／account，且情緒緊急。",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-010",
@@ -148,8 +148,8 @@
       "expected_difficulty": "easy",
       "notes": "標準 technical 情境：單一裝置的 App 閃退回報。",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-011",
@@ -163,8 +163,8 @@
       "expected_difficulty": "easy",
       "notes": "標準 account 情境：離職交接的帳號轉移流程詢問。",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-012",
@@ -178,8 +178,8 @@
       "expected_difficulty": "edge",
       "notes": "極短句＋反諷語氣組合：測試模型是否被「太棒了」字面誤導成正面情緒，而非讀出真正的當機抱怨。〔2026-07-20 定案原則：有具體症狀描述才標 technical（如 case-034），純情緒抱怨無可排查資訊→general。〕",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-013",
@@ -193,8 +193,8 @@
       "expected_difficulty": "easy",
       "notes": "標準 billing 情境：補開發票請求。",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-014",
@@ -208,8 +208,8 @@
       "expected_difficulty": "ambiguous",
       "notes": "偶發性、無規律的整合故障，客戶自己也無法判斷是我方 webhook 還是第三方 Zapier 的問題，需要工程排查才能定案。",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-015",
@@ -218,13 +218,13 @@
       "draft_category": "account",
       "draft_summary": "客戶反映帳號因異常活動偵測被誤判停用，遠端團隊多地登入觸發風控，急需恢復。",
       "draft_difficulty": "edge",
-      "expected_category": "account",
+      "expected_category": "technical",
       "expected_summary": "客戶反映帳號因異常活動偵測被誤判停用，遠端團隊多地登入觸發風控，急需恢復。",
       "expected_difficulty": "edge",
       "notes": "高急迫度的疑似誤判案例：風控機制與正常遠端團隊行為衝突，需要人工判斷是否為誤判，非單純的帳號設定請求。",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-016",
@@ -238,8 +238,8 @@
       "expected_difficulty": "easy",
       "notes": "標準 general 情境：企業方案的業務詢價。",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-017",
@@ -253,8 +253,8 @@
       "expected_difficulty": "ambiguous",
       "notes": "幣別混用（USD 計價／TWD 報帳需求）：是單純的財務流程問題，也可能牽涉到系統是否支援雙幣別開票，判斷空間存在。",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-018",
@@ -268,8 +268,8 @@
       "expected_difficulty": "easy",
       "notes": "標準 technical 情境：SSO 網域驗證失敗，客戶已排除自身 DNS 設定延遲的可能性。",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-019",
@@ -283,8 +283,8 @@
       "expected_difficulty": "easy",
       "notes": "標準 account 情境：重複帳號合併請求。",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-020",
@@ -293,13 +293,13 @@
       "draft_category": "general",
       "draft_summary": "客戶質疑官網標示美金價格與結帳頁台幣金額換算是否合理，語氣帶有質疑。",
       "draft_difficulty": "edge",
-      "expected_category": "general",
+      "expected_category": "billing",
       "expected_summary": "客戶質疑官網標示美金價格與結帳頁台幣金額換算是否合理，語氣帶有質疑。",
       "expected_difficulty": "edge",
       "notes": "幣別混用（USD／TWD）＋輕微反諷語氣（「坑人」），且介於 billing 計價疑問與 general 詢價之間，是本組合最刁鑽的邊界案例之一。〔2026-07-20 定案原則：與 case-068 對照——尚未購買的 pre-sale 定價爭議→general；已發生扣款的帳務爭議→billing。〕",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-021",
@@ -308,13 +308,13 @@
       "draft_category": "billing",
       "draft_summary": "客戶反映活動優惠碼結帳時顯示無效，但主辦方告知仍在有效期內。",
       "draft_difficulty": "ambiguous",
-      "expected_category": "billing",
+      "expected_category": "general",
       "expected_summary": "客戶反映活動優惠碼結帳時顯示無效，但主辦方告知仍在有效期內。",
       "expected_difficulty": "ambiguous",
       "notes": "客戶說法與系統行為互相矛盾（活動方說有效、系統顯示無效），需要後台查證才能判定是設定錯誤還是客戶誤解條件。",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-022",
@@ -328,8 +328,8 @@
       "expected_difficulty": "easy",
       "notes": "標準 technical 情境：靜態資源載入異常回報。",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-023",
@@ -343,8 +343,8 @@
       "expected_difficulty": "easy",
       "notes": "標準 account 情境：角色權限調整操作詢問。",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-024",
@@ -358,8 +358,8 @@
       "expected_difficulty": "easy",
       "notes": "標準 general 情境：功能建議。",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-025",
@@ -373,8 +373,8 @@
       "expected_difficulty": "edge",
       "notes": "極短句、缺乏上下文：考驗模型是否會過度腦補細節，或誠實地在資訊不足下仍給出合理的最佳猜測分類。",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-026",
@@ -388,8 +388,8 @@
       "expected_difficulty": "ambiguous",
       "notes": "客戶明確提出兩種可能成因（維護／已知效能問題）自己也不確定，屬於需要後台狀態資訊才能定案的模糊案例。",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-027",
@@ -403,8 +403,8 @@
       "expected_difficulty": "easy",
       "notes": "標準 account 情境：2FA 強制啟用設定詢問。",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "adjudicated",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-028",
@@ -418,8 +418,8 @@
       "expected_difficulty": "easy",
       "notes": "標準 general 情境：純感謝信，無待辦事項。",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-029",
@@ -433,8 +433,8 @@
       "expected_difficulty": "ambiguous",
       "notes": "價格爭議＋內部流程壓力（需要簽核說法），情緒偏向不滿但尚未到投訴等級，難度在於判斷這屬於一般billing 詢問還是需要升級處理的爭議。",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-030",
@@ -448,8 +448,8 @@
       "expected_difficulty": "easy",
       "notes": "標準 technical 情境：資料同步延遲回報。",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-031",
@@ -463,8 +463,8 @@
       "expected_difficulty": "ambiguous",
       "notes": "降級動作本身屬 billing，但客戶真正關切的是 account／資料保存政策，跨類別的典型案例。〔2026-07-20 人工定案：原 draft 標 account，定案改 billing 與 case-052 統一——主動作「降級」屬帳務變更，資料保存為附帶疑問。〕",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-032",
@@ -478,8 +478,8 @@
       "expected_difficulty": "easy",
       "notes": "標準 general 情境：教育訓練資源詢問。",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-033",
@@ -493,8 +493,8 @@
       "expected_difficulty": "ambiguous",
       "notes": "同時提出兩個可能解法（延長試用／暫緩扣款），需要客服判斷哪個更符合客戶真正需求，非單一動作的請求。",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-034",
@@ -508,8 +508,8 @@
       "expected_difficulty": "edge",
       "notes": "刻意含注音文殘留字（「ㄓㄨㄥ」＝中／讀取中）與錯字（「我門」＝我們），測試模型對非標準輸入的穩健度。",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-035",
@@ -523,8 +523,8 @@
       "expected_difficulty": "easy",
       "notes": "標準 account 情境：新增管理員角色詢問。",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-036",
@@ -538,8 +538,8 @@
       "expected_difficulty": "easy",
       "notes": "Standard billing case: complete, unambiguous address-update request.",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-037",
@@ -553,8 +553,8 @@
       "expected_difficulty": "easy",
       "notes": "Standard technical case: integration failure tied to a specific recent action (secret rotation).",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-038",
@@ -568,8 +568,8 @@
       "expected_difficulty": "ambiguous",
       "notes": "Self-inflicted permission lockout that also blocks billing access -- a genuine account/billing boundary case with real urgency.",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-039",
@@ -583,8 +583,8 @@
       "expected_difficulty": "easy",
       "notes": "Standard general case: feature request, no urgency.",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-040",
@@ -598,8 +598,8 @@
       "expected_difficulty": "easy",
       "notes": "Standard billing case: clear refund request with acknowledged root cause.",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-041",
@@ -613,8 +613,8 @@
       "expected_difficulty": "ambiguous",
       "notes": "Customer explicitly frames two plausible causes (plan limit vs. misconfiguration) and can't tell which -- genuinely needs investigation to resolve.",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-042",
@@ -628,8 +628,8 @@
       "expected_difficulty": "easy",
       "notes": "Standard account case: ownership transfer procedure request.",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-043",
@@ -643,8 +643,8 @@
       "expected_difficulty": "edge",
       "notes": "Very short input combined with sarcasm -- tests whether the model is misled by surface-positive words like 'love it' into missing the underlying outage complaint.〔2026-07-20 labeling principle: concrete, troubleshootable symptoms → technical (cf. case-034); pure venting with no diagnostic detail → general.〕",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-044",
@@ -658,8 +658,8 @@
       "expected_difficulty": "easy",
       "notes": "Standard billing case: proration policy question.",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-045",
@@ -673,8 +673,8 @@
       "expected_difficulty": "easy",
       "notes": "Standard technical case: export failure with a clear repro pattern (large range fails, small range works).",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-046",
@@ -688,8 +688,8 @@
       "expected_difficulty": "easy",
       "notes": "Standard account case: offboarding blocked by a UI/state inconsistency.",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-047",
@@ -703,8 +703,8 @@
       "expected_difficulty": "easy",
       "notes": "Standard general case: compliance-documentation request tied to a sales process.",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-048",
@@ -718,8 +718,8 @@
       "expected_difficulty": "ambiguous",
       "notes": "Currency mixing (EUR quote vs. USD invoice) with an implicit dispute over which figure is contractually correct -- needs a definitive answer, not just an explanation.",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-049",
@@ -733,8 +733,8 @@
       "expected_difficulty": "easy",
       "notes": "Standard technical case: regression tied to a specific app update, settings already ruled out by the customer.",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-050",
@@ -748,8 +748,8 @@
       "expected_difficulty": "easy",
       "notes": "Standard account case: SSO domain conflict with a plausible self-diagnosed cause.",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-051",
@@ -758,13 +758,13 @@
       "draft_category": "general",
       "draft_summary": "Customer finds the pricing page confusing and requests a plain plan comparison table.",
       "draft_difficulty": "easy",
-      "expected_category": "general",
+      "expected_category": "billing",
       "expected_summary": "Customer finds the pricing page confusing and requests a plain plan comparison table.",
       "expected_difficulty": "easy",
       "notes": "Standard general case: UX complaint paired with a concrete, actionable ask.",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-052",
@@ -778,8 +778,8 @@
       "expected_difficulty": "ambiguous",
       "notes": "Downgrade request (billing) intertwined with a data-retention condition (account/data) -- the answer has to cover both halves to actually satisfy the customer.〔2026-07-20 human-verified: kept billing; paired with case-031 (same construct), both unified under billing — the primary action (downgrade) is a billing change, data retention is the rider.〕",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-053",
@@ -793,8 +793,8 @@
       "expected_difficulty": "easy",
       "notes": "Standard technical case: reporting/timezone configuration question.",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-054",
@@ -803,13 +803,13 @@
       "draft_category": "account",
       "draft_summary": "Customer's mandatory 2FA rollout is locking out half the team with persistent 'invalid code' errors.",
       "draft_difficulty": "easy",
-      "expected_category": "account",
+      "expected_category": "technical",
       "expected_summary": "Customer's mandatory 2FA rollout is locking out half the team with persistent 'invalid code' errors.",
       "expected_difficulty": "easy",
       "notes": "Standard account case: security-feature rollout gone wrong, high urgency but clearly an account/access issue.",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-055",
@@ -823,8 +823,8 @@
       "expected_difficulty": "edge",
       "notes": "Deliberately vague, low-information complaint -- tests whether the model forces a specific, defensible category guess rather than stalling, while still flagging (in the summary) that detail is missing.",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-056",
@@ -838,8 +838,8 @@
       "expected_difficulty": "easy",
       "notes": "Standard billing case: vendor-documentation request tied to payment processing.",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-057",
@@ -853,8 +853,8 @@
       "expected_difficulty": "easy",
       "notes": "Standard technical case: API consistency-model question, well-specified repro.",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-058",
@@ -868,8 +868,8 @@
       "expected_difficulty": "easy",
       "notes": "Standard account case: permission-granularity request.",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-059",
@@ -883,8 +883,8 @@
       "expected_difficulty": "easy",
       "notes": "Standard general case: pre-sales/integration capability question.",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-060",
@@ -898,8 +898,8 @@
       "expected_difficulty": "easy",
       "notes": "Standard billing case: bulk historical invoice request.",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-061",
@@ -913,8 +913,8 @@
       "expected_difficulty": "ambiguous",
       "notes": "Customer offers their own hypothesis (indexing delay) that is plausible but unconfirmed -- the model has to classify without knowing if that hypothesis is actually correct.",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-062",
@@ -928,8 +928,8 @@
       "expected_difficulty": "easy",
       "notes": "Standard account case: account email change request.",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-063",
@@ -943,8 +943,8 @@
       "expected_difficulty": "easy",
       "notes": "Standard general case: pure thank-you note, no action needed.",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-064",
@@ -958,8 +958,8 @@
       "expected_difficulty": "easy",
       "notes": "標準 billing 情境的中英夾雜版本：截止日期查詢。",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-065",
@@ -973,8 +973,8 @@
       "expected_difficulty": "ambiguous",
       "notes": "客戶提出具體假設（近期部署導致），但無法自行確認，需後台查證，屬跨語言的模糊技術案例。",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-066",
@@ -988,8 +988,8 @@
       "expected_difficulty": "easy",
       "notes": "標準 account 情境的中英夾雜版本：角色升級請求，附核准佐證。",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-067",
@@ -1003,8 +1003,8 @@
       "expected_difficulty": "easy",
       "notes": "標準 general 情境的中英夾雜版本：合約/評估用的 SLA 數字詢問。",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-068",
@@ -1018,8 +1018,8 @@
       "expected_difficulty": "edge",
       "notes": "中英夾雜＋幣別混用（USD／TWD）＋反諷（「佛心」為反話），是整份資料集中語言與語氣複雜度最高的案例之一。〔2026-07-20 定案原則：與 case-020 對照——已發生信用卡扣款→billing；未購買的 pre-sale 詢價爭議→general。〕",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-069",
@@ -1033,8 +1033,8 @@
       "expected_difficulty": "easy",
       "notes": "標準 technical 情境的中英夾雜版本：SSO metadata 上傳失敗，客戶已提供錯誤訊息與排除線索。",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     },
     {
       "id": "case-070",
@@ -1048,8 +1048,8 @@
       "expected_difficulty": "ambiguous",
       "notes": "介於 general 詢價與 billing 折扣申請之間的模糊案例：既是產品評估詢問，也隱含具體的價格協商請求。",
       "label_status": "confirmed",
-      "labeled_by": "Elijah Hsu",
-      "labeled_at": "2026-07-20"
+      "labeled_by": "majority",
+      "labeled_at": "2026-09-22"
     }
   ]
 }
