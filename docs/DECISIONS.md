@@ -426,7 +426,13 @@ gold v2 is their majority, and the protocol is registered before any comparison
   A3's first return, `f4819757...`, annotated 2026-09-22. Each hash was fixed
   in a documentation-only pull request that precedes this one (#9 and #10), so
   the commit that registers a hash is an ancestor of the commit that imports
-  the file it pins.
+  the file it pins. The two notes-blanked copies themselves enter version
+  control in this pull request's second commit, as
+  `experiments/data/a2_category_labels_2026-09-21.csv` and
+  `experiments/data/a3_category_labels_2026-09-22.csv`, byte for byte and
+  under those same two hashes, and section 9 gains a 2026-09-22 entry that
+  records the two files, repeats their hashes and releases the case id the
+  2026-09-21 entry held back.
 - **Gold v2 is the `main` regime, and it is sealed.**
   `experiments/data/gold_v2.json` is the output of `experiments/gold_v2.py
   --as-of 2026-09-22` with all three sheets present: 70 labels, 69 of them the
@@ -445,10 +451,10 @@ gold v2 is their majority, and the protocol is registered before any comparison
   have rewritten the pre-registered confirmatory tables with gold v2 numbers
   under their registered filenames. Run this way, no v1.1 table moved a byte:
   `experiments/results/tables/e4_kappa.csv` gains 14 rows and changes none,
-  `MANIFEST.json` is regenerated, and the recomputation lands in twelve new
-  files -- eleven `*_gold_v2.csv` tables and `gold_v2_diff.csv`. That is
-  section 9's beside-not-into rule, and it keeps "the published v1.1 numbers
-  did not move" checkable by hashing the files rather than by reading a family
+  `MANIFEST.json` is regenerated, and the recomputation lands in eleven
+  `*_gold_v2.csv` tables plus `gold_v2_diff.csv`. That is section 9's
+  beside-not-into rule, and it keeps "the published v1.1 numbers did not
+  move" checkable by hashing the files rather than by reading a family
   column.
 - **What moved inside the dataset.** `dataset_version` v1.1 -> v2.0; five of
   the 70 `expected_category` values changed (`case-015`, `case-020`,
