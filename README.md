@@ -4,7 +4,7 @@ CI-style regression testing for LLM prompt changes — every prompt edit is eval
 
 > Spec'd, directed, and reviewed by me; implemented with an AI engineering team I orchestrate.
 
-**Status:** MVP built — 46 tests pass (fully mocked, no API key needed) and the acceptance script in [`checks/acceptance.sh`](checks/acceptance.sh) runs the machine-checkable criteria from SPEC.md §7. The regression baseline (`eval_reports/baseline.json`) is a real-API run of `prompts/v1` over all 70 confirmed cases: rebuilt on dataset v2.0 from the run of 2026-09-22 16:24 UTC (2026-09-23 00:24 +08:00), pass rate 0.8714 (61/70). The two runs it replaced are kept and read by nothing — `eval_reports/baseline-2026-09-17-dataset-v1.1.json` (dataset v1.1, 63/70) and `eval_reports/baseline-2026-09-14-dataset-v1.json` (dataset v1, 64/70). [docs/DECISIONS.md D-014](docs/DECISIONS.md) says why the baseline follows the dataset version and which six cases changed verdict between the two newest; D-011 does the same for the rebuild before it. See *CI gate* below.
+**Status:** MVP built — 114 tests pass (fully mocked, no API key needed): 46 cover the tool itself and 68 the experiment tooling under `experiments/`, and the acceptance script in [`checks/acceptance.sh`](checks/acceptance.sh) runs the machine-checkable criteria from SPEC.md §7. The regression baseline (`eval_reports/baseline.json`) is a real-API run of `prompts/v1` over all 70 confirmed cases: rebuilt on dataset v2.0 from the run of 2026-09-22 16:24 UTC (2026-09-23 00:24 +08:00), pass rate 0.8714 (61/70). The two runs it replaced are kept and read by nothing — `eval_reports/baseline-2026-09-17-dataset-v1.1.json` (dataset v1.1, 63/70) and `eval_reports/baseline-2026-09-14-dataset-v1.json` (dataset v1, 64/70). [docs/DECISIONS.md D-014](docs/DECISIONS.md) says why the baseline follows the dataset version and which six cases changed verdict between the two newest; D-011 does the same for the rebuild before it. See *CI gate* below.
 
 ## Why
 
@@ -59,11 +59,18 @@ evaluation. `evalkit.run_eval` only ever evaluates `label_status: confirmed`
 cases and warns loudly about (and refuses to run against) anything that reverts
 to draft or is missing an expected label (SPEC.md §3). The cases are fictional:
 every company, person, domain and email address in them is invented, and any
-resemblance to a real one is coincidence. v1.1 (2026-09-17) is the only change
-to the file since it was frozen -- `case-007`'s email address moved to a domain
+resemblance to a real one is coincidence. The file has changed twice since it
+was frozen. v1.1 (2026-09-17) moved `case-007`'s email address to a domain
 reserved for documentation, the one it carried having turned out to belong to a
-real company. Reason, scope and both sha256 are in `docs/PREREGISTRATION.md`
-section 9; no label, no category and no other case moved.
+real company; reason, scope and both sha256 are in `docs/PREREGISTRATION.md`
+section 9, and no label, no category and no other case moved. v2.0
+(2026-09-22) is the relabelling: three people labelled the same 70 emails
+blind, each case takes the majority of the three, the author ruled on the one
+case all three split, and five of the 70 `expected_category` values changed
+([PR #11](https://github.com/angie091120-cpu/llm-regression-gate/pull/11),
+[docs/DECISIONS.md D-013](docs/DECISIONS.md)). The pre-registered tables in
+`experiments/` stay the confirmatory result on the v1.1 labels; the versions
+recomputed on v2.0 sit beside them as a sensitivity analysis.
 
 See [SPEC.md](SPEC.md) for the frozen specification and acceptance criteria, and [docs/DECISIONS.md](docs/DECISIONS.md) for design decisions.
 
