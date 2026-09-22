@@ -1,17 +1,17 @@
 {
   "prompt_version": "v1",
   "model": "claude-haiku-4-5",
-  "generated_at": "2026-09-22T16:24:18.972622+00:00",
-  "git_commit": "056c6ac",
+  "generated_at": "2026-09-16T19:10:31.088897+00:00",
+  "git_commit": "99f6a8b",
   "pass_threshold": 3,
-  "pass_rate": 0.8714,
+  "pass_rate": 0.9,
   "per_category_accuracy": {
-    "billing": 0.9,
-    "technical": 0.85,
+    "billing": 0.8947,
+    "technical": 0.9444,
     "account": 1.0,
-    "general": 0.75
+    "general": 0.7647
   },
-  "cumulative_cost_usd": 0.414243,
+  "cumulative_cost_usd": 0.419296,
   "cases": [
     {
       "id": "case-001",
@@ -19,16 +19,16 @@
       "expected_category": "billing",
       "predicted_category": "billing",
       "expected_summary": "客戶請求更新訂閱發票的公司抬頭與統一編號。",
-      "predicted_summary": "客戶請求更新訂閱發票的公司抬頭為「星曜雲端股份有限公司」及統一編號12345678。",
+      "predicted_summary": "客戶要求更新訂閱發票的公司抬頭為「星曜雲端股份有限公司」及統編12345678。",
       "category_match": true,
       "judge_score": 5,
       "passed": true,
-      "latency_ms": 4273.64,
+      "latency_ms": 2975.84,
       "tokens": {
-        "input": 2821,
-        "output": 230
+        "input": 2819,
+        "output": 235
       },
-      "cost_usd": 0.005771
+      "cost_usd": 0.005827
     },
     {
       "id": "case-002",
@@ -36,16 +36,16 @@
       "expected_category": "technical",
       "predicted_category": "technical",
       "expected_summary": "客戶反映 API 串接文件連結失效，需要新的端點資訊。",
-      "predicted_summary": "客戶在 Webhook 整合時遇到文件中的 API 範例連結為 404，需要確認正確的端點。",
+      "predicted_summary": "客戶的整合工程師在 Webhook API 文件中發現 404 錯誤的範例連結，需要確認正確的端點。",
       "category_match": true,
       "judge_score": 5,
       "passed": true,
-      "latency_ms": 4321.21,
+      "latency_ms": 3068.18,
       "tokens": {
-        "input": 2793,
-        "output": 217
+        "input": 2797,
+        "output": 290
       },
-      "cost_usd": 0.005624
+      "cost_usd": 0.006342
     },
     {
       "id": "case-003",
@@ -53,16 +53,16 @@
       "expected_category": "account",
       "predicted_category": "account",
       "expected_summary": "客戶反映團隊成員登入被系統擋下，顯示已達人數上限但後台顯示仍有名額，需釐清是帳號問題還是需升級方案。",
-      "predicted_summary": "管理員無法為新成員分配座位，後台顯示有名額但登入時出現人數上限錯誤。",
+      "predicted_summary": "客戶新增團隊成員時遇到「人數上限」錯誤，但後台顯示仍有名額，需確認座位限制問題。",
       "category_match": true,
       "judge_score": 3,
       "passed": true,
-      "latency_ms": 4342.09,
+      "latency_ms": 3242.85,
       "tokens": {
-        "input": 2858,
-        "output": 310
+        "input": 2868,
+        "output": 508
       },
-      "cost_usd": 0.006674
+      "cost_usd": 0.008624
     },
     {
       "id": "case-004",
@@ -70,16 +70,16 @@
       "expected_category": "general",
       "predicted_category": "general",
       "expected_summary": "客戶詢問是否提供中文電話客服管道。",
-      "predicted_summary": "客戶詢問是否有中文客服可提供電話支援。",
+      "predicted_summary": "客戶詢問是否有中文客服支援及電話溝通服務。",
       "category_match": true,
       "judge_score": 5,
       "passed": true,
-      "latency_ms": 4247.19,
+      "latency_ms": 2870.16,
       "tokens": {
-        "input": 2725,
-        "output": 178
+        "input": 2728,
+        "output": 214
       },
-      "cost_usd": 0.005207
+      "cost_usd": 0.005558
     },
     {
       "id": "case-005",
@@ -87,16 +87,16 @@
       "expected_category": "billing",
       "predicted_category": "billing",
       "expected_summary": "客戶詢問如何將月繳方案切換為年繳，並確認是否影響當期已付款項。",
-      "predicted_summary": "客戶詢問如何從月繳改為年繳方案，及是否會影響已支付的費用。",
+      "predicted_summary": "客戶詢問從月繳升級至年繳方案的流程、折扣，以及是否會影響已繳費用。",
       "category_match": true,
       "judge_score": 5,
       "passed": true,
-      "latency_ms": 4274.75,
+      "latency_ms": 3126.56,
       "tokens": {
-        "input": 2745,
-        "output": 239
+        "input": 2751,
+        "output": 231
       },
-      "cost_usd": 0.005801
+      "cost_usd": 0.005703
     },
     {
       "id": "case-006",
@@ -104,16 +104,16 @@
       "expected_category": "technical",
       "predicted_category": "technical",
       "expected_summary": "客戶反映匯出報表的工單總數與後台儀表板數字不一致，懷疑匯出功能有誤。",
-      "predicted_summary": "Customer reports discrepancy between exported CSV ticket count (842) and dashboard count (861), requesting confirmation of whether it's an export bug or a difference in calculation methodology.",
+      "predicted_summary": "Customer reports discrepancy between exported CSV ticket count (842) and dashboard display (861), requesting investigation into export functionality or data calculation differences.",
       "category_match": true,
       "judge_score": 5,
       "passed": true,
-      "latency_ms": 1208.47,
+      "latency_ms": 1501.88,
       "tokens": {
-        "input": 2875,
-        "output": 275
+        "input": 2866,
+        "output": 257
       },
-      "cost_usd": 0.006369
+      "cost_usd": 0.006201
     },
     {
       "id": "case-007",
@@ -121,16 +121,16 @@
       "expected_category": "account",
       "predicted_category": "account",
       "expected_summary": "客戶請求協助重設密碼，表示未收到重設信件。",
-      "predicted_summary": "客戶請求協助重設密碼，表示未收到重設信件，帳號為 lin.admin@example.com。",
+      "predicted_summary": "客戶請求協助重設密碼並提供帳號，表示未收到重設信件。",
       "category_match": true,
       "judge_score": 5,
       "passed": true,
-      "latency_ms": 980.59,
+      "latency_ms": 1293.18,
       "tokens": {
-        "input": 2728,
-        "output": 228
+        "input": 2719,
+        "output": 245
       },
-      "cost_usd": 0.005648
+      "cost_usd": 0.005835
     },
     {
       "id": "case-008",
@@ -138,16 +138,16 @@
       "expected_category": "general",
       "predicted_category": "general",
       "expected_summary": "客戶詢問後台介面是否有繁體中文版規劃。",
-      "predicted_summary": "客戶詢問 NebulaDesk 後台介面是否有繁體中文版本的規劃。",
+      "predicted_summary": "客戶詢問 NebulaDesk 後台介面是否規劃繁體中文版本支援。",
       "category_match": true,
       "judge_score": 5,
       "passed": true,
-      "latency_ms": 1222.65,
+      "latency_ms": 1419.61,
       "tokens": {
         "input": 2749,
-        "output": 250
+        "output": 323
       },
-      "cost_usd": 0.005912
+      "cost_usd": 0.006642
     },
     {
       "id": "case-009",
@@ -155,16 +155,16 @@
       "expected_category": "billing",
       "predicted_category": "account",
       "expected_summary": "客戶因信用卡過期扣款失敗，帳號被降級導致無法存取進行中的工單，情況緊急。",
-      "predicted_summary": "客戶因付款失敗帳號被降級導致無法存取工單，請求緊急恢復帳號存取權限。",
+      "predicted_summary": "客戶帳號因支付失敗被降級至免費版導致無法存取工單，需緊急恢復帳號存取權限。",
       "category_match": false,
-      "judge_score": 4,
+      "judge_score": 5,
       "passed": false,
-      "latency_ms": 1241.54,
+      "latency_ms": 1618.91,
       "tokens": {
-        "input": 2831,
-        "output": 306
+        "input": 2834,
+        "output": 283
       },
-      "cost_usd": 0.006572
+      "cost_usd": 0.006333
     },
     {
       "id": "case-010",
@@ -172,13 +172,13 @@
       "expected_category": "technical",
       "predicted_category": "technical",
       "expected_summary": "客戶反映特定 iPhone 更新 App 後開啟即閃退，其他裝置正常。",
-      "predicted_summary": "Customer reports NebulaDesk mobile app crashing on iPhone 15 after update, persists after reinstall.",
+      "predicted_summary": "NebulaDesk App crashes on customer's iPhone 15 after update; other devices unaffected.",
       "category_match": true,
       "judge_score": 5,
       "passed": true,
-      "latency_ms": 1050.2,
+      "latency_ms": 1334.05,
       "tokens": {
-        "input": 2774,
+        "input": 2769,
         "output": 293
       },
       "cost_usd": 0.006429
@@ -189,16 +189,16 @@
       "expected_category": "account",
       "predicted_category": "account",
       "expected_summary": "客戶詢問如何將離職員工的帳號權限與工單紀錄轉移給接手同事。",
-      "predicted_summary": "客戶需要將離職員工的帳號權限和待辦工單轉移給新接手的團隊成員。",
+      "predicted_summary": "客戶需要將離職員工的帳號權限和工單轉移給新接手的同事。",
       "category_match": true,
       "judge_score": 5,
       "passed": true,
-      "latency_ms": 1110.01,
+      "latency_ms": 1431.77,
       "tokens": {
-        "input": 2772,
-        "output": 261
+        "input": 2766,
+        "output": 212
       },
-      "cost_usd": 0.006048
+      "cost_usd": 0.005576
     },
     {
       "id": "case-012",
@@ -210,12 +210,12 @@
       "category_match": false,
       "judge_score": 3,
       "passed": false,
-      "latency_ms": 927.15,
+      "latency_ms": 1120.73,
       "tokens": {
         "input": 2609,
-        "output": 302
+        "output": 254
       },
-      "cost_usd": 0.006324
+      "cost_usd": 0.005844
     },
     {
       "id": "case-013",
@@ -223,16 +223,16 @@
       "expected_category": "billing",
       "predicted_category": "billing",
       "expected_summary": "客戶請求補發第二季合併發票，表示未收到六月份發票。",
-      "predicted_summary": "客戶請求補開第二季（4-6月）的合併發票，財務報帳所需，並表示未收到6月份發票信件。",
+      "predicted_summary": "客戶要求補開第二季（4-6月）的發票，並表示未收到6月份的發票信件。",
       "category_match": true,
       "judge_score": 5,
       "passed": true,
-      "latency_ms": 1083.93,
+      "latency_ms": 1306.51,
       "tokens": {
-        "input": 2747,
-        "output": 248
+        "input": 2738,
+        "output": 231
       },
-      "cost_usd": 0.00584
+      "cost_usd": 0.005697
     },
     {
       "id": "case-014",
@@ -240,33 +240,33 @@
       "expected_category": "technical",
       "predicted_category": "technical",
       "expected_summary": "客戶反映 Zapier 整合的新工單通知偶發性未觸發，成因待釐清。",
-      "predicted_summary": "客戶報告透過 Zapier 整合的工單建立 webhook 觸發不穩定，需要排查是否為 NebulaDesk webhook 問題。",
+      "predicted_summary": "客戶的 Zapier 工單同步 Slack 整合間歇性失效，懷疑是 NebulaDesk webhook 不穩定。",
       "category_match": true,
-      "judge_score": 4,
+      "judge_score": 3,
       "passed": true,
-      "latency_ms": 1234.28,
+      "latency_ms": 1618.51,
       "tokens": {
-        "input": 2833,
-        "output": 378
+        "input": 2828,
+        "output": 420
       },
-      "cost_usd": 0.007257
+      "cost_usd": 0.007687
     },
     {
       "id": "case-015",
       "language": "zh-tw",
-      "expected_category": "technical",
+      "expected_category": "account",
       "predicted_category": "account",
       "expected_summary": "客戶反映帳號因異常活動偵測被誤判停用，遠端團隊多地登入觸發風控，急需恢復。",
-      "predicted_summary": "客戶的帳號因異常活動偵測而被暫時停用，需要立即恢復帳號存取權限。",
-      "category_match": false,
+      "predicted_summary": "客戶帳號因異常活動被暫時停用，需要立即恢復以恢復營運。",
+      "category_match": true,
       "judge_score": 3,
-      "passed": false,
-      "latency_ms": 1084.11,
+      "passed": true,
+      "latency_ms": 1794.15,
       "tokens": {
-        "input": 2838,
-        "output": 267
+        "input": 2832,
+        "output": 340
       },
-      "cost_usd": 0.006203
+      "cost_usd": 0.006951
     },
     {
       "id": "case-016",
@@ -274,16 +274,16 @@
       "expected_category": "general",
       "predicted_category": "general",
       "expected_summary": "客戶詢問 50 人規模團隊的企業方案報價與是否配有專屬客戶成功經理。",
-      "predicted_summary": "客戶詢問企業方案的報價及客戶成功經理支援。",
+      "predicted_summary": "Customer inquires about Enterprise plan pricing and dedicated customer success manager support for a 50-person support team.",
       "category_match": true,
-      "judge_score": 4,
+      "judge_score": 5,
       "passed": true,
-      "latency_ms": 1010.72,
+      "latency_ms": 1294.58,
       "tokens": {
-        "input": 2723,
-        "output": 230
+        "input": 2736,
+        "output": 222
       },
-      "cost_usd": 0.005722
+      "cost_usd": 0.005683
     },
     {
       "id": "case-017",
@@ -291,16 +291,16 @@
       "expected_category": "billing",
       "predicted_category": "billing",
       "expected_summary": "客戶詢問是否能將以美金計價的訂閱費用開立台幣發票。",
-      "predicted_summary": "客戶詢問是否可以開立台幣發票，因為原訂閱為美金計費但公司財務需要台幣發票。",
+      "predicted_summary": "客戶詢問是否可以開立台幣發票，原始訂閱以美金計費。",
       "category_match": true,
       "judge_score": 5,
       "passed": true,
-      "latency_ms": 1117.29,
+      "latency_ms": 1210.68,
       "tokens": {
-        "input": 2780,
-        "output": 239
+        "input": 2767,
+        "output": 200
       },
-      "cost_usd": 0.005806
+      "cost_usd": 0.005455
     },
     {
       "id": "case-018",
@@ -308,16 +308,16 @@
       "expected_category": "technical",
       "predicted_category": "account",
       "expected_summary": "客戶設定 SSO 網域驗證持續失敗，即便 DNS TXT 紀錄已生效超過 24 小時。",
-      "predicted_summary": "客戶在設定 Google Workspace SSO 時遇到網域驗證失敗的錯誤，已加入 DNS TXT 紀錄但仍無法解決。",
+      "predicted_summary": "客戶在設定 Google Workspace SSO 時遇到網域驗證失敗，已加入 DNS TXT 紀錄但仍未解決。",
       "category_match": false,
       "judge_score": 5,
       "passed": false,
-      "latency_ms": 1186.91,
+      "latency_ms": 1321.92,
       "tokens": {
-        "input": 2846,
-        "output": 342
+        "input": 2840,
+        "output": 292
       },
-      "cost_usd": 0.006914
+      "cost_usd": 0.006432
     },
     {
       "id": "case-019",
@@ -325,50 +325,50 @@
       "expected_category": "account",
       "predicted_category": "account",
       "expected_summary": "客戶請求合併兩個重複建立的帳號。",
-      "predicted_summary": "客戶要求合併兩個帳號並保留其中一個的資料和訂閱。",
+      "predicted_summary": "客戶要求合併兩個帳號並保留主要帳號的資料與訂閱。",
       "category_match": true,
       "judge_score": 5,
       "passed": true,
-      "latency_ms": 952.94,
+      "latency_ms": 1291.66,
       "tokens": {
-        "input": 2733,
-        "output": 227
+        "input": 2734,
+        "output": 215
       },
-      "cost_usd": 0.005673
+      "cost_usd": 0.00555
     },
     {
       "id": "case-020",
       "language": "zh-tw",
-      "expected_category": "billing",
+      "expected_category": "general",
       "predicted_category": "billing",
       "expected_summary": "客戶質疑官網標示美金價格與結帳頁台幣金額換算是否合理，語氣帶有質疑。",
-      "predicted_summary": "客戶詢問美元與新台幣定價的匯率換算方式，需要釐清計費政策以向主管報告。",
-      "category_match": true,
+      "predicted_summary": "Customer questions currency conversion from USD to TWD and asks for explanation of exchange rate calculation for plan pricing.",
+      "category_match": false,
       "judge_score": 4,
-      "passed": true,
-      "latency_ms": 1278.06,
+      "passed": false,
+      "latency_ms": 1304.14,
       "tokens": {
         "input": 2800,
-        "output": 331
+        "output": 284
       },
-      "cost_usd": 0.006776
+      "cost_usd": 0.006406
     },
     {
       "id": "case-021",
       "language": "zh-tw",
-      "expected_category": "general",
+      "expected_category": "billing",
       "predicted_category": "billing",
       "expected_summary": "客戶反映活動優惠碼結帳時顯示無效，但主辦方告知仍在有效期內。",
-      "predicted_summary": "客戶無法使用研討會發放的九折折扣碼，請求確認代碼是否設定錯誤。",
-      "category_match": false,
+      "predicted_summary": "客戶報告研討會提供的折扣碼無法使用，請求確認代碼設定是否有誤。",
+      "category_match": true,
       "judge_score": 4,
-      "passed": false,
-      "latency_ms": 1139.26,
+      "passed": true,
+      "latency_ms": 1313.96,
       "tokens": {
-        "input": 2799,
-        "output": 282
+        "input": 2798,
+        "output": 286
       },
-      "cost_usd": 0.006296
+      "cost_usd": 0.006339
     },
     {
       "id": "case-022",
@@ -376,16 +376,16 @@
       "expected_category": "technical",
       "predicted_category": "technical",
       "expected_summary": "客戶反映知識庫文章圖片近期大量無法載入，懷疑是圖床服務異常。",
-      "predicted_summary": "客戶回報知識庫文章中的圖片無法載入，懷疑NebulaDesk的圖床服務出現問題。",
+      "predicted_summary": "Customer reports broken image links in their knowledge base articles; suspects an issue with NebulaDesk's image hosting service.",
       "category_match": true,
       "judge_score": 5,
       "passed": true,
-      "latency_ms": 1211.51,
+      "latency_ms": 1348.15,
       "tokens": {
-        "input": 2792,
-        "output": 263
+        "input": 2789,
+        "output": 242
       },
-      "cost_usd": 0.006072
+      "cost_usd": 0.005941
     },
     {
       "id": "case-023",
@@ -393,16 +393,16 @@
       "expected_category": "account",
       "predicted_category": "account",
       "expected_summary": "客戶詢問如何調整團隊成員的角色權限，讓對方具備報表檢視與工單指派能力。",
-      "predicted_summary": "客戶需要升級一位團隊成員的角色權限，從一般客服調升為主管以獲得報表檢視和工單指派權限。",
+      "predicted_summary": "客戶需要將團隊成員的角色從「一般客服」升級為「主管」以獲得報表查看和工單指派權限。",
       "category_match": true,
       "judge_score": 5,
       "passed": true,
-      "latency_ms": 1367.5,
+      "latency_ms": 1463.67,
       "tokens": {
-        "input": 2760,
-        "output": 254
+        "input": 2757,
+        "output": 329
       },
-      "cost_usd": 0.005913
+      "cost_usd": 0.006672
     },
     {
       "id": "case-024",
@@ -410,16 +410,16 @@
       "expected_category": "general",
       "predicted_category": "general",
       "expected_summary": "客戶建議新增工單自動標籤分類功能，並詢問是否已在規劃中。",
-      "predicted_summary": "客戶提出自動工單標籤功能的建議。",
+      "predicted_summary": "客戶建議新增自動標籤功能以減少手動分類工作。",
       "category_match": true,
       "judge_score": 4,
       "passed": true,
-      "latency_ms": 934.18,
+      "latency_ms": 1290.94,
       "tokens": {
-        "input": 2752,
-        "output": 185
+        "input": 2758,
+        "output": 265
       },
-      "cost_usd": 0.005338
+      "cost_usd": 0.00612
     },
     {
       "id": "case-025",
@@ -431,12 +431,12 @@
       "category_match": true,
       "judge_score": 5,
       "passed": true,
-      "latency_ms": 958.79,
+      "latency_ms": 1208.29,
       "tokens": {
         "input": 2617,
-        "output": 210
+        "output": 236
       },
-      "cost_usd": 0.005383
+      "cost_usd": 0.005643
     },
     {
       "id": "case-026",
@@ -444,16 +444,16 @@
       "expected_category": "technical",
       "predicted_category": "technical",
       "expected_summary": "客戶反映後台工單列表載入速度明顯變慢，詢問是否為系統維護或已知效能問題。",
-      "predicted_summary": "客戶回報工單列表載入速度明顯變慢（從1秒變為5-6秒），詢問是否為維護或已知效能問題。",
+      "predicted_summary": "客戶回報工單列表載入速度變慢（從1秒增加到5-6秒），詢問是否存在已知的效能問題或維護作業。",
       "category_match": true,
       "judge_score": 5,
       "passed": true,
-      "latency_ms": 1146.01,
+      "latency_ms": 1447.46,
       "tokens": {
-        "input": 2805,
-        "output": 255
+        "input": 2807,
+        "output": 253
       },
-      "cost_usd": 0.005986
+      "cost_usd": 0.00596
     },
     {
       "id": "case-027",
@@ -461,16 +461,16 @@
       "expected_category": "account",
       "predicted_category": "account",
       "expected_summary": "客戶詢問如何在後台為全團隊強制啟用雙因素驗證。",
-      "predicted_summary": "Customer asks how to enforce 2FA (two-factor authentication) for all team members in NebulaDesk.",
+      "predicted_summary": "客戶詢問如何在 NebulaDesk 後台強制全團隊啟用雙因素驗證（2FA）。",
       "category_match": true,
       "judge_score": 5,
       "passed": true,
-      "latency_ms": 993.79,
+      "latency_ms": 1299.96,
       "tokens": {
-        "input": 2758,
-        "output": 196
+        "input": 2764,
+        "output": 227
       },
-      "cost_usd": 0.005431
+      "cost_usd": 0.005678
     },
     {
       "id": "case-028",
@@ -478,16 +478,16 @@
       "expected_category": "general",
       "predicted_category": "general",
       "expected_summary": "客戶對上週的緊急技術支援表達感謝。",
-      "predicted_summary": "Customer sending thank-you note for emergency support provided by the team.",
+      "predicted_summary": "客戶感謝上週緊急支援團隊的協助。",
       "category_match": true,
       "judge_score": 5,
       "passed": true,
-      "latency_ms": 999.11,
+      "latency_ms": 1333.59,
       "tokens": {
-        "input": 2728,
-        "output": 179
+        "input": 2727,
+        "output": 206
       },
-      "cost_usd": 0.005262
+      "cost_usd": 0.005495
     },
     {
       "id": "case-029",
@@ -495,16 +495,16 @@
       "expected_category": "billing",
       "predicted_category": "billing",
       "expected_summary": "客戶對續約價格調漲近 20% 表示不解，要求說明調漲原因以利內部簽核。",
-      "predicted_summary": "客戶質疑續約價格上漲近 20% 並要求說明漲價原因以供財務核准。",
+      "predicted_summary": "客戶質詢續約價格上漲近 20% 的原因，需要說明文件供財務簽核。",
       "category_match": true,
       "judge_score": 5,
       "passed": true,
-      "latency_ms": 1114.64,
+      "latency_ms": 1590.74,
       "tokens": {
         "input": 2778,
-        "output": 260
+        "output": 292
       },
-      "cost_usd": 0.006053
+      "cost_usd": 0.006373
     },
     {
       "id": "case-030",
@@ -512,16 +512,16 @@
       "expected_category": "technical",
       "predicted_category": "technical",
       "expected_summary": "客戶反映 CRM 資料同步出現 15-20 分鐘延遲，影響客服即時查看客戶狀態。",
-      "predicted_summary": "CRM data sync to NebulaDesk has slowed to 15-20 minute delays instead of real-time, causing agents to miss current customer information when responding to tickets.",
+      "predicted_summary": "客戶反映 CRM 資料同步延遲 15-20 分鐘，應該即時的功能受到影響。",
       "category_match": true,
-      "judge_score": 5,
+      "judge_score": 4,
       "passed": true,
-      "latency_ms": 1158.11,
+      "latency_ms": 1309.29,
       "tokens": {
-        "input": 2829,
-        "output": 240
+        "input": 2814,
+        "output": 307
       },
-      "cost_usd": 0.005923
+      "cost_usd": 0.006568
     },
     {
       "id": "case-031",
@@ -529,16 +529,16 @@
       "expected_category": "billing",
       "predicted_category": "billing",
       "expected_summary": "客戶詢問方案降級是否會影響歷史工單資料的保存。",
-      "predicted_summary": "客戶詢問降級方案後歷史工單資料是否會保留。",
+      "predicted_summary": "客戶詢問從 Pro 降級到 Starter 方案後，現有的工單歷史紀錄是否會被保留。",
       "category_match": true,
       "judge_score": 5,
       "passed": true,
-      "latency_ms": 1070.4,
+      "latency_ms": 1430.59,
       "tokens": {
-        "input": 2748,
-        "output": 214
+        "input": 2767,
+        "output": 227
       },
-      "cost_usd": 0.005593
+      "cost_usd": 0.005681
     },
     {
       "id": "case-032",
@@ -546,16 +546,16 @@
       "expected_category": "general",
       "predicted_category": "general",
       "expected_summary": "客戶詢問是否提供新進員工的教育訓練資源或線上教學安排。",
-      "predicted_summary": "客戶請求為新進團隊成員提供 NebulaDesk 的培訓資源或線上教學。",
+      "predicted_summary": "客戶要求為 8 名新員工提供 NebulaDesk 的培訓資源或線上教學課程。",
       "category_match": true,
       "judge_score": 5,
       "passed": true,
-      "latency_ms": 1117.87,
+      "latency_ms": 1317.77,
       "tokens": {
-        "input": 2760,
-        "output": 285
+        "input": 2762,
+        "output": 262
       },
-      "cost_usd": 0.006273
+      "cost_usd": 0.006037
     },
     {
       "id": "case-033",
@@ -563,16 +563,16 @@
       "expected_category": "billing",
       "predicted_category": "billing",
       "expected_summary": "客戶請求延長試用期或暫緩試用到期後的自動轉正式訂閱扣款。",
-      "predicted_summary": "客戶請求延長試用期或暫停自動扣款以便完成測試評估。",
+      "predicted_summary": "客戶請求延長試用期或暫緩自動升級扣款以便完成評估。",
       "category_match": true,
       "judge_score": 5,
       "passed": true,
-      "latency_ms": 1064.69,
+      "latency_ms": 1413.83,
       "tokens": {
-        "input": 2766,
-        "output": 238
+        "input": 2767,
+        "output": 334
       },
-      "cost_usd": 0.005845
+      "cost_usd": 0.006802
     },
     {
       "id": "case-034",
@@ -580,16 +580,16 @@
       "expected_category": "technical",
       "predicted_category": "technical",
       "expected_summary": "客戶反映工單頁面持續讀取轉圈無法完成，疑似系統異常。",
-      "predicted_summary": "客戶反映工單頁面無法載入，持續轉圈超過五分鐘，懷疑是伺服器問題。",
+      "predicted_summary": "工單頁面無法載入且持續轉圈圈，客戶懷疑是服務端故障。",
       "category_match": true,
       "judge_score": 5,
       "passed": true,
-      "latency_ms": 1167.0,
+      "latency_ms": 1744.69,
       "tokens": {
-        "input": 2778,
-        "output": 235
+        "input": 2770,
+        "output": 243
       },
-      "cost_usd": 0.005773
+      "cost_usd": 0.005877
     },
     {
       "id": "case-035",
@@ -597,16 +597,16 @@
       "expected_category": "account",
       "predicted_category": "account",
       "expected_summary": "客戶詢問如何新增第二位帳號管理員角色。",
-      "predicted_summary": "客戶想要添加第二位管理員以便在其休假時可以處理帳號設定。",
+      "predicted_summary": "客戶需要協助將另一位同事設定為管理員角色。",
       "category_match": true,
       "judge_score": 5,
       "passed": true,
-      "latency_ms": 1082.9,
+      "latency_ms": 1311.37,
       "tokens": {
-        "input": 2743,
-        "output": 215
+        "input": 2735,
+        "output": 188
       },
-      "cost_usd": 0.005565
+      "cost_usd": 0.005319
     },
     {
       "id": "case-036",
@@ -618,12 +618,12 @@
       "category_match": true,
       "judge_score": 5,
       "passed": true,
-      "latency_ms": 856.88,
+      "latency_ms": 1169.13,
       "tokens": {
         "input": 2712,
-        "output": 175
+        "output": 176
       },
-      "cost_usd": 0.005228
+      "cost_usd": 0.005238
     },
     {
       "id": "case-037",
@@ -631,16 +631,16 @@
       "expected_category": "technical",
       "predicted_category": "technical",
       "expected_summary": "Customer reports webhook signature verification failures after rotating the signing secret.",
-      "predicted_summary": "Customer reports webhook signature verification failures after rotating the signing secret and needs help debugging HMAC validation.",
+      "predicted_summary": "Customer experiencing webhook signature verification failures after rotating their signing secret; seeking clarification on whether payload format changed.",
       "category_match": true,
       "judge_score": 5,
       "passed": true,
-      "latency_ms": 962.36,
+      "latency_ms": 1287.61,
       "tokens": {
-        "input": 2734,
-        "output": 230
+        "input": 2738,
+        "output": 201
       },
-      "cost_usd": 0.005771
+      "cost_usd": 0.005484
     },
     {
       "id": "case-038",
@@ -648,16 +648,16 @@
       "expected_category": "account",
       "predicted_category": "account",
       "expected_summary": "Customer accidentally downgraded their own role and lost access to owner-level settings, with no other Owner on the team, blocking billing access too.",
-      "predicted_summary": "Customer accidentally downgraded their own role to Admin and needs Owner permissions restored to regain access to billing and team management.",
+      "predicted_summary": "Customer accidentally downgraded their own role to Admin and lost Owner permissions; needs role restored to regain access to billing and team management functions.",
       "category_match": true,
       "judge_score": 4,
       "passed": true,
-      "latency_ms": 1124.87,
+      "latency_ms": 1356.41,
       "tokens": {
-        "input": 2765,
-        "output": 286
+        "input": 2771,
+        "output": 290
       },
-      "cost_usd": 0.006368
+      "cost_usd": 0.0064
     },
     {
       "id": "case-039",
@@ -665,16 +665,16 @@
       "expected_category": "general",
       "predicted_category": "general",
       "expected_summary": "Customer requests a dark mode option for the agent dashboard.",
-      "predicted_summary": "Customer requests a dark mode feature for the agent dashboard to reduce eye strain during night shifts.",
+      "predicted_summary": "Customer requesting dark mode feature for the agent dashboard to reduce eye strain during night shifts.",
       "category_match": true,
       "judge_score": 5,
       "passed": true,
-      "latency_ms": 948.59,
+      "latency_ms": 1341.6,
       "tokens": {
         "input": 2695,
-        "output": 205
+        "output": 202
       },
-      "cost_usd": 0.005468
+      "cost_usd": 0.005443
     },
     {
       "id": "case-040",
@@ -686,12 +686,12 @@
       "category_match": true,
       "judge_score": 5,
       "passed": true,
-      "latency_ms": 1093.99,
+      "latency_ms": 1327.44,
       "tokens": {
         "input": 2779,
-        "output": 220
+        "output": 235
       },
-      "cost_usd": 0.005733
+      "cost_usd": 0.005883
     },
     {
       "id": "case-041",
@@ -699,16 +699,16 @@
       "expected_category": "technical",
       "predicted_category": "technical",
       "expected_summary": "Customer's integration hits rate-limit errors during a daily traffic spike, unsure whether it's a plan limit or a configuration issue.",
-      "predicted_summary": "Customer experiencing recurring rate-limit errors on ticket-creation API during peak hours and asking if it's a plan limit or configuration issue.",
+      "predicted_summary": "Customer experiencing recurring 429 rate-limit errors on ticket-creation API endpoint at specific times; needs guidance on rate limits or burst configuration.",
       "category_match": true,
       "judge_score": 5,
       "passed": true,
-      "latency_ms": 1250.64,
+      "latency_ms": 1522.19,
       "tokens": {
-        "input": 2804,
-        "output": 249
+        "input": 2810,
+        "output": 237
       },
-      "cost_usd": 0.006051
+      "cost_usd": 0.005933
     },
     {
       "id": "case-042",
@@ -716,16 +716,16 @@
       "expected_category": "account",
       "predicted_category": "account",
       "expected_summary": "Customer requests guidance on transferring account ownership ahead of the current Owner's departure.",
-      "predicted_summary": "Customer needs to transfer account ownership to themselves before current owner's access is revoked on Friday.",
+      "predicted_summary": "Customer needs to transfer account ownership before the current Owner leaves at end of week.",
       "category_match": true,
-      "judge_score": 5,
+      "judge_score": 4,
       "passed": true,
-      "latency_ms": 1010.85,
+      "latency_ms": 1666.83,
       "tokens": {
-        "input": 2708,
-        "output": 217
+        "input": 2703,
+        "output": 215
       },
-      "cost_usd": 0.005605
+      "cost_usd": 0.00559
     },
     {
       "id": "case-043",
@@ -733,16 +733,16 @@
       "expected_category": "general",
       "predicted_category": "technical",
       "expected_summary": "Customer sarcastically comments on an apparent service outage.",
-      "predicted_summary": "Customer reports experiencing another service outage.",
+      "predicted_summary": "Customer reporting a service outage.",
       "category_match": false,
       "judge_score": 3,
       "passed": false,
-      "latency_ms": 902.45,
+      "latency_ms": 1213.86,
       "tokens": {
-        "input": 2610,
-        "output": 284
+        "input": 2607,
+        "output": 220
       },
-      "cost_usd": 0.006163
+      "cost_usd": 0.005522
     },
     {
       "id": "case-044",
@@ -750,16 +750,16 @@
       "expected_category": "billing",
       "predicted_category": "billing",
       "expected_summary": "Customer asks whether adding seats mid-cycle is billed at full price or prorated.",
-      "predicted_summary": "Customer asking about seat upgrade proration charges mid-cycle.",
+      "predicted_summary": "Customer inquires about proration policy for mid-cycle seat additions.",
       "category_match": true,
-      "judge_score": 4,
+      "judge_score": 5,
       "passed": true,
-      "latency_ms": 966.38,
+      "latency_ms": 1309.94,
       "tokens": {
         "input": 2712,
-        "output": 247
+        "output": 221
       },
-      "cost_usd": 0.005942
+      "cost_usd": 0.005672
     },
     {
       "id": "case-045",
@@ -767,16 +767,16 @@
       "expected_category": "technical",
       "predicted_category": "technical",
       "expected_summary": "Customer's large-date-range CSV export times out, while smaller exports succeed, suggesting a size limit.",
-      "predicted_summary": "Customer reports export timeouts when attempting large-scale ticket data export (40k tickets) and suspects a size limit.",
+      "predicted_summary": "Customer's large data export (40k tickets) times out; smaller exports work; investigating possible size limit.",
       "category_match": true,
-      "judge_score": 4,
+      "judge_score": 5,
       "passed": true,
-      "latency_ms": 1104.83,
+      "latency_ms": 1339.5,
       "tokens": {
-        "input": 2736,
-        "output": 239
+        "input": 2730,
+        "output": 240
       },
-      "cost_usd": 0.005848
+      "cost_usd": 0.005856
     },
     {
       "id": "case-046",
@@ -784,16 +784,16 @@
       "expected_category": "account",
       "predicted_category": "account",
       "expected_summary": "Customer is unable to remove a former employee whose team member entry remains active despite SSO deactivation.",
-      "predicted_summary": "Customer unable to remove a deactivated team member from their account due to a greyed-out button and incorrect status display.",
+      "predicted_summary": "Customer cannot remove an inactive team member whose account status isn't syncing and whose removal button is disabled.",
       "category_match": true,
       "judge_score": 4,
       "passed": true,
-      "latency_ms": 1204.55,
+      "latency_ms": 1427.25,
       "tokens": {
         "input": 2736,
-        "output": 303
+        "output": 249
       },
-      "cost_usd": 0.006474
+      "cost_usd": 0.005959
     },
     {
       "id": "case-047",
@@ -801,16 +801,16 @@
       "expected_category": "general",
       "predicted_category": "general",
       "expected_summary": "Customer requests access to the SOC 2 Type II report for a security review ahead of an enterprise contract.",
-      "predicted_summary": "Customer requests SOC 2 Type II certification documentation for security review before enterprise contract signing.",
+      "predicted_summary": "Customer requests access to SOC 2 Type II report for security review under NDA as part of enterprise contract evaluation.",
       "category_match": true,
-      "judge_score": 4,
+      "judge_score": 5,
       "passed": true,
-      "latency_ms": 1271.51,
+      "latency_ms": 1285.89,
       "tokens": {
-        "input": 2703,
-        "output": 251
+        "input": 2709,
+        "output": 214
       },
-      "cost_usd": 0.005938
+      "cost_usd": 0.00555
     },
     {
       "id": "case-048",
@@ -818,16 +818,16 @@
       "expected_category": "billing",
       "predicted_category": "billing",
       "expected_summary": "Customer flags a currency discrepancy between the sales quote (EUR) and the actual invoice (USD).",
-      "predicted_summary": "Customer questions currency discrepancy between sales quote (EUR) and invoice (USD) and seeks clarification on contracted billing currency.",
+      "predicted_summary": "Customer disputes invoice currency and exchange rate applied to their annual subscription.",
       "category_match": true,
-      "judge_score": 5,
+      "judge_score": 3,
       "passed": true,
-      "latency_ms": 1072.66,
+      "latency_ms": 1298.8,
       "tokens": {
-        "input": 2759,
-        "output": 275
+        "input": 2740,
+        "output": 268
       },
-      "cost_usd": 0.006242
+      "cost_usd": 0.006199
     },
     {
       "id": "case-049",
@@ -835,16 +835,16 @@
       "expected_category": "technical",
       "predicted_category": "technical",
       "expected_summary": "Customer reports mobile push notifications have stopped since a recent app update, despite correct settings.",
-      "predicted_summary": "Mobile app push notifications for new tickets are not delivering after Tuesday's update despite correct settings.",
+      "predicted_summary": "Mobile app push notifications for new tickets stopped working after Tuesday's update despite correct settings.",
       "category_match": true,
       "judge_score": 5,
       "passed": true,
-      "latency_ms": 1333.05,
+      "latency_ms": 1258.89,
       "tokens": {
-        "input": 2736,
-        "output": 218
+        "input": 2735,
+        "output": 223
       },
-      "cost_usd": 0.005667
+      "cost_usd": 0.00572
     },
     {
       "id": "case-050",
@@ -852,33 +852,33 @@
       "expected_category": "account",
       "predicted_category": "account",
       "expected_summary": "Customer's SSO setup fails due to a domain-claim conflict, possibly from a forgotten old trial account.",
-      "predicted_summary": "Customer unable to configure SSO due to domain already being claimed by another NebulaDesk account, possibly from a previous trial signup.",
+      "predicted_summary": "Customer unable to set up SSO due to domain being claimed by another account; suspects leftover trial account and needs domain/account resolution.",
       "category_match": true,
       "judge_score": 5,
       "passed": true,
-      "latency_ms": 1365.1,
+      "latency_ms": 1814.13,
       "tokens": {
         "input": 2758,
-        "output": 212
+        "output": 245
       },
-      "cost_usd": 0.005588
+      "cost_usd": 0.005923
     },
     {
       "id": "case-051",
       "language": "en",
-      "expected_category": "billing",
+      "expected_category": "general",
       "predicted_category": "general",
       "expected_summary": "Customer finds the pricing page confusing and requests a plain plan comparison table.",
       "predicted_summary": "Customer requests a clearer pricing comparison table between Pro and Business plans.",
-      "category_match": false,
-      "judge_score": 4,
-      "passed": false,
-      "latency_ms": 977.3,
+      "category_match": true,
+      "judge_score": 5,
+      "passed": true,
+      "latency_ms": 1100.72,
       "tokens": {
         "input": 2708,
-        "output": 218
+        "output": 226
       },
-      "cost_usd": 0.005638
+      "cost_usd": 0.005718
     },
     {
       "id": "case-052",
@@ -890,12 +890,12 @@
       "category_match": true,
       "judge_score": 4,
       "passed": true,
-      "latency_ms": 958.51,
+      "latency_ms": 1125.3,
       "tokens": {
         "input": 2724,
-        "output": 242
+        "output": 236
       },
-      "cost_usd": 0.005886
+      "cost_usd": 0.005826
     },
     {
       "id": "case-053",
@@ -903,33 +903,33 @@
       "expected_category": "technical",
       "predicted_category": "technical",
       "expected_summary": "Customer's dashboard charts display in UTC instead of their local timezone, unclear if a setting is missing.",
-      "predicted_summary": "Customer reports dashboard charts displaying in UTC instead of their local timezone (Taipei) and asks if timezone configuration or support is available.",
+      "predicted_summary": "Customer reports dashboard response-time charts displaying in UTC instead of their local timezone (Taipei) and asks if timezone configuration or support is available.",
       "category_match": true,
       "judge_score": 5,
       "passed": true,
-      "latency_ms": 1204.61,
+      "latency_ms": 1473.82,
       "tokens": {
-        "input": 2748,
-        "output": 227
+        "input": 2751,
+        "output": 231
       },
-      "cost_usd": 0.005742
+      "cost_usd": 0.005773
     },
     {
       "id": "case-054",
       "language": "en",
-      "expected_category": "technical",
+      "expected_category": "account",
       "predicted_category": "account",
       "expected_summary": "Customer's mandatory 2FA rollout is locking out half the team with persistent 'invalid code' errors.",
-      "predicted_summary": "Customer reports 2FA setup failure affecting multiple team members and requests troubleshooting or temporary disabling of the requirement.",
-      "category_match": false,
+      "predicted_summary": "Team unable to complete 2FA setup after enabling mandatory 2FA; QR code validation fails with \"invalid code\" error.",
+      "category_match": true,
       "judge_score": 4,
-      "passed": false,
-      "latency_ms": 1089.62,
+      "passed": true,
+      "latency_ms": 1376.85,
       "tokens": {
-        "input": 2769,
-        "output": 348
+        "input": 2768,
+        "output": 312
       },
-      "cost_usd": 0.006991
+      "cost_usd": 0.006619
     },
     {
       "id": "case-055",
@@ -937,33 +937,33 @@
       "expected_category": "general",
       "predicted_category": "technical",
       "expected_summary": "Customer expresses vague dissatisfaction without specifying what is malfunctioning.",
-      "predicted_summary": "Customer reports tickets not working properly.",
+      "predicted_summary": "Customer reports that tickets are not functioning properly.",
       "category_match": false,
       "judge_score": 3,
       "passed": false,
-      "latency_ms": 890.56,
+      "latency_ms": 1110.1,
       "tokens": {
-        "input": 2639,
-        "output": 250
+        "input": 2643,
+        "output": 280
       },
-      "cost_usd": 0.005877
+      "cost_usd": 0.006175
     },
     {
       "id": "case-056",
       "language": "en",
       "expected_category": "billing",
-      "predicted_category": "billing",
+      "predicted_category": "general",
       "expected_summary": "Customer's accounting team requests a signed W-9 form to process vendor payment.",
-      "predicted_summary": "Customer's accounting department requires a signed W-9 form from NebulaDesk before processing annual payment.",
-      "category_match": true,
+      "predicted_summary": "Customer's accounting department requires a signed W-9 form from NebulaDesk before processing payment.",
+      "category_match": false,
       "judge_score": 5,
-      "passed": true,
-      "latency_ms": 1037.18,
+      "passed": false,
+      "latency_ms": 1277.16,
       "tokens": {
-        "input": 2695,
-        "output": 208
+        "input": 2693,
+        "output": 220
       },
-      "cost_usd": 0.005468
+      "cost_usd": 0.005589
     },
     {
       "id": "case-057",
@@ -971,16 +971,16 @@
       "expected_category": "technical",
       "predicted_category": "technical",
       "expected_summary": "Customer observes stale data briefly returned by the API right after a ticket update, asking whether it's expected caching behavior.",
-      "predicted_summary": "Customer reports API read-after-write inconsistency where ticket status updates are not immediately reflected in GET responses.",
+      "predicted_summary": "Customer reports eventual consistency delay when updating ticket status via API and querying immediately afterward.",
       "category_match": true,
-      "judge_score": 5,
+      "judge_score": 4,
       "passed": true,
-      "latency_ms": 983.67,
+      "latency_ms": 1201.84,
       "tokens": {
-        "input": 2747,
-        "output": 344
+        "input": 2742,
+        "output": 308
       },
-      "cost_usd": 0.006922
+      "cost_usd": 0.006582
     },
     {
       "id": "case-058",
@@ -988,16 +988,16 @@
       "expected_category": "account",
       "predicted_category": "account",
       "expected_summary": "Customer wants billing visibility separated from the Admin role into its own granular permission.",
-      "predicted_summary": "Customer requests granular permission control to restrict billing visibility separately from Admin role access.",
+      "predicted_summary": "Customer requests granular permission controls to restrict billing visibility separately from Admin role.",
       "category_match": true,
       "judge_score": 5,
       "passed": true,
-      "latency_ms": 1054.25,
+      "latency_ms": 1160.03,
       "tokens": {
         "input": 2711,
-        "output": 225
+        "output": 219
       },
-      "cost_usd": 0.005701
+      "cost_usd": 0.005646
     },
     {
       "id": "case-059",
@@ -1005,16 +1005,16 @@
       "expected_category": "general",
       "predicted_category": "general",
       "expected_summary": "Customer asks whether NebulaDesk natively integrates with Linear, or requires a custom API integration.",
-      "predicted_summary": "Customer inquires about native Linear integration support and custom API options.",
+      "predicted_summary": "Customer inquiring about native Linear integration availability and API customization options.",
       "category_match": true,
-      "judge_score": 5,
+      "judge_score": 4,
       "passed": true,
-      "latency_ms": 1091.82,
+      "latency_ms": 1265.89,
       "tokens": {
-        "input": 2679,
-        "output": 167
+        "input": 2681,
+        "output": 194
       },
-      "cost_usd": 0.005085
+      "cost_usd": 0.005354
     },
     {
       "id": "case-060",
@@ -1022,16 +1022,16 @@
       "expected_category": "billing",
       "predicted_category": "billing",
       "expected_summary": "Customer requests bulk access to two years of historical invoices for an internal audit.",
-      "predicted_summary": "Customer needs to retrieve 24 months of invoices for audit purposes and is asking about bulk-download options.",
+      "predicted_summary": "Customer needs bulk access to invoices from the past 24 months for audit purposes.",
       "category_match": true,
       "judge_score": 5,
       "passed": true,
-      "latency_ms": 1137.7,
+      "latency_ms": 1163.96,
       "tokens": {
-        "input": 2710,
-        "output": 224
+        "input": 2701,
+        "output": 194
       },
-      "cost_usd": 0.005656
+      "cost_usd": 0.005363
     },
     {
       "id": "case-061",
@@ -1039,16 +1039,16 @@
       "expected_category": "technical",
       "predicted_category": "technical",
       "expected_summary": "Customer notices recently created tickets are missing from search results despite appearing in the manual list, suggesting an indexing delay.",
-      "predicted_summary": "Customer reports ticket search results not returning recently created tickets, suggesting a search indexing delay issue.",
+      "predicted_summary": "Customer reports newly created tickets not appearing in search results but visible in manual browse, suggesting a search indexing delay.",
       "category_match": true,
-      "judge_score": 4,
+      "judge_score": 5,
       "passed": true,
-      "latency_ms": 1069.6,
+      "latency_ms": 1309.96,
       "tokens": {
-        "input": 2733,
-        "output": 232
+        "input": 2738,
+        "output": 192
       },
-      "cost_usd": 0.005798
+      "cost_usd": 0.005388
     },
     {
       "id": "case-062",
@@ -1060,12 +1060,12 @@
       "category_match": true,
       "judge_score": 4,
       "passed": true,
-      "latency_ms": 1375.38,
+      "latency_ms": 1148.21,
       "tokens": {
         "input": 2687,
-        "output": 215
+        "output": 210
       },
-      "cost_usd": 0.005566
+      "cost_usd": 0.005516
     },
     {
       "id": "case-063",
@@ -1073,16 +1073,16 @@
       "expected_category": "general",
       "predicted_category": "general",
       "expected_summary": "Customer thanks the team for a helpful onboarding call.",
-      "predicted_summary": "Customer sending positive feedback about onboarding support experience.",
+      "predicted_summary": "Customer sending appreciation feedback for onboarding support received.",
       "category_match": true,
       "judge_score": 5,
       "passed": true,
-      "latency_ms": 882.2,
+      "latency_ms": 1209.57,
       "tokens": {
-        "input": 2695,
-        "output": 176
+        "input": 2696,
+        "output": 200
       },
-      "cost_usd": 0.005206
+      "cost_usd": 0.005448
     },
     {
       "id": "case-064",
@@ -1090,16 +1090,16 @@
       "expected_category": "billing",
       "predicted_category": "billing",
       "expected_summary": "客戶詢問本月 invoice 的付款截止日期，表示 billing portal 上未清楚顯示。",
-      "predicted_summary": "Customer requests clarification on the invoice due date for this month.",
+      "predicted_summary": "Customer requests clarification on this month's invoice due date.",
       "category_match": true,
       "judge_score": 4,
       "passed": true,
-      "latency_ms": 1127.22,
+      "latency_ms": 1043.6,
       "tokens": {
-        "input": 2733,
-        "output": 206
+        "input": 2732,
+        "output": 210
       },
-      "cost_usd": 0.005557
+      "cost_usd": 0.0056
     },
     {
       "id": "case-065",
@@ -1107,16 +1107,16 @@
       "expected_category": "technical",
       "predicted_category": "technical",
       "expected_summary": "客戶反映 production 環境的 API 整合出現 500 錯誤，sandbox 測試正常，懷疑近期有伺服器更新導致。",
-      "predicted_summary": "Customer's production API integration is returning 500 errors while sandbox works fine; suspects a recent server deployment.",
+      "predicted_summary": "客戶的生產環境 API integration 回傳 500 錯誤，沙盒環境正常，懷疑是伺服器端的更新導致。",
       "category_match": true,
       "judge_score": 5,
       "passed": true,
-      "latency_ms": 1110.92,
+      "latency_ms": 1563.51,
       "tokens": {
-        "input": 2782,
-        "output": 211
+        "input": 2795,
+        "output": 272
       },
-      "cost_usd": 0.00565
+      "cost_usd": 0.006151
     },
     {
       "id": "case-066",
@@ -1124,16 +1124,16 @@
       "expected_category": "account",
       "predicted_category": "account",
       "expected_summary": "客戶請求將自己的角色從 agent 升級為 admin，並附上主管核准的轉發信件。",
-      "predicted_summary": "客戶請求將其角色從 agent 升級為 admin，附有主管的核准信。",
+      "predicted_summary": "客戶請求將角色從 agent 升級為 admin，並提供主管核准。",
       "category_match": true,
       "judge_score": 5,
       "passed": true,
-      "latency_ms": 1062.63,
+      "latency_ms": 1339.48,
       "tokens": {
-        "input": 2730,
-        "output": 226
+        "input": 2728,
+        "output": 291
       },
-      "cost_usd": 0.005675
+      "cost_usd": 0.006331
     },
     {
       "id": "case-067",
@@ -1141,16 +1141,16 @@
       "expected_category": "general",
       "predicted_category": "general",
       "expected_summary": "客戶詢問服務的 uptime SLA 百分比，用於供應商評估文件。",
-      "predicted_summary": "客戶向NebulaDesk詢問正式的Uptime SLA百分比及相關文件連結以供廠商評估之用。",
+      "predicted_summary": "客戶詢問 NebulaDesk 的 uptime SLA 百分比以供 vendor evaluation 使用。",
       "category_match": true,
       "judge_score": 5,
       "passed": true,
-      "latency_ms": 1295.22,
+      "latency_ms": 1451.94,
       "tokens": {
-        "input": 2753,
-        "output": 255
+        "input": 2750,
+        "output": 262
       },
-      "cost_usd": 0.005941
+      "cost_usd": 0.006045
     },
     {
       "id": "case-068",
@@ -1158,16 +1158,16 @@
       "expected_category": "billing",
       "predicted_category": "billing",
       "expected_summary": "客戶質疑官網標示美金月費與信用卡實際扣款台幣金額之間的匯率換算，語氣帶諷刺。",
-      "predicted_summary": "客戶質疑月費定價與實際扣款金額的換算差異，要求解釋匯率計算方式。",
+      "predicted_summary": "客戶質疑信用卡帳單金額與官網價格不符，要求說明匯率計算方式。",
       "category_match": true,
       "judge_score": 5,
       "passed": true,
-      "latency_ms": 1126.63,
+      "latency_ms": 1470.88,
       "tokens": {
-        "input": 2785,
-        "output": 302
+        "input": 2783,
+        "output": 303
       },
-      "cost_usd": 0.006481
+      "cost_usd": 0.006497
     },
     {
       "id": "case-069",
@@ -1175,16 +1175,16 @@
       "expected_category": "technical",
       "predicted_category": "technical",
       "expected_summary": "客戶在設定 SSO 時上傳 Okta 匯出的 metadata 檔案持續失敗，錯誤訊息顯示憑證格式無效，懷疑是解析器問題。",
-      "predicted_summary": "Customer unable to upload SSO metadata file during setup; getting 'invalid certificate format' error despite using standard Okta-exported XML.",
+      "predicted_summary": "客戶在上傳 SSO metadata 檔案時遇到「invalid certificate format」錯誤，需要檢查解析器是否有相容性問題。",
       "category_match": true,
-      "judge_score": 4,
+      "judge_score": 5,
       "passed": true,
-      "latency_ms": 1339.22,
+      "latency_ms": 1502.72,
       "tokens": {
-        "input": 2856,
-        "output": 282
+        "input": 2863,
+        "output": 261
       },
-      "cost_usd": 0.006451
+      "cost_usd": 0.006165
     },
     {
       "id": "case-070",
@@ -1192,16 +1192,16 @@
       "expected_category": "general",
       "predicted_category": "general",
       "expected_summary": "客戶為非營利組織，詢問是否提供優惠折扣或特殊定價方案。",
-      "predicted_summary": "Non-profit organization inquiring about discounted pricing or special pricing options for NebulaDesk.",
+      "predicted_summary": "Non-profit organization inquiring about discounts or special pricing options.",
       "category_match": true,
       "judge_score": 5,
       "passed": true,
-      "latency_ms": 1151.88,
+      "latency_ms": 1143.32,
       "tokens": {
-        "input": 2736,
-        "output": 213
+        "input": 2725,
+        "output": 238
       },
-      "cost_usd": 0.00559
+      "cost_usd": 0.005858
     }
   ]
 }
