@@ -47,7 +47,8 @@ experiments/
                    PREREGISTRATION section 9 rules, or refuse and say which
                    rule is missing
   apply_gold_v2.py write a sealed gold v2 into golden_dataset.json and move it
-                   to v2.0 (dry run unless --write; not run by the import PR)
+                   to v2.0 (dry run unless --write; run with --write by the
+                   import PR on 2026-09-22)
   prompts/         experiment-only prompts (judge_pairwise_v1.yaml,
                    annotator_model_v1.yaml). Kept out of the repo's prompts/,
                    which is the classifier's version directory; analyze.py
@@ -257,8 +258,8 @@ No ordinal agreement coefficient is specified anywhere in this study, so the
 cells stay empty and the note in the table says that rather than the older
 "not implemented".
 
-Still to run: nothing that costs an API call. A2's and A3's sheets are the
-inputs this study is still waiting on, due 2026-09-23.
+Still to run: nothing that costs an API call. A2's and A3's sheets came back
+on 2026-09-21 and 2026-09-22, and gold v2 was sealed on 2026-09-22.
 
 ## What E1 found
 
@@ -546,7 +547,8 @@ python -m experiments.import_annotations --annotator A1 \
     --sheet experiments/data/a1_category_labels_2026-09-19.csv \
     --annotated-on 2026-09-19
 python -m experiments.import_annotations --annotator A2 \
-    --sheet ~/Downloads/annotator2_sheet.csv --annotated-on 2026-09-23
+    --sheet experiments/data/a2_category_labels_2026-09-21.csv \
+    --annotated-on 2026-09-21
 ```
 
 `import_annotations.py` validates the whole file before it writes anything: 70
@@ -622,21 +624,26 @@ not fall back to the version on disk, because that is a guess in exactly the
 case where the guess is wrong. `sheet_dataset_version_basis` records which of
 those four it was.
 
-Status on 2026-09-19: A1, the author, returned a completed sheet, imported at
-sha256 `774e62bc6c8337b188b87f249b66f1991196c6d616ef4d6d2e1cae1cde02cfbb` and
-committed to `experiments/data/` exactly as received; A2 and A3 are due back
-2026-09-23. The kappa estimator and its bootstrap interval run against A1 and
-the model annotators today, and each further annotator's rows appear in the
-same `e4_kappa.csv` the moment `experiments/data/annotations/<id>_labels.json`
-exists. The three-rater rows -- Fleiss' kappa, Krippendorff's alpha and the
-exact three-way agreement rate -- are written only once all three human sheets
-are in, and are absent rather than approximated until then. The rank-flip check
--- does the system's ranking change when the gold labels are swapped for
-another annotator's -- is still a `NotImplementedError` item in the table below.
+Status on 2026-09-22: all three sheets are in. A1, the author, returned a
+completed sheet on 2026-09-19, imported at sha256
+`774e62bc6c8337b188b87f249b66f1991196c6d616ef4d6d2e1cae1cde02cfbb` and
+committed to `experiments/data/` exactly as received; A2's corrected return
+arrived 2026-09-21 and A3's on 2026-09-22, both committed as their
+notes-blanked copies under the hashes `docs/PREREGISTRATION.md` section 9
+registered on the day each arrived. `e4_kappa.csv` now carries all three human
+raters, the model raters and the three-rater rows -- Fleiss' kappa,
+Krippendorff's alpha and the exact three-way agreement rate -- which were
+written once the third sheet was in rather than approximated before it.
+Gold v2 was sealed and `golden_dataset.json` moved to v2.0 in the same pull
+request, #11 (D-013); the CI baseline was rebuilt on v2.0 after it (D-014).
+The rank-flip check -- does the system's ranking change when the gold labels
+are swapped for another annotator's -- is still a `NotImplementedError` item
+in the table below.
 
-**A1 against the shipped v1.1 labels, the one agreement number this study can
-report before A2 and A3 return:** raw agreement 0.800 (56 of 70), Cohen's kappa
-0.732, 95% bootstrap 0.600 to 0.846 (B = 10,000, seed 20260920). It is one of
+**A1 against the shipped v1.1 labels, the one agreement number this study
+could report before A2 and A3 returned:** raw agreement 0.800 (56 of 70),
+Cohen's kappa 0.732, 95% bootstrap 0.600 to 0.846 (B = 10,000,
+seed 20260920). It is one of
 the quantities section 9 lists in advance -- "each annotator against the
 shipped v1.1 labels" -- and it changes no label: gold v2 needs a majority, and
 `experiments/gold_v2.py` refuses to produce one from a single sheet. Read it
@@ -706,13 +713,15 @@ What this arm cannot say is in PREREGISTRATION section 8.3: kappa measures
 agreement, not correctness, and two raters agreeing at 0.9 with one annotator
 can also mean all three share a blind spot. That caveat is harder to apply here
 than it looks, because the annotator in question is itself of model-drafted
-origin. Three people are labelling these 70 emails blind to close that: A1's
-sheet is in and is in the table above, A2's and A3's are due 2026-09-23, and
-gold v2 is their per-case majority.
+origin. Three people labelled these 70 emails blind to close that: A1's sheet
+is the one in the table above, A2's and A3's came back on 2026-09-21 and
+2026-09-22, and gold v2 is their per-case majority, sealed 2026-09-22. The
+rows the two outside annotators and the panel add are in `e4_kappa.csv`; the
+table above is the five rows that existed before they returned.
 
-### How to read the three-rater rows, once they exist
+### How to read the three-rater rows
 
-`e4_kappa.csv` gains three rows when all three human sheets are in, all three
+`e4_kappa.csv` gained three rows when the third sheet came in, all three
 across the panel rather than between a pair:
 
 * **Fleiss' kappa** -- mean within-case agreement corrected by the pooled
@@ -734,7 +743,7 @@ annotator variance. Both new estimators reproduce a printed worked example in
 `python -m experiments.stats` -- Randolph (2005) for Fleiss, Krippendorff
 (2011) for alpha -- on the same terms as every other estimator here.
 
-### Gold v2, and what would make it
+### Gold v2, and what made it
 
 `experiments/gold_v2.py` is section 9's rule set and nothing else: the per-case
 majority of the three, the author ruling on a three-way split from a sheet
@@ -743,14 +752,16 @@ sheet is short, the shipped label kept on a case left with fewer than two valid
 human votes, and the two fallbacks fixed in advance. One refusal is left -- a
 roster in which A1 has not returned, which cannot arise -- and the script exits
 4 and says what is missing rather than guessing, because a rule chosen after the
-sheets are open is what registering the protocol was for. Run today, with only
-A1 back, it declines twice over: before 2026-09-27 the regime is not chosen
-yet, and at the deadline with one sheet it is fallback 2, under which gold
-stays at v1.1 and A1's sheet is a reliability check used for nothing else.
+sheets are open is what registering the protocol was for. Run on 2026-09-22
+with all three sheets in, ahead of the 2026-09-27 deadline, it took the
+`main` regime: 69 cases by majority, `case-027` ruled on by the author after
+the three split three ways, no case on either fallback and
+`n_adjudicated_pending` 0. The file it wrote carries `sealed: true` and
+`sealed_on: 2026-09-22`.
 
-When a sealed gold v2 exists, `analyze.py` recomputes the E0, E1 and E5 tables
-on it and writes each beside its pre-registered version as `*_gold_v2.csv`,
-plus `gold_v2_diff.csv` listing what moved, row by row and column by column.
+With gold v2 sealed, `analyze.py` recomputed the E0, E1 and E5 tables on it
+and wrote each beside its pre-registered version as `*_gold_v2.csv`, plus
+`gold_v2_diff.csv` listing what moved, row by row and column by column.
 The v1.1 files are not opened for writing, so "the published numbers did not
 change" is checkable by hashing them. Every gold v2 row carries the family
 `sensitivity_gold_v2`, takes no multiplicity correction, leaves `p_holm` and

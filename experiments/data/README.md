@@ -48,6 +48,8 @@
 #                                   overwriting expected_summary takes its own
 #                                   dated entry and a judge re-run
 #
-# gold_v2.json and adjudication_queue.csv appear when gold_v2.py has three
-# sheets to work from. Neither exists yet, and gold_v2.py refuses to invent
-# one from a single sheet.
+# gold_v2.json is here: gold_v2.py built it on 2026-09-22 from the three
+# sheets above, and it carries sealed: true. The adjudication queue for the
+# one case the three split on was written outside the repository and is not
+# committed, and gold_v2.py still refuses to invent gold v2 from a single
+# sheet.
